@@ -1,0 +1,159 @@
+// profile.component.scss - Mais bonito com cores, gradientes e espaçamento
+.profile-card {
+  border: none !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+  background: #f8f9fa !important; // Fundo cinza claro, não branco
+
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  }
+
+  .avatar-container {
+    position: relative;
+    display: inline-block;
+
+    .avatar-img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border: 5px solid #fff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .avatar-img:hover {
+      transform: scale(1.05);
+    }
+
+    .upload-btn {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.9);
+      color: #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+      mat-icon {
+        font-size: 20px;
+      }
+
+      &:hover {
+        background: #fff;
+      }
+    }
+  }
+
+  .role-tag {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .view-mode {
+    .info-card {
+      padding: 1.5rem;
+      background: white;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .info-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 0.75rem;
+      }
+
+      h6 {
+        margin-bottom: 0.5rem;
+        color: #495057;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 1rem;
+      }
+
+      .role-tag {
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .edit-mode mat-form-field {
+    .mat-mdc-form-field-wrapper {
+      .mat-mdc-form-field-flex {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+
+  .password-section {
+    h5 {
+      color: #667eea;
+      font-weight: 600;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 0.5rem;
+    }
+  }
+
+  mat-card-actions {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  }
+}
+
+.d-flex.gap-3 {
+  gap: 1rem !important; // Espaço maior entre botões
+}
+
+.btn-lg {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+
+  .profile-card mat-card-content {
+    padding: 1.5rem !important;
+  }
+
+  .avatar-container .avatar-img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .d-flex.gap-3 {
+    flex-direction: column;
+    gap: 0.75rem !important;
+  }
+}

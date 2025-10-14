@@ -1,0 +1,177 @@
+.container-fluid {
+  max-width: 1400px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 16px 24px;
+}
+
+.search-box {
+  min-width: 300px;
+}
+
+.input-group {
+  position: relative;
+}
+
+.input-group .form-control {
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+}
+
+.input-group .btn {
+  border-radius: 0 6px 6px 0;
+}
+
+.badge {
+  padding: 0.5em 0.75em;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.badge-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.table-responsive {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mat-mdc-table {
+  width: 100%;
+}
+
+.mat-mdc-header-cell {
+  background: #f8f9fa !important;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.mat-mdc-cell {
+  border-bottom: 1px solid #dee2e6;
+  padding: 12px 8px !important;
+}
+
+.mat-mdc-row:hover {
+  background: #f8f9fa;
+}
+
+.mat-mdc-row:nth-child(even) {
+  background: #fafafa;
+}
+
+mat-icon-button {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+}
+
+.product-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Fix alignment for mat-chip in Status column */
+.mat-mdc-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 8px;
+}
+
+.mat-mdc-chip .mat-mdc-chip-avatar {
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.mat-mdc-chip .mat-mdc-chip-avatar mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  vertical-align: middle;
+}
+
+.mat-mdc-chip span {
+  line-height: 20px;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 8px;
+  }
+
+  .card-header {
+    padding: 12px 16px;
+  }
+
+  .search-box {
+    min-width: 100%;
+    margin-top: 12px;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group .btn {
+    border-radius: 0 0 6px 6px;
+    margin-top: -1px;
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 8px 4px !important;
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.25em 0.5em;
+  }
+
+  .product-image {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mat-mdc-chip {
+    height: 24px;
+    padding: 0 6px;
+  }
+
+  .mat-mdc-chip .mat-mdc-chip-avatar mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+  }
+
+  .mat-mdc-chip span {
+    line-height: 18px;
+    font-size: 0.75rem;
+  }
+}

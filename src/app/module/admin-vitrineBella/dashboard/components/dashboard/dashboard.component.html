@@ -1,0 +1,84 @@
+<app-navigation-admin>
+
+<div class="dashboard-main">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1 class="header-title">Dashboard de Análise</h1>
+      <p class="header-subtitle">Estatísticas de produtos, vendas e lucros</p>
+    </div>
+    <div class="header-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="exportData()"
+        class="header-btn"
+      >
+        Exportar Relatório
+      </button>
+      <button mat-button (click)="refreshData()" class="header-btn">
+        Atualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+
+  <!-- Charts Section -->
+  <section class="charts-section">
+    <mat-card class="chart-card animated-card">
+      <mat-card-header>
+        <mat-card-title>Total de Vendas por Mês</mat-card-title>
+        <mat-card-subtitle>Valor total em R$</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div style="min-height: 300px">
+          <apx-chart
+            [series]="salesAmountByMonthChartData.series"
+            [chart]="salesAmountByMonthChartData.chart"
+            [xaxis]="salesAmountByMonthChartData.xaxis"
+            [dataLabels]="salesAmountByMonthChartData.dataLabels"
+            [title]="salesAmountByMonthChartData.title"
+          ></apx-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="chart-card animated-card">
+      <mat-card-header>
+        <mat-card-title>Quantidade de Produtos Vendidos por Mês</mat-card-title>
+        <mat-card-subtitle>Unidades vendidas</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div style="min-height: 300px">
+          <apx-chart
+            [series]="quantitySoldByMonthChartData.series"
+            [chart]="quantitySoldByMonthChartData.chart"
+            [xaxis]="quantitySoldByMonthChartData.xaxis"
+            [dataLabels]="quantitySoldByMonthChartData.dataLabels"
+            [title]="quantitySoldByMonthChartData.title"
+          ></apx-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="chart-card animated-card">
+      <mat-card-header>
+        <mat-card-title>Vendas ao Longo do Tempo</mat-card-title>
+        <mat-card-subtitle>Valor em R$ por mês e ano</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div style="min-height: 300px">
+          <apx-chart
+            [series]="salesOverTimeChartData.series"
+            [chart]="salesOverTimeChartData.chart"
+            [xaxis]="salesOverTimeChartData.xaxis"
+            [dataLabels]="salesOverTimeChartData.dataLabels"
+            [title]="salesOverTimeChartData.title"
+          ></apx-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </section>
+</div>
+</app-navigation-admin>

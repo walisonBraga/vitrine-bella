@@ -1,0 +1,447 @@
+// Angular Material Theme Colors
+$primary-color: #1976d2;
+$accent-color: #ff4081;
+$warn-color: #f44336;
+$success-color: #4caf50;
+
+// Custom Colors
+$navbar-height: 64px;
+$brand-color: #ff6f00;
+$text-color: #333;
+$border-color: #e0e0e0;
+
+// Modern Navbar
+.navbar-modern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: $navbar-height;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white !important;
+  border-bottom: 1px solid $border-color;
+
+  .navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 100%;
+  }
+
+  // Brand Section
+  .navbar-brand {
+    .brand-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: $brand-color;
+      font-weight: 700;
+      font-size: 1.5rem;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: darken($brand-color, 10%);
+      }
+
+      .brand-logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 0.75rem;
+        border-radius: 8px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+
+      .brand-text {
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  // Desktop Navigation
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      a {
+        color: $text-color;
+        font-weight: 500;
+        transition: color 0.3s ease;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+
+        &:hover {
+          color: $primary-color;
+          background-color: rgba($primary-color, 0.1);
+        }
+
+        &.active {
+          color: $primary-color;
+          background-color: rgba($primary-color, 0.1);
+        }
+
+        mat-icon {
+          margin-right: 0.5rem;
+          font-size: 1.2rem;
+          width: 1.2rem;
+          height: 1.2rem;
+        }
+      }
+    }
+
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      button[mat-icon-button] {
+        color: $text-color;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: $primary-color;
+        }
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+
+        &:hover {
+          border-color: $primary-color;
+        }
+      }
+    }
+  }
+
+  // Mobile Menu Button
+  .mobile-menu-btn {
+    color: $text-color;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
+}
+
+// User Menu Customization
+::ng-deep {
+  .user-menu {
+    min-width: 280px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid $border-color;
+    overflow: hidden;
+
+    .menu-header {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+
+      .menu-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 0.75rem;
+        border: 2px solid white;
+      }
+
+      .menu-user-info {
+        flex: 1;
+
+        .user-name {
+          font-weight: 600;
+          color: $text-color;
+          margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+          font-size: 0.85rem;
+          color: #666;
+        }
+      }
+    }
+
+    .mat-mdc-menu-item {
+      padding: 0.75rem 1rem;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: rgba($primary-color, 0.1);
+      }
+
+      mat-icon {
+        margin-right: 0.75rem;
+        color: #666;
+      }
+
+      &.logout-item {
+        color: $warn-color;
+
+        mat-icon {
+          color: $warn-color;
+        }
+
+        &:hover {
+          background-color: rgba($warn-color, 0.1);
+        }
+      }
+    }
+  }
+}
+
+// Mobile Navigation
+.mobile-nav-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  pointer-events: none;
+
+  .mobile-sidenav {
+    width: 320px;
+    background: white;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+    pointer-events: auto;
+
+    .mobile-nav-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid $border-color;
+
+        .mobile-brand {
+          display: flex;
+          align-items: center;
+
+          .mobile-logo {
+            width: 32px;
+            height: 32px;
+            margin-right: 0.5rem;
+            border-radius: 6px;
+          }
+
+          .mobile-brand-text {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: $brand-color;
+          }
+        }
+      }
+
+      .mobile-nav-list {
+        flex: 1;
+        padding: 0.5rem 0;
+
+        .mat-mdc-list-item {
+          margin: 0.25rem 0.5rem;
+          border-radius: 8px;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: rgba($primary-color, 0.1);
+          }
+
+          &.active {
+            background-color: rgba($primary-color, 0.1);
+            color: $primary-color;
+
+            mat-icon {
+              color: $primary-color;
+            }
+          }
+
+          mat-icon {
+            margin-right: 1rem;
+            color: #666;
+          }
+        }
+      }
+
+      .mobile-auth-section {
+        padding: 1rem;
+        border-top: 1px solid $border-color;
+
+        .mobile-login-btn {
+          width: 100%;
+          height: 48px;
+          font-weight: 600;
+          border-radius: 8px;
+        }
+
+        .mobile-user-info {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1rem;
+          padding: 0.75rem;
+          background: rgba($primary-color, 0.05);
+          border-radius: 8px;
+
+          .mobile-user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 0.75rem;
+            border: 2px solid white;
+          }
+
+          .mobile-user-details {
+            flex: 1;
+
+            .mobile-user-name {
+              font-weight: 600;
+              color: $text-color;
+              margin-bottom: 0.25rem;
+            }
+
+            .mobile-user-email {
+              font-size: 0.85rem;
+              color: #666;
+            }
+          }
+        }
+
+        .mobile-user-menu {
+          .mat-mdc-list-item {
+            margin: 0.25rem 0;
+            border-radius: 8px;
+
+            &:hover {
+              background-color: rgba($primary-color, 0.1);
+            }
+
+            &.mobile-logout {
+              color: $warn-color;
+
+              mat-icon {
+                color: $warn-color;
+              }
+
+              &:hover {
+                background-color: rgba($warn-color, 0.1);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Snackbar Customization
+::ng-deep {
+  .success-snackbar {
+    background-color: $success-color;
+    color: white;
+  }
+
+  .error-snackbar {
+    background-color: $warn-color;
+    color: white;
+  }
+}
+
+// Responsive Design
+@media (max-width: 991.98px) {
+  .navbar-modern {
+    .navbar-container {
+      padding: 0 0.75rem;
+    }
+
+    .navbar-brand {
+      .brand-link {
+        font-size: 1.25rem;
+
+        .brand-logo {
+          width: 32px;
+          height: 32px;
+          margin-right: 0.5rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 575.98px) {
+  .navbar-modern {
+    .navbar-container {
+      padding: 0 0.5rem;
+    }
+
+    .navbar-brand {
+      .brand-link {
+        font-size: 1.1rem;
+
+        .brand-logo {
+          width: 28px;
+          height: 28px;
+          margin-right: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .mobile-nav-container {
+    .mobile-sidenav {
+      width: 100%;
+    }
+  }
+}
+
+// Animation
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.mobile-sidenav {
+  animation: slideInRight 0.3s ease-out;
+}
+
+// Focus states
+button:focus-visible {
+  outline: 2px solid $primary-color;
+  outline-offset: 2px;
+}
+
+// Loading states
+.mat-mdc-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

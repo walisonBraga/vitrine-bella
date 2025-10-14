@@ -1,0 +1,143 @@
+<div class="modal-header">
+  <h4 class="modal-title">{{ title }}</h4>
+  <button mat-icon-button (click)="onCancel()" aria-label="Fechar modal">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+<div class="modal-body">
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Nome do Produto</mat-label>
+          <input matInput formControlName="productName" required />
+          <mat-error
+            *ngIf="productForm.get('productName')?.hasError('required')"
+          >
+            Nome do produto é obrigatório
+          </mat-error>
+          <mat-error
+            *ngIf="productForm.get('productName')?.hasError('minlength')"
+          >
+            Deve ter pelo menos 3 caracteres
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="col-md-6 mb-3">
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Preço</mat-label>
+          <input
+            matInput
+            formControlName="price"
+            type="number"
+            step="0.01"
+            required
+          />
+          <mat-error *ngIf="productForm.get('price')?.hasError('required')">
+            Preço é obrigatório
+          </mat-error>
+          <mat-error *ngIf="productForm.get('price')?.hasError('min')">
+            Preço deve ser maior que 0
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <mat-form-field appearance="fill" class="w-100">
+        <mat-label>Descrição</mat-label>
+        <textarea matInput formControlName="description" required></textarea>
+        <mat-error *ngIf="productForm.get('description')?.hasError('required')">
+          Descrição é obrigatória
+        </mat-error>
+        <mat-error
+          *ngIf="productForm.get('description')?.hasError('maxlength')"
+        >
+          Máximo de 500 caracteres
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Estoque</mat-label>
+          <input matInput formControlName="stock" type="number" required />
+          <mat-error *ngIf="productForm.get('stock')?.hasError('required')">
+            Estoque é obrigatório
+          </mat-error>
+          <mat-error *ngIf="productForm.get('stock')?.hasError('min')">
+            Estoque não pode ser negativo
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="col-md-6 mb-3">
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Categoria</mat-label>
+          <mat-select formControlName="category" required>
+            <mat-option value="Roupas">Roupas</mat-option>
+            <mat-option value="Acessórios">Acessórios</mat-option>
+            <mat-option value="Calçados">Calçados</mat-option>
+            <mat-option value="Eletrônicos">Eletrônicos</mat-option>
+          </mat-select>
+          <mat-error *ngIf="productForm.get('category')?.hasError('required')">
+            Categoria é obrigatória
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label"
+        >Imagem do Produto
+        {{ data.mode === "create" ? "(Obrigatória)" : "(Opcional)" }}</label
+      >
+      <div class="image-upload-container">
+        <div *ngIf="selectedImageUrl" class="image-preview">
+          <img
+            [src]="selectedImageUrl"
+            alt="Pré-visualização da imagem"
+            class="preview-image"
+          />
+          <button
+            mat-icon-button
+            class="remove-image-btn"
+            (click)="removeImage()"
+            matTooltip="Remover imagem"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div *ngIf="!selectedImageUrl" class="upload-placeholder">
+          <mat-icon>image</mat-icon>
+          <span>Nenhuma imagem selecionada</span>
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onImageSelected($event)"
+          class="image-input"
+          id="imageUpload"
+        />
+        <label for="imageUpload" class="btn btn-outline-primary upload-btn">
+          Selecionar Imagem
+        </label>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" mat-button (click)="onCancel()">Cancelar</button>
+      <button
+        type="submit"
+        mat-raised-button
+        color="primary"
+        [disabled]="loading || (data.mode === 'create' && !selectedImageUrl)"
+      >
+        <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+        <span *ngIf="!loading">{{
+          data.mode === "create" ? "Criar" : "Salvar"
+        }}</span>
+      </button>
+    </div>
+  </form>
+</div>

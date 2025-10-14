@@ -1,0 +1,118 @@
+<app-navbar-home></app-navbar-home>
+
+<div class="signin-container">
+  <div class="container-fluid h-100">
+    <div class="row h-100">
+      <!-- Lado esquerdo: Hero Section -->
+      <div class="col-lg-6 d-none d-lg-flex hero-section">
+        <div class="hero-content">
+          <div class="hero-logo">
+            <img src="https://mms.img.susercontent.com/f45a708b2f6ef258a33df147103a5251" alt="VitrineBella Logo"
+              class="logo-image">
+          </div>
+          <h1 class="hero-title">Bem-vindo de volta!</h1>
+          <p class="hero-subtitle">
+            Acesse sua conta e continue sua jornada na VitrineBella.
+            Descubra produtos incríveis e gerencie suas compras.
+          </p>
+          <div class="hero-features">
+            <div class="feature-item">
+              <mat-icon>shopping_cart</mat-icon>
+              <span>Carrinho Inteligente</span>
+            </div>
+            <div class="feature-item">
+              <mat-icon>favorite</mat-icon>
+              <span>Lista de Favoritos</span>
+            </div>
+            <div class="feature-item">
+              <mat-icon>history</mat-icon>
+              <span>Histórico de Compras</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lado direito: Formulário -->
+      <div class="col-lg-6 form-section">
+        <div class="form-container">
+          <mat-card class="signin-card">
+            <mat-card-header class="card-header">
+              <mat-card-title class="card-title">
+                <mat-icon class="title-icon">login</mat-icon>
+                Entrar
+              </mat-card-title>
+              <mat-card-subtitle class="card-subtitle">
+                Acesse sua conta para continuar
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content class="card-content">
+              <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="signin-form">
+
+                <!-- Email -->
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>E-mail</mat-label>
+                  <input matInput type="email" formControlName="email" placeholder="exemplo@email.com"
+                    autocomplete="email" maxlength="100">
+                  <mat-icon matSuffix>email</mat-icon>
+                  <mat-hint>Digite seu e-mail de cadastro</mat-hint>
+                  <mat-error *ngIf="signInForm.controls['email'].invalid && signInForm.controls['email'].touched">
+                    <span *ngIf="signInForm.controls['email'].errors?.['required']">E-mail é obrigatório</span>
+                    <span *ngIf="signInForm.controls['email'].errors?.['email']">Digite um e-mail válido</span>
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Senha -->
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Senha</mat-label>
+                  <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+                    placeholder="Digite sua senha" autocomplete="current-password">
+                  <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
+                    [attr.aria-label]="'Ocultar senha'" [attr.aria-pressed]="hidePassword">
+                    <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                  </button>
+                  <mat-hint>Digite sua senha de acesso</mat-hint>
+                  <mat-error *ngIf="signInForm.controls['password'].invalid && signInForm.controls['password'].touched">
+                    <span *ngIf="signInForm.controls['password'].errors?.['required']">Senha é obrigatória</span>
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Lembrar-me e Esqueci a senha -->
+                <div class="form-options">
+                  <mat-checkbox formControlName="rememberMe" class="remember-checkbox">
+                    Lembrar-me
+                  </mat-checkbox>
+                  <a href="#" class="forgot-password-link">
+                    Esqueci minha senha
+                  </a>
+                </div>
+
+                <!-- Botão de Submit -->
+                <button mat-raised-button color="primary" type="submit" class="submit-button"
+                  [disabled]="signInForm.invalid || loading">
+                  <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+                  <mat-icon *ngIf="!loading">login</mat-icon>
+                  <span *ngIf="!loading">Entrar</span>
+                  <span *ngIf="loading">Entrando...</span>
+                </button>
+
+              </form>
+            </mat-card-content>
+
+            <mat-divider></mat-divider>
+
+            <mat-card-footer class="card-footer">
+              <div class="signup-link">
+                <span>Não tem uma conta?</span>
+                <a mat-button color="primary" routerLink="/sign-up" class="signup-button">
+                  <mat-icon>person_add</mat-icon>
+                  Criar Conta
+                </a>
+              </div>
+            </mat-card-footer>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

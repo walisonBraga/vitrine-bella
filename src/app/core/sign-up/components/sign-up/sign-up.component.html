@@ -1,0 +1,182 @@
+<app-navbar-home></app-navbar-home>
+
+<div class="signup-container">
+  <div class="container-fluid h-100">
+    <div class="row h-100">
+      <!-- Lado esquerdo: Hero Section -->
+      <div class="col-lg-6 d-none d-lg-flex hero-section">
+        <div class="hero-content">
+          <div class="hero-logo">
+            <img src="https://mms.img.susercontent.com/f45a708b2f6ef258a33df147103a5251" alt="VitrineBella Logo"
+              class="logo-image">
+          </div>
+          <h1 class="hero-title">Bem-vindo à VitrineBella</h1>
+          <p class="hero-subtitle">
+            Transforme sua experiência de compras com nossa plataforma inovadora.
+            Descubra produtos incríveis e conecte-se com vendedores confiáveis.
+          </p>
+          <div class="hero-features">
+            <div class="feature-item">
+              <mat-icon>verified</mat-icon>
+              <span>Vendedores Verificados</span>
+            </div>
+            <div class="feature-item">
+              <mat-icon>security</mat-icon>
+              <span>Pagamento Seguro</span>
+            </div>
+            <div class="feature-item">
+              <mat-icon>support_agent</mat-icon>
+              <span>Suporte 24/7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lado direito: Formulário -->
+      <div class="col-lg-6 form-section">
+        <div class="form-container">
+          <mat-card class="signup-card">
+            <mat-card-header class="card-header">
+              <mat-card-title class="card-title">
+                <mat-icon class="title-icon">person_add</mat-icon>
+                Criar Conta
+              </mat-card-title>
+              <mat-card-subtitle class="card-subtitle">
+                Preencha os dados para começar sua jornada
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content class="card-content">
+              <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()" class="signup-form">
+
+                <!-- Primeira linha: Nome e CPF -->
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field-half">
+                    <mat-label>Nome Completo</mat-label>
+                    <input matInput formControlName="nome" placeholder="Digite seu nome completo" autocomplete="name"
+                      maxlength="100">
+                    <mat-icon matSuffix>person</mat-icon>
+                    <mat-hint>Mínimo 3 caracteres</mat-hint>
+                    <mat-error *ngIf="signUpForm.controls['nome'].invalid && signUpForm.controls['nome'].touched">
+                      <span *ngIf="signUpForm.controls['nome'].errors?.['required']">Nome é obrigatório</span>
+                      <span *ngIf="signUpForm.controls['nome'].errors?.['minlength']">Nome deve ter pelo menos 3
+                        caracteres</span>
+                      <span *ngIf="signUpForm.controls['nome'].errors?.['containsNumbers']">Nome não pode conter
+                        números</span>
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field-half">
+                    <mat-label>CPF</mat-label>
+                    <input matInput formControlName="cpf" placeholder="000.000.000-00" mask="000.000.000-00"
+                      autocomplete="off">
+                    <mat-icon matSuffix>badge</mat-icon>
+                    <mat-hint>Digite apenas números</mat-hint>
+                    <mat-error *ngIf="signUpForm.controls['cpf'].invalid && signUpForm.controls['cpf'].touched">
+                      <span *ngIf="signUpForm.controls['cpf'].errors?.['required']">CPF é obrigatório</span>
+                      <span *ngIf="signUpForm.controls['cpf'].errors?.['invalidCpf']">CPF inválido</span>
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Segunda linha: Email e Telefone -->
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field-half">
+                    <mat-label>E-mail</mat-label>
+                    <input matInput type="email" formControlName="email" placeholder="exemplo@email.com"
+                      autocomplete="email" maxlength="100">
+                    <mat-icon matSuffix>email</mat-icon>
+                    <mat-hint>Usaremos este e-mail para contato</mat-hint>
+                    <mat-error *ngIf="signUpForm.controls['email'].invalid && signUpForm.controls['email'].touched">
+                      <span *ngIf="signUpForm.controls['email'].errors?.['required']">E-mail é obrigatório</span>
+                      <span *ngIf="signUpForm.controls['email'].errors?.['email']">Digite um e-mail válido</span>
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field-half">
+                    <mat-label>Telefone</mat-label>
+                    <input matInput type="tel" formControlName="telefone" placeholder="(11) 99999-9999"
+                      mask="(00) 00000-0000" autocomplete="tel">
+                    <mat-icon matSuffix>phone</mat-icon>
+                    <mat-hint>Inclua o DDD</mat-hint>
+                    <mat-error
+                      *ngIf="signUpForm.controls['telefone'].invalid && signUpForm.controls['telefone'].touched">
+                      <span *ngIf="signUpForm.controls['telefone'].errors?.['required']">Telefone é obrigatório</span>
+                      <span *ngIf="signUpForm.controls['telefone'].errors?.['invalidPhone']">Telefone inválido</span>
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Terceira linha: Senha e Confirmar Senha -->
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field-half">
+                    <mat-label>Senha</mat-label>
+                    <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="senha"
+                      placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                    <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
+                      [attr.aria-label]="'Ocultar senha'" [attr.aria-pressed]="hidePassword">
+                      <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-hint>Maiúscula, minúscula, número e caractere especial</mat-hint>
+                    <mat-error *ngIf="signUpForm.controls['senha'].invalid && signUpForm.controls['senha'].touched">
+                      <span *ngIf="signUpForm.controls['senha'].errors?.['required']">Senha é obrigatória</span>
+                      <span *ngIf="signUpForm.controls['senha'].errors?.['minlength']">Senha deve ter pelo menos 8
+                        caracteres</span>
+                      <span *ngIf="signUpForm.controls['senha'].errors?.['weakPassword']">Senha deve conter maiúscula,
+                        minúscula, número e caractere especial</span>
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field-half">
+                    <mat-label>Confirmar Senha</mat-label>
+                    <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmarSenha"
+                      placeholder="Repita a senha" autocomplete="new-password">
+                    <button mat-icon-button matSuffix type="button" (click)="hideConfirmPassword = !hideConfirmPassword"
+                      [attr.aria-label]="'Ocultar confirmação de senha'" [attr.aria-pressed]="hideConfirmPassword">
+                      <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-hint>Digite a mesma senha novamente</mat-hint>
+                    <mat-error
+                      *ngIf="signUpForm.errors?.['senhasDiferentes'] && signUpForm.controls['confirmarSenha'].touched">
+                      As senhas não conferem
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Termos e Condições -->
+                <div class="terms-section">
+                  <mat-checkbox formControlName="acceptTerms" class="terms-checkbox">
+                    Aceito os <a href="#" class="terms-link">Termos de Uso</a> e
+                    <a href="#" class="terms-link">Política de Privacidade</a>
+                  </mat-checkbox>
+                </div>
+
+                <!-- Botão de Submit -->
+                <button mat-raised-button color="primary" type="submit" class="submit-button"
+                  [disabled]="signUpForm.invalid || loading || !acceptTerms">
+                  <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+                  <mat-icon *ngIf="!loading">person_add</mat-icon>
+                  <span *ngIf="!loading">Criar Conta</span>
+                  <span *ngIf="loading">Criando conta...</span>
+                </button>
+
+              </form>
+            </mat-card-content>
+
+            <mat-divider></mat-divider>
+
+            <mat-card-footer class="card-footer">
+              <div class="login-link">
+                <span>Já tem uma conta?</span>
+                <a mat-button color="primary" routerLink="/sign-in" class="login-button">
+                  <mat-icon>login</mat-icon>
+                  Entrar
+                </a>
+              </div>
+            </mat-card-footer>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

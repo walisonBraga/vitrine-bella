@@ -1,0 +1,181 @@
+<mat-toolbar color="primary" class="navbar-modern">
+  <div class="navbar-container">
+    <!-- Logo e Brand -->
+    <div class="navbar-brand">
+      <a routerLink="/" class="brand-link" aria-label="VitrineBella Home">
+        <img [src]="logoPath" alt="VitrineBella Logo" class="brand-logo" loading="lazy" />
+        <span class="brand-text">VitrineBella</span>
+      </a>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <div class="desktop-nav d-none d-lg-flex">
+      <nav class="nav-links">
+        <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <mat-icon>home</mat-icon>
+          Home
+        </a>
+        <a mat-button routerLink="/produtos" routerLinkActive="active">
+          <mat-icon>shopping_bag</mat-icon>
+          Produtos
+        </a>
+        <a mat-button routerLink="/sobre" routerLinkActive="active">
+          <mat-icon>info</mat-icon>
+          Sobre
+        </a>
+      </nav>
+
+      <!-- Actions -->
+      <div class="navbar-actions">
+        <!-- Carrinho -->
+        <button mat-icon-button routerLink="/carrinho" matTooltip="Carrinho de compras">
+          <mat-icon matBadge="{{cartCount}}" matBadgeColor="warn" [matBadgeHidden]="cartCount === 0">
+            shopping_cart
+          </mat-icon>
+        </button>
+
+        <!-- Auth Section -->
+        <ng-container *ngIf="!(user$ | async); else loggedUser">
+          <button mat-raised-button color="accent" routerLink="/sign-in">
+            <mat-icon>login</mat-icon>
+            Entrar
+          </button>
+        </ng-container>
+
+        <ng-template #loggedUser>
+          <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="Menu do usuário">
+            <img [src]="(user$ | async)?.photoURL || defaultAvatar" class="user-avatar" alt="Avatar do usuário"
+              loading="lazy" />
+          </button>
+
+          <mat-menu #userMenu="matMenu" class="user-menu">
+            <div class="menu-header">
+              <img [src]="(user$ | async)?.photoURL || defaultAvatar" class="menu-avatar" alt="Avatar" />
+              <div class="menu-user-info">
+                <div class="user-name">{{ (user$ | async)?.displayName || 'Usuário' }}</div>
+                <div class="user-email">{{ (user$ | async)?.email }}</div>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <button mat-menu-item routerLink="/perfil">
+              <mat-icon>person</mat-icon>
+              Meu Perfil
+            </button>
+            <button mat-menu-item routerLink="/pedidos">
+              <mat-icon>receipt</mat-icon>
+              Meus Pedidos
+            </button>
+            <button mat-menu-item routerLink="/favoritos">
+              <mat-icon>favorite</mat-icon>
+              Favoritos
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()" class="logout-item">
+              <mat-icon>logout</mat-icon>
+              Sair
+            </button>
+          </mat-menu>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button mat-icon-button class="mobile-menu-btn d-lg-none" (click)="toggleMobileMenu()" matTooltip="Menu">
+      <mat-icon>{{ isMobileMenuOpen ? 'close' : 'menu' }}</mat-icon>
+    </button>
+  </div>
+
+  <!-- Mobile Navigation Drawer -->
+  <mat-sidenav-container class="mobile-nav-container d-lg-none">
+    <mat-sidenav #mobileSidenav mode="over" position="end" [opened]="isMobileMenuOpen"
+      (openedChange)="isMobileMenuOpen = $event" class="mobile-sidenav">
+
+      <div class="mobile-nav-content">
+        <!-- Mobile Header -->
+        <div class="mobile-nav-header">
+          <div class="mobile-brand">
+            <img [src]="logoPath" alt="VitrineBella Logo" class="mobile-logo">
+            <span class="mobile-brand-text">VitrineBella</span>
+          </div>
+          <button mat-icon-button (click)="closeMobileMenu()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Mobile Navigation Links -->
+        <mat-nav-list class="mobile-nav-list">
+          <a mat-list-item routerLink="/" (click)="closeMobileMenu()" routerLinkActive="active">
+            <mat-icon matListItemIcon>home</mat-icon>
+            <span matListItemTitle>Home</span>
+          </a>
+
+          <a mat-list-item routerLink="/produtos" (click)="closeMobileMenu()" routerLinkActive="active">
+            <mat-icon matListItemIcon>shopping_bag</mat-icon>
+            <span matListItemTitle>Produtos</span>
+          </a>
+
+          <a mat-list-item routerLink="/sobre" (click)="closeMobileMenu()" routerLinkActive="active">
+            <mat-icon matListItemIcon>info</mat-icon>
+            <span matListItemTitle>Sobre</span>
+          </a>
+
+          <a mat-list-item routerLink="/carrinho" (click)="closeMobileMenu()">
+            <mat-icon matListItemIcon matBadge="{{cartCount}}" matBadgeColor="warn" [matBadgeHidden]="cartCount === 0">
+              shopping_cart
+            </mat-icon>
+            <span matListItemTitle>Carrinho</span>
+          </a>
+        </mat-nav-list>
+
+        <mat-divider></mat-divider>
+
+        <!-- Mobile Auth Section -->
+        <div class="mobile-auth-section">
+          <ng-container *ngIf="!(user$ | async); else loggedMobileUser">
+            <button mat-raised-button color="primary" routerLink="/sign-in" (click)="closeMobileMenu()"
+              class="mobile-login-btn">
+              <mat-icon>login</mat-icon>
+              Entrar
+            </button>
+          </ng-container>
+
+          <ng-template #loggedMobileUser>
+            <div class="mobile-user-info">
+              <img [src]="(user$ | async)?.photoURL || defaultAvatar" class="mobile-user-avatar" alt="Avatar" />
+              <div class="mobile-user-details">
+                <div class="mobile-user-name">{{ (user$ | async)?.displayName || 'Usuário' }}</div>
+                <div class="mobile-user-email">{{ (user$ | async)?.email }}</div>
+              </div>
+            </div>
+
+            <mat-nav-list class="mobile-user-menu">
+              <a mat-list-item routerLink="/perfil" (click)="closeMobileMenu()">
+                <mat-icon matListItemIcon>person</mat-icon>
+                <span matListItemTitle>Meu Perfil</span>
+              </a>
+
+              <a mat-list-item routerLink="/pedidos" (click)="closeMobileMenu()">
+                <mat-icon matListItemIcon>receipt</mat-icon>
+                <span matListItemTitle>Meus Pedidos</span>
+              </a>
+
+              <a mat-list-item routerLink="/favoritos" (click)="closeMobileMenu()">
+                <mat-icon matListItemIcon>favorite</mat-icon>
+                <span matListItemTitle>Favoritos</span>
+              </a>
+
+              <mat-divider></mat-divider>
+
+              <button mat-list-item (click)="logout(); closeMobileMenu()" class="mobile-logout">
+                <mat-icon matListItemIcon>logout</mat-icon>
+                <span matListItemTitle>Sair</span>
+              </button>
+            </mat-nav-list>
+          </ng-template>
+        </div>
+      </div>
+    </mat-sidenav>
+  </mat-sidenav-container>
+</mat-toolbar>
