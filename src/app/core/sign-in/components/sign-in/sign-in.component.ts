@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../auth/auth.service';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { NavbarHomeComponent } from '../../../navbar-home/components/navbar-home/navbar-home.component';
 
 // Angular Material Imports
@@ -47,19 +47,72 @@ export class SignInComponent implements OnInit {
     private router: Router,
     private fb: FormBuilder,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit(): void {
     this.signInForm = this.createSignInForm();
+    this.loadRememberedEmail();
   }
 
   private createSignInForm(): FormGroup {
+    const rememberedEmail = this.getRememberedEmail();
     return this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: [rememberedEmail || '', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
-      rememberMe: [false]
+      rememberMe: [!!rememberedEmail]
     });
+  }
+
+  private getRememberedEmail(): string | null {
+    // Verificar se estamos no browser antes de acessar localStorage
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return null;
+    }
+
+    try {
+      return localStorage.getItem('rememberedEmail');
+    } catch (error) {
+      console.warn('Erro ao acessar localStorage:', error);
+      return null;
+    }
+  }
+
+  private saveRememberedEmail(email: string): void {
+    // Verificar se estamos no browser antes de acessar localStorage
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+
+    try {
+      localStorage.setItem('rememberedEmail', email);
+    } catch (error) {
+      console.warn('Erro ao salvar email no localStorage:', error);
+    }
+  }
+
+  private removeRememberedEmail(): void {
+    // Verificar se estamos no browser antes de acessar localStorage
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+
+    try {
+      localStorage.removeItem('rememberedEmail');
+    } catch (error) {
+      console.warn('Erro ao remover email do localStorage:', error);
+    }
+  }
+
+  private loadRememberedEmail(): void {
+    const rememberedEmail = this.getRememberedEmail();
+    if (rememberedEmail && this.signInForm) {
+      this.signInForm.patchValue({
+        email: rememberedEmail,
+        rememberMe: true
+      });
+    }
   }
 
   public async onSubmit() {
@@ -69,8 +122,14 @@ export class SignInComponent implements OnInit {
     }
 
     this.loading = true;
-    const email = this.signInForm.value.email;
-    const password = this.signInForm.value.password;
+    const { email, password, rememberMe } = this.signInForm.value;
+
+    // Salvar ou remover email baseado no checkbox "Lembrar-me"
+    if (rememberMe) {
+      this.saveRememberedEmail(email);
+    } else {
+      this.removeRememberedEmail();
+    }
 
     try {
       const user: any = await this.authService.signIn(email, password);
@@ -103,5 +162,18 @@ export class SignInComponent implements OnInit {
 
   public goToSignUp() {
     this.router.navigate(['/sign-up']);
+  }
+
+  public onRememberMeChange(event: any): void {
+    const isChecked = event.checked;
+    const currentEmail = this.signInForm.get('email')?.value;
+
+    if (isChecked && currentEmail) {
+      // Se marcou o checkbox e há email, salva
+      this.saveRememberedEmail(currentEmail);
+    } else if (!isChecked) {
+      // Se desmarcou o checkbox, remove o email salvo
+      this.removeRememberedEmail();
+    }
   }
 }

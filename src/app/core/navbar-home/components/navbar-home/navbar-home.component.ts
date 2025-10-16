@@ -3,6 +3,7 @@ import { Auth, authState, signOut, User } from '@angular/fire/auth';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../auth/auth.service';
+import { FavoritosFirebaseService } from '../../../services/favoritos-firebase.service';
 import { Observable } from 'rxjs';
 
 // Angular Material Imports
@@ -44,14 +45,18 @@ export class NavbarHomeComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private favoritosFirebaseService = inject(FavoritosFirebaseService);
 
   user$: Observable<any> = authState(this.auth);
   cartCount: number = 0;
+  favoritosCount: number = 0;
   logoPath: string = 'assets/img/logo.png';
   defaultAvatar: string = 'assets/img/icon-sem-perfil.png';
   isMobileMenuOpen = false;
 
-  constructor() { }
+  constructor() {
+    this.setupFavoritosListener();
+  }
 
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
@@ -59,6 +64,21 @@ export class NavbarHomeComponent {
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen = false;
+  }
+
+  setupFavoritosListener(): void {
+    // Escutar mudanças nos favoritos do Firebase
+    this.favoritosFirebaseService.getFavoritosCount$().subscribe(count => {
+      this.favoritosCount = count;
+    });
+
+    // Fallback para localStorage quando não logado
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const favoritosSalvos = localStorage.getItem('favoritos');
+      if (favoritosSalvos) {
+        this.favoritosCount = JSON.parse(favoritosSalvos).length;
+      }
+    }
   }
 
   @HostListener('window:resize', ['$event'])

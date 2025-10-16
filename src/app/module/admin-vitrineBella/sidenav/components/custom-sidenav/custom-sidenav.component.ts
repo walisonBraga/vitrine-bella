@@ -1,8 +1,9 @@
-import { Component, computed, effect, Input, signal } from '@angular/core';
+import { Component, computed, effect, Input, signal, HostListener } from '@angular/core';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { MenuItem } from '../../interface/MenuItem';
 import { Router } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
+import { StockNotificationService } from '../../../../../core/services/stock-notification.service';
 
 @Component({
   selector: 'app-custom-sidenav',
@@ -11,15 +12,20 @@ import { filter, Subject, takeUntil } from 'rxjs';
 })
 export class CustomSidenavComponent {
 
-sideNavCollapsed = signal(false);
+  sideNavCollapsed = signal(false);
   userData = signal<any | null>(null);
+  lowStockCount = signal(0);
   private destroy$ = new Subject<void>(); // Subject para unsubscribe manual
 
   @Input() set collapse(value: boolean) {
     this.sideNavCollapsed.set(value);
   }
 
-  constructor(private _authService: AuthService, private _router: Router) {
+  constructor(
+    private _authService: AuthService,
+    private _router: Router,
+    private stockNotificationService: StockNotificationService
+  ) {
     effect(() => {
       const user = this.userData();
       if (!user) {
@@ -28,7 +34,7 @@ sideNavCollapsed = signal(false);
     });
   }
 
-  sidenavWidth = computed(() => this.sideNavCollapsed() ? '70px' : '250px');
+  sidenavWidth = computed(() => this.sideNavCollapsed() ? '70px' : 'auto');
 
   menuItems = signal<MenuItem[]>([
     {
@@ -38,28 +44,48 @@ sideNavCollapsed = signal(false);
       permission: '/dashboard'
     },
     {
-      icon: 'inventory_2',
-      label: 'Produtos',
-      route: '/admin/adminProductTable',
-      permission: '/product-management'
-    },
-    {
-      icon: 'people',
-      label: 'Usuários',
-      route: '/admin/adminUserTableOwner',
-      permission: '/users'
-    },
-    {
       icon: 'point_of_sale',
       label: 'Vendas Internas',
       route: '/admin/internal-sales',
       permission: '/internal-sales'
     },
     {
-      icon: 'trending_up',
-      label: 'Vendas',
-      route: '/admin/sales-management',
-      permission: '/sales-management'
+      icon: 'inventory_2',
+      label: 'Gerenciar Produtos',
+      permission: '/product-management',
+      expanded: false,
+      children: [
+        {
+          icon: 'inventory_2',
+          label: 'Lista de Produtos',
+          route: '/admin/adminProductTable',
+          permission: '/product-management'
+        },
+        {
+          icon: 'category',
+          label: 'Categorias',
+          route: '/admin/categories',
+          permission: '/category-management'
+        },
+        {
+          icon: 'confirmation_number',
+          label: 'Cupons',
+          route: '/admin/coupons',
+          permission: '/coupon-management'
+        },
+        {
+          icon: 'slideshow',
+          label: 'Slides',
+          route: '/admin/slides',
+          permission: '/slides-management'
+        }
+      ]
+    },
+    {
+      icon: 'people',
+      label: 'Usuários',
+      route: '/admin/adminUserTableOwner',
+      permission: '/users'
     },
     {
       icon: 'security',
@@ -75,25 +101,36 @@ sideNavCollapsed = signal(false);
     }
   ])
 
+  // Cache para evitar recálculos desnecessários
+  private _filteredMenuItemsCache: MenuItem[] | null = null;
+  private _lastUserPermissions: string | null = null;
+
   // Filtra os itens do menu baseado nas permissões do usuário
   filteredMenuItems = computed(() => {
     const user = this.userData();
 
     if (!user || !user.managementType) {
-      return this.menuItems().filter(item => !item.permission); // Mostra apenas itens sem permissão
+      return this.menuItems().filter(item => !item.permission);
     }
 
     const userPermissions = user.managementType;
 
+    // Se as permissões não mudaram, retorna o cache
+    if (this._lastUserPermissions === userPermissions && this._filteredMenuItemsCache) {
+      return this._filteredMenuItemsCache;
+    }
+
     const filteredItems = this.menuItems().filter(item => {
-      // Se não tem permissão definida, sempre mostra (ex: Perfil)
       if (!item.permission) {
         return true;
       }
-      // Se tem permissão definida, verifica se o usuário tem essa permissão
       const hasPermission = userPermissions.includes(item.permission);
       return hasPermission;
     });
+
+    // Atualiza o cache
+    this._filteredMenuItemsCache = filteredItems;
+    this._lastUserPermissions = userPermissions;
 
     return filteredItems;
   })
@@ -103,12 +140,67 @@ sideNavCollapsed = signal(false);
   ngOnInit(): void {
     this._authService.currentUser$
       .pipe(
-        takeUntil(this.destroy$), // Usa o Subject manual
-        filter(user => user !== null) // Opcional: filtra nulls pra não navegar desnecessariamente
+        takeUntil(this.destroy$),
+        filter(user => user !== null)
       )
       .subscribe((user) => {
-        this.userData.set(user);
+        // Só atualiza se o usuário realmente mudou
+        const currentUser = this.userData();
+        if (!currentUser || JSON.stringify(currentUser) !== JSON.stringify(user)) {
+          this.userData.set(user);
+        }
       });
+
+    // Subscrever às notificações de estoque
+    this.stockNotificationService.lowStockCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((count) => {
+        this.lowStockCount.set(count);
+      });
+  }
+
+  toggleMenuExpansion(menuItem: MenuItem, event: Event) {
+    // Previne o comportamento padrão do link (refresh da página)
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (menuItem.children) {
+      // Se o sidenav estiver fechado, redireciona para a primeira página do submenu
+      if (this.sideNavCollapsed()) {
+        const firstChild = menuItem.children[0];
+        if (firstChild && firstChild.route) {
+          this._router.navigate([firstChild.route]);
+        }
+      } else {
+        // Se estiver aberto, apenas expande/colapsa o menu
+        menuItem.expanded = !menuItem.expanded;
+        this.menuItems.set([...this.menuItems()]); // Trigger change detection
+      }
+    }
+  }
+
+  preventDefault(event: Event) {
+    // Método para prevenir comportamento padrão em todos os links
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  @HostListener('submit', ['$event'])
+  onFormSubmit(event: Event) {
+    // Previne qualquer submit de formulário dentro do sidenav
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+  }
+
+  @HostListener('click', ['$event'])
+  onGlobalClick(event: Event) {
+    // Previne comportamento padrão em todos os cliques
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A' || target.closest('a')) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 
   ngOnDestroy(): void {

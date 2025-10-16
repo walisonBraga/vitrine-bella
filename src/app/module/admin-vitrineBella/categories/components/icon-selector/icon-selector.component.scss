@@ -1,0 +1,298 @@
+// ===== CONTAINER PRINCIPAL =====
+.icon-selector {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+}
+
+// ===== HEADER =====
+.selector-header {
+  padding: 16px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #e0e0e0;
+
+  .selector-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px 0;
+    color: #212121;
+    font-size: 1.1rem;
+    font-weight: 600;
+
+    mat-icon {
+      color: #1976d2;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .selector-subtitle {
+    margin: 0;
+    color: #757575;
+    font-size: 0.875rem;
+  }
+}
+
+// ===== BUSCA =====
+.search-section {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+
+  .search-field {
+    width: 100%;
+
+    .mat-mdc-form-field-outline {
+      color: #e0e0e0;
+    }
+
+    &.mat-focused .mat-mdc-form-field-outline-thick {
+      color: #1976d2;
+    }
+  }
+}
+
+// ===== ÍCONE SELECIONADO =====
+.selected-icon-section {
+  padding: 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+
+  .selected-icon-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid #1976d2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .selected-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #1976d2;
+    }
+
+    .selected-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .selected-name {
+        font-weight: 600;
+        color: #212121;
+        font-size: 0.95rem;
+      }
+
+      .selected-code {
+        font-size: 0.8rem;
+        color: #757575;
+        font-family: 'Courier New', monospace;
+      }
+    }
+  }
+}
+
+// ===== CONTAINER DE ÍCONES =====
+.icons-container {
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+// ===== CATEGORIA DE ÍCONES =====
+.icon-category {
+  margin-bottom: 20px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .category-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    color: #212121;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    .category-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #1976d2;
+    }
+  }
+}
+
+// ===== GRID DE ÍCONES =====
+.icons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+
+  .icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+
+    &:hover {
+      border-color: #1976d2;
+      background: #f8f9fa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &.selected {
+      border-color: #1976d2;
+      background: #e3f2fd;
+      transform: scale(1.05);
+
+      &::after {
+        content: '✓';
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 16px;
+        height: 16px;
+        background: #1976d2;
+        color: white;
+        border-radius: 50%;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+    }
+
+    .grid-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: #424242;
+    }
+
+    &:hover .grid-icon {
+      color: #1976d2;
+    }
+
+    &.selected .grid-icon {
+      color: #1976d2;
+    }
+  }
+}
+
+// ===== SEM RESULTADOS =====
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+
+  .no-results-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #bdbdbd;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    color: #757575;
+    font-size: 0.9rem;
+  }
+}
+
+// ===== RESPONSIVIDADE =====
+@media (max-width: 768px) {
+  .icons-grid {
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 6px;
+
+    .icon-button {
+      width: 45px;
+      height: 45px;
+
+      .grid-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .selected-icon-display {
+    .selected-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .icons-grid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 4px;
+
+    .icon-button {
+      width: 40px;
+      height: 40px;
+
+      .grid-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .selector-header,
+  .search-section,
+  .selected-icon-section,
+  .icons-container {
+    padding: 12px;
+  }
+}
+
+// ===== SCROLLBAR CUSTOMIZADA =====
+.icon-selector::-webkit-scrollbar,
+.icons-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.icon-selector::-webkit-scrollbar-track,
+.icons-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.icon-selector::-webkit-scrollbar-thumb,
+.icons-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+
+  &:hover {
+    background: #a8a8a8;
+  }
+}

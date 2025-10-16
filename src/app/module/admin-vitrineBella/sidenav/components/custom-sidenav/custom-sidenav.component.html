@@ -1,16 +1,10 @@
 <div class="sidenav-header">
-  <img
-    [width]="profilePicSize()"
-    [height]="profilePicSize()"
-    [src]="
+  <img [width]="profilePicSize()" [height]="profilePicSize()" [src]="
       userData()?.photoURL || '../../../../../../assets/img/icon-sem-perfil.png'
-    "
-    [alt]="userData()?.photoURL ? 'Foto de perfil' : 'Logo'"
-    class="profile-img"
-  />
+    " [alt]="userData()?.photoURL ? 'Foto de perfil' : 'Logo'" class="profile-img" />
   <div class="header-text" [class.hide-header-text]="sideNavCollapsed()">
     <h2 class="no-margin">
-      {{ userData()?.firstName || "" }} {{ userData()?.lastName || "" }}
+      {{ userData()?.fullName || "" }}
     </h2>
     <p class="no-margin">
       {{ userData()?.role || "Gerencie sua loja com facilidade" }}
@@ -19,16 +13,52 @@
 </div>
 
 <mat-nav-list>
-  <a
-    mat-list-item
-    class="menu-item"
-    *ngFor="let item of filteredMenuItems()"
-    [routerLink]="item.route"
-    routerLinkActive="selected-menu-item"
-    #rla="routerLinkActive"
-    [activated]="rla.isActive"
-  >
-    <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-    <span matListItemTitle *ngIf="!sideNavCollapsed()">{{ item.label }}</span>
-  </a>
+  <ng-container *ngFor="let item of filteredMenuItems()">
+
+    <!-- Item de menu com submenu -->
+    <div *ngIf="item.children" class="menu-item-container">
+      <a mat-list-item class="menu-item expandable" (click)="toggleMenuExpansion(item, $event)">
+        <mat-icon matListItemIcon aria-hidden="false">{{ item.icon }}</mat-icon>
+        <span matListItemTitle *ngIf="!sideNavCollapsed()">{{ item.label }}</span>
+
+        <!-- Badge de notificação para produtos com estoque baixo -->
+        <span *ngIf="item.label === 'Gerenciar Produtos' && lowStockCount() > 0 && !sideNavCollapsed()"
+          class="stock-notification-badge">
+          {{ lowStockCount() }}
+        </span>
+
+        <!-- Ícone de notificação quando collapsed -->
+        <mat-icon *ngIf="item.label === 'Gerenciar Produtos' && lowStockCount() > 0 && sideNavCollapsed()"
+          class="notification-icon" matTooltip="{{ lowStockCount() }} produto(s) com estoque baixo" aria-hidden="false">
+          notifications_active
+        </mat-icon>
+
+        <!-- Ícone de expansão -->
+        <mat-icon *ngIf="!sideNavCollapsed()" matListItemIcon class="expand-icon" [class.expanded]="item.expanded"
+          aria-hidden="false">
+          keyboard_arrow_down
+        </mat-icon>
+
+      </a>
+
+      <!-- Submenu -->
+      <div *ngIf="item.expanded && !sideNavCollapsed()" class="submenu">
+        <a mat-list-item class="submenu-item" *ngFor="let child of item.children" [routerLink]="child.route"
+          routerLinkActive="selected-menu-item" #rla="routerLinkActive" [activated]="rla.isActive"
+          (click)="preventDefault($event)">
+          <mat-icon matListItemIcon aria-hidden="false">{{ child.icon }}</mat-icon>
+          <span matListItemTitle>{{ child.label }}</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Item de menu simples -->
+    <a *ngIf="!item.children" mat-list-item class="menu-item" [routerLink]="item.route"
+      routerLinkActive="selected-menu-item" #rla="routerLinkActive" [activated]="rla.isActive"
+      (click)="preventDefault($event)">
+      <mat-icon matListItemIcon aria-hidden="false">{{ item.icon }}</mat-icon>
+      <span matListItemTitle *ngIf="!sideNavCollapsed()">{{ item.label }}</span>
+    </a>
+
+  </ng-container>
 </mat-nav-list>

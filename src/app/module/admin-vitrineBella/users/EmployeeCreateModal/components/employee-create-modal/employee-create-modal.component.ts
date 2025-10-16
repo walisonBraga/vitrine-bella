@@ -35,10 +35,11 @@ export class EmployeeCreateModalComponent {
     public dialogRef: MatDialogRef<EmployeeCreateModalComponent>
   ) {
     this.createUserForm = this.formBuilder.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      fullName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      cpf: ['', [Validators.required, this.cpfValidator]],
+      birthDate: ['', [Validators.required]],
       role: ['/admin', Validators.required], // Página de destino após login
       userRole: ['store_employee', Validators.required], // Função do usuário
       managementType: [['/dashboard'], Validators.required], // Permissões de navegação - Dashboard selecionado por padrão
@@ -85,7 +86,7 @@ export class EmployeeCreateModalComponent {
     }
 
     try {
-      const { email, password, firstName, lastName, managementType, isActive, role, userRole } = this.createUserForm.value;
+      const { email, password, fullName, cpf, birthDate, managementType, isActive, role, userRole } = this.createUserForm.value;
       const authResponse = await this.authService.createUser(email, password);
 
       if (!authResponse.user) {
@@ -97,9 +98,10 @@ export class EmployeeCreateModalComponent {
       const userId = authResponse.user.uid;
       const userData: createUsersAdmin = {
         uid: userId,
-        firstName,
-        lastName,
+        fullName,
         email,
+        cpf,
+        birthDate,
         managementType,
         accessCode: userId.substring(0, 10),
         isActive,
@@ -124,5 +126,48 @@ export class EmployeeCreateModalComponent {
 
   closeDialog(): void {
     this.dialogRef.close();
+  }
+
+  // Validador de CPF
+  cpfValidator(control: any) {
+    if (!control.value) {
+      return null;
+    }
+
+    // Remove pontos, traços e espaços
+    const cpf = control.value.replace(/[^\d]/g, '');
+
+    // Verifica se tem 11 dígitos
+    if (cpf.length !== 11) {
+      return { invalidCpf: true };
+    }
+
+    // Verifica se todos os dígitos são iguais (ex: 111.111.111-11)
+    if (/^(\d)\1{10}$/.test(cpf)) {
+      return { invalidCpf: true };
+    }
+
+    // Validação do algoritmo do CPF
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.charAt(9))) {
+      return { invalidCpf: true };
+    }
+
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.charAt(10))) {
+      return { invalidCpf: true };
+    }
+
+    return null; // CPF válido
   }
 }

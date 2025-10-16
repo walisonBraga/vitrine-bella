@@ -1,0 +1,567 @@
+// ===== VARIÁVEIS DE CORES =====
+$primary-color: #1976d2;
+$success-color: #4caf50;
+$warning-color: #ff9800;
+$error-color: #f44336;
+$info-color: #2196f3;
+$coupon-color: #9c27b0;
+$background-color: #fafafa;
+$surface-color: #ffffff;
+$text-primary: #212121;
+$text-secondary: #757575;
+$border-color: #e0e0e0;
+
+// ===== CONTAINER PRINCIPAL =====
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+// ===== HEADER =====
+.page-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #dee2e6;
+  padding: 24px 0;
+  margin-bottom: 24px;
+  position: relative;
+  width: 100%;
+
+  > div {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $coupon-color, lighten($coupon-color, 20%), $coupon-color);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  h1 {
+    color: $text-primary;
+    font-weight: 600;
+  }
+
+  .text-muted {
+    color: $text-secondary !important;
+  }
+}
+
+// ===== BOTÕES DO HEADER =====
+header .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: none;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 1;
+    margin: 0;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, $coupon-color 0%, darken($coupon-color, 10%) 100%);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(135deg, darken($coupon-color, 10%) 0%, darken($coupon-color, 20%) 100%);
+  }
+}
+
+.btn-outline-secondary {
+  background: transparent;
+  color: #6c757d;
+  border: 2px solid #dee2e6;
+
+  &:hover {
+    background: #f8f9fa;
+    color: #495057;
+    border-color: #adb5bd;
+  }
+}
+
+// ===== CARD PRINCIPAL =====
+.card {
+  background: $surface-color;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid $border-color;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #dee2e6;
+  padding: 20px 24px;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $coupon-color, lighten($coupon-color, 20%), $coupon-color);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .card-title {
+    color: $text-primary;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+// ===== BUSCA =====
+.search-box {
+  min-width: 300px;
+}
+
+.input-group {
+  position: relative;
+
+  .form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: $coupon-color;
+      box-shadow: 0 0 0 0.2rem rgba($coupon-color, 0.25);
+    }
+  }
+
+  .btn {
+    border-radius: 0 6px 6px 0;
+    border-left: none;
+  }
+}
+
+// ===== LOADING =====
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: $text-secondary;
+}
+
+// ===== TABELA =====
+.table-responsive {
+  overflow-x: auto;
+}
+
+.mat-table {
+  width: 100%;
+  background: $surface-color;
+}
+
+.mat-header-cell {
+  background: #f8f9fa;
+  color: $text-primary;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 16px 8px;
+  border-bottom: 2px solid $border-color;
+}
+
+.mat-cell {
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba($border-color, 0.5);
+  font-size: 0.9rem;
+}
+
+.table-row {
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba($coupon-color, 0.02);
+  }
+}
+
+// ===== CÓDIGO DO CUPOM =====
+.coupon-code-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.coupon-code {
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: $coupon-color;
+  background: rgba($coupon-color, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.copy-btn {
+  color: $text-secondary;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $coupon-color;
+    background: rgba($coupon-color, 0.1);
+  }
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// ===== NOME DO CUPOM =====
+.coupon-name {
+  h6 {
+    color: $text-primary;
+    font-weight: 600;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  small {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+}
+
+// ===== BADGE DE DESCONTO =====
+.discount-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: $coupon-color;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// ===== PERÍODO DE VALIDADE =====
+.validity-period {
+  .date-range {
+    font-weight: 500;
+    color: $text-primary;
+    font-size: 0.85rem;
+  }
+
+  small {
+    font-size: 0.75rem;
+  }
+}
+
+// ===== USO DO CUPOM =====
+.usage-container {
+  .usage-stats {
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 4px;
+
+    .usage-count {
+      color: $success-color;
+    }
+
+    .usage-separator {
+      color: $text-secondary;
+      margin: 0 2px;
+    }
+
+    .usage-limit {
+      color: $text-secondary;
+    }
+  }
+
+  .usage-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba($border-color, 0.5);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+
+    .usage-progress {
+      height: 100%;
+      background: linear-gradient(90deg, $success-color, lighten($success-color, 10%));
+      transition: width 0.3s ease;
+    }
+  }
+
+  small {
+    font-size: 0.75rem;
+  }
+}
+
+// ===== STATUS =====
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &.status-active {
+    background: rgba($success-color, 0.1);
+    color: $success-color;
+    border: 1px solid rgba($success-color, 0.3);
+  }
+
+  &.status-pending {
+    background: rgba($warning-color, 0.1);
+    color: $warning-color;
+    border: 1px solid rgba($warning-color, 0.3);
+  }
+
+  &.status-expired {
+    background: rgba($error-color, 0.1);
+    color: $error-color;
+    border: 1px solid rgba($error-color, 0.3);
+  }
+
+  &.status-inactive {
+    background: rgba($text-secondary, 0.1);
+    color: $text-secondary;
+    border: 1px solid rgba($text-secondary, 0.3);
+  }
+}
+
+// ===== BOTÕES DE AÇÃO =====
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.edit-btn {
+    color: $info-color;
+
+    &:hover {
+      background: rgba($info-color, 0.1);
+      transform: scale(1.1);
+    }
+  }
+
+  &.toggle-btn.activate {
+    color: $success-color;
+
+    &:hover {
+      background: rgba($success-color, 0.1);
+      transform: scale(1.1);
+    }
+  }
+
+  &.toggle-btn.deactivate {
+    color: $warning-color;
+
+    &:hover {
+      background: rgba($warning-color, 0.1);
+      transform: scale(1.1);
+    }
+  }
+
+  &.delete-btn {
+    color: $error-color;
+
+    &:hover {
+      background: rgba($error-color, 0.1);
+      transform: scale(1.1);
+    }
+  }
+}
+
+// ===== SEM DADOS =====
+.no-data-container {
+  text-align: center;
+  padding: 60px 20px;
+  color: $text-secondary;
+
+  .no-data-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: rgba($text-secondary, 0.3);
+    margin-bottom: 16px;
+  }
+
+  h5 {
+    color: $text-primary;
+    margin-bottom: 8px;
+  }
+
+  .btn {
+    margin-top: 16px;
+  }
+}
+
+// ===== PAGINAÇÃO =====
+.mat-paginator {
+  background: #f8f9fa;
+  border-top: 1px solid $border-color;
+}
+
+// ===== ANIMAÇÕES =====
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// ===== RESPONSIVIDADE =====
+@media (max-width: 768px) {
+  .main-container {
+    padding: 0 16px;
+    max-width: 100%;
+  }
+
+  .page-header {
+    padding: 16px 0;
+
+    > div {
+      padding: 0 16px;
+      max-width: 100%;
+    }
+  }
+
+  .card-header {
+    padding: 16px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .search-box {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .mat-header-cell,
+  .mat-cell {
+    padding: 8px 4px;
+    font-size: 0.8rem;
+  }
+
+  .coupon-code {
+    font-size: 0.8rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .main-container {
+    padding: 0 12px;
+    max-width: 100%;
+  }
+
+  .page-header {
+    padding: 12px 0;
+
+    > div {
+      padding: 0 12px;
+      max-width: 100%;
+    }
+  }
+
+  .mat-table {
+    font-size: 0.75rem;
+  }
+
+  .discount-badge {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .status-badge {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+  }
+}

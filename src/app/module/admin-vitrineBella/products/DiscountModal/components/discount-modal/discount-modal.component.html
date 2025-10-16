@@ -1,0 +1,207 @@
+<!-- Header -->
+<div class="modal-header">
+  <div class="header-content">
+    <div class="header-icon">
+      <mat-icon>{{ data.mode === 'add' ? 'local_offer' : data.mode === 'edit' ? 'edit' : 'remove_circle' }}</mat-icon>
+    </div>
+    <div class="header-text">
+      <h4 class="modal-title">{{ title }}</h4>
+      <p class="modal-subtitle">
+        {{ data.mode === 'add' ? 'Aplique um desconto ao produto' :
+        data.mode === 'edit' ? 'Edite as informações do desconto' :
+        'Remover desconto do produto' }}
+      </p>
+    </div>
+  </div>
+  <button mat-icon-button class="close-btn" (click)="onCancel()" aria-label="Fechar modal">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- Body -->
+<div class="modal-body">
+  <!-- Informações do Produto -->
+  <div class="product-info">
+    <div class="product-image">
+      <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.productName" class="product-img" />
+      <mat-icon *ngIf="!product.imageUrl" class="no-image-icon">inventory_2</mat-icon>
+    </div>
+    <div class="product-details">
+      <h5 class="product-name">{{ product.productName }}</h5>
+      <p class="product-category">{{ product.category }}</p>
+      <div class="price-info">
+        <span class="current-price" [ngClass]="{ 'has-discount': product.hasDiscount }">
+          {{ product.price | currency: 'BRL' }}
+        </span>
+        <span *ngIf="product.hasDiscount && product.originalPrice" class="original-price">
+          {{ product.originalPrice | currency: 'BRL' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário de Desconto -->
+  <form *ngIf="data.mode !== 'remove'" [formGroup]="discountForm" (ngSubmit)="onSubmit()" class="discount-form">
+
+    <!-- Tipo de Desconto -->
+    <div class="form-section">
+      <div class="section-header">
+        <mat-icon>local_offer</mat-icon>
+        <h5>Configuração do Desconto</h5>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field-half">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Tipo de Desconto</mat-label>
+            <mat-select formControlName="discountType" (selectionChange)="onDiscountTypeChange()">
+              <mat-option value="percentage">
+                <mat-icon>percent</mat-icon>
+                Percentual (%)
+              </mat-option>
+              <mat-option value="fixed">
+                <mat-icon>attach_money</mat-icon>
+                Valor Fixo (R$)
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>trending_down</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field-half">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>
+              {{ discountForm.get('discountType')?.value === 'percentage' ? 'Percentual (%)' : 'Valor (R$)' }}
+            </mat-label>
+            <input matInput formControlName="discountValue" type="number"
+              [step]="discountForm.get('discountType')?.value === 'percentage' ? '1' : '0.01'"
+              [max]="getMaxDiscountValue()"
+              [placeholder]="discountForm.get('discountType')?.value === 'percentage' ? '0' : '0,00'" />
+            <mat-icon matSuffix>{{ discountForm.get('discountType')?.value === 'percentage' ? 'percent' : 'attach_money'
+              }}</mat-icon>
+            <mat-hint>
+              {{ discountForm.get('discountType')?.value === 'percentage' ?
+              'Máximo 100%' :
+              'Máximo ' + (product.price | currency: 'BRL') }}
+            </mat-hint>
+            <mat-error *ngIf="discountForm.get('discountValue')?.hasError('required')">
+              Valor do desconto é obrigatório
+            </mat-error>
+            <mat-error *ngIf="discountForm.get('discountValue')?.hasError('min')">
+              Valor deve ser maior que 0
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Período de Validade -->
+      <div class="form-row">
+        <div class="form-field-half">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Data de Início</mat-label>
+            <input matInput formControlName="startDate" type="date" />
+            <mat-icon matSuffix>event</mat-icon>
+            <mat-error *ngIf="discountForm.get('startDate')?.hasError('required')">
+              Data de início é obrigatória
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field-half">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Data de Fim</mat-label>
+            <input matInput formControlName="endDate" type="date" />
+            <mat-icon matSuffix>event_available</mat-icon>
+            <mat-error *ngIf="discountForm.get('endDate')?.hasError('required')">
+              Data de fim é obrigatória
+            </mat-error>
+            <mat-error *ngIf="discountForm.get('endDate')?.hasError('endDateInvalid')">
+              Data de fim deve ser posterior à data de início
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Descrição -->
+      <div class="form-field-full">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Descrição do Desconto (Opcional)</mat-label>
+          <textarea matInput formControlName="description"
+            placeholder="Ex: Promoção de Black Friday, Desconto especial..." rows="2" maxlength="200"></textarea>
+          <mat-icon matSuffix>description</mat-icon>
+          <mat-hint>{{ discountForm.get('description')?.value?.length || 0 }}/200 caracteres</mat-hint>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Preview do Desconto -->
+    <div class="discount-preview" *ngIf="discountForm.get('discountValue')?.value && getDiscountPercentage() > 0">
+      <div class="section-header">
+        <mat-icon>visibility</mat-icon>
+        <h5>Pré-visualização</h5>
+      </div>
+
+      <div class="preview-content">
+        <div class="price-comparison">
+          <div class="price-item original">
+            <span class="price-label">Preço Original:</span>
+            <span class="price-value">{{ product.price | currency: 'BRL' }}</span>
+          </div>
+          <div class="price-item discounted">
+            <span class="price-label">Preço com Desconto:</span>
+            <span class="price-value">{{ calculateDiscountedPrice() | currency: 'BRL' }}</span>
+          </div>
+          <div class="discount-info">
+            <span class="discount-badge">
+              <mat-icon>local_offer</mat-icon>
+              {{ getDiscountPercentage().toFixed(1) }}% OFF
+            </span>
+            <span class="savings">
+              Economia: {{ (product.price - calculateDiscountedPrice()) | currency: 'BRL' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="form-actions">
+      <button type="button" mat-stroked-button class="cancel-btn" (click)="onCancel()">
+        <mat-icon>cancel</mat-icon>
+        Cancelar
+      </button>
+      <button type="submit" mat-raised-button color="primary" class="submit-btn"
+        [disabled]="loading || discountForm.invalid">
+        <div class="button-content">
+          <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!loading">{{ data.mode === 'add' ? 'local_offer' : 'save' }}</mat-icon>
+          <span *ngIf="!loading">{{ data.mode === 'add' ? 'Aplicar Desconto' : 'Salvar Alterações' }}</span>
+        </div>
+      </button>
+    </div>
+  </form>
+
+  <!-- Confirmação de Remoção -->
+  <div *ngIf="data.mode === 'remove'" class="remove-confirmation">
+    <div class="warning-section">
+      <mat-icon class="warning-icon">warning</mat-icon>
+      <h5>Tem certeza que deseja remover o desconto?</h5>
+      <p>O produto voltará ao preço original de <strong>{{ product.originalPrice | currency: 'BRL' }}</strong></p>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" mat-stroked-button class="cancel-btn" (click)="onCancel()">
+        <mat-icon>cancel</mat-icon>
+        Cancelar
+      </button>
+      <button type="button" mat-raised-button color="warn" class="remove-btn" (click)="removeDiscount()"
+        [disabled]="loading">
+        <div class="button-content">
+          <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!loading">delete</mat-icon>
+          <span *ngIf="!loading">Remover Desconto</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>

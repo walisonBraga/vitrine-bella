@@ -43,8 +43,7 @@ export class EditUserModalComponent implements OnInit, OnDestroy {
 
   private initForm(): void {
     this.editUserForm = this.formBuilder.group({
-      firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.minLength(6)]],
       confirmPassword: [''],
@@ -56,8 +55,7 @@ export class EditUserModalComponent implements OnInit, OnDestroy {
   private populateForm(): void {
     const user = this.data.user;
     this.editUserForm?.patchValue({
-      firstName: user.firstName,
-      lastName: user.lastName,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
       isActive: user.isActive
@@ -104,8 +102,7 @@ export class EditUserModalComponent implements OnInit, OnDestroy {
 
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      firstName: 'Nome',
-      lastName: 'Sobrenome',
+      fullName: 'Nome Completo',
       email: 'Email',
       password: 'Senha',
       confirmPassword: 'Confirmar Senha',
@@ -133,8 +130,7 @@ export class EditUserModalComponent implements OnInit, OnDestroy {
 
       const formData = this.editUserForm.value;
       const updateData: any = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        fullName: formData.fullName,
         email: formData.email,
         role: formData.role,
         isActive: formData.isActive

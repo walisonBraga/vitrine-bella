@@ -1,3 +1,77 @@
+// ===== CONTAINER PRINCIPAL =====
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+}
+
+// ===== HEADER =====
+.page-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #dee2e6;
+  padding: 24px 0;
+  margin-bottom: 24px;
+  position: relative;
+  width: 100%;
+
+  > div {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #1976d2, lighten(#1976d2, 20%), #1976d2);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  h1 {
+    color: #212121;
+    font-weight: 600;
+  }
+
+  .text-muted {
+    color: #757575 !important;
+  }
+
+  // ===== BOTÕES DO HEADER =====
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// ===== ANIMAÇÃO SHIMMER =====
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .container-fluid {
   max-width: 1400px;
 }
@@ -129,7 +203,37 @@ mat-icon-button {
   font-size: 0.875rem;
 }
 
+// ===== RESPONSIVIDADE =====
 @media (max-width: 768px) {
+  .main-container {
+    padding: 0 16px;
+    max-width: 100%;
+  }
+
+  .page-header {
+    padding: 16px 0;
+
+    > div {
+      padding: 0 16px;
+      max-width: 100%;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      font-size: 0.875rem;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
   .container-fluid {
     padding: 8px;
   }
@@ -183,5 +287,37 @@ mat-icon-button {
   .mat-mdc-chip span {
     line-height: 18px;
     font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-container {
+    padding: 0 12px;
+    max-width: 100%;
+  }
+
+  .page-header {
+    padding: 12px 0;
+
+    > div {
+      padding: 0 12px;
+      max-width: 100%;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+    }
+
+    .d-flex {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start !important;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+      padding: 10px 16px;
+    }
   }
 }

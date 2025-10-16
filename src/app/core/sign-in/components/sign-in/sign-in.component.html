@@ -79,8 +79,8 @@
 
                 <!-- Lembrar-me e Esqueci a senha -->
                 <div class="form-options">
-                  <mat-checkbox formControlName="rememberMe" class="remember-checkbox">
-                    Lembrar-me
+                  <mat-checkbox formControlName="rememberMe" class="remember-checkbox" (change)="onRememberMeChange($event)">
+                    <span class="checkbox-label">Lembrar-me</span>
                   </mat-checkbox>
                   <a href="#" class="forgot-password-link">
                     Esqueci minha senha
@@ -90,10 +90,12 @@
                 <!-- Botão de Submit -->
                 <button mat-raised-button color="primary" type="submit" class="submit-button"
                   [disabled]="signInForm.invalid || loading">
-                  <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
-                  <mat-icon *ngIf="!loading">login</mat-icon>
-                  <span *ngIf="!loading">Entrar</span>
-                  <span *ngIf="loading">Entrando...</span>
+                  <div class="button-content">
+                    <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+                    <mat-icon *ngIf="!loading">login</mat-icon>
+                    <span *ngIf="!loading">Entrar</span>
+                    <span *ngIf="loading">Entrando...</span>
+                  </div>
                 </button>
 
               </form>

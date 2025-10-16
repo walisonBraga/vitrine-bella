@@ -21,7 +21,7 @@ import { EditUserModalComponent } from '../../../EditUserModal/components/edit-u
 export class UserTableOwnerComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  displayedColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'isActive', 'actions'];
+  displayedColumns: string[] = ['fullName', 'email', 'role', 'isActive', 'actions'];
   dataSource = new MatTableDataSource<createUsersAdmin>();
   users: createUsersAdmin[] = [];
   isLoading = true;

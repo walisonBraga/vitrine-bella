@@ -1,74 +1,297 @@
+// ===== VARIÁVEIS DE CORES =====
+$primary-color: #1976d2;
+$accent-color: #ff4081;
+$success-color: #4caf50;
+$warning-color: #ff9800;
+$error-color: #f44336;
+$background-color: #fafafa;
+$surface-color: #ffffff;
+$text-primary: #212121;
+$text-secondary: #757575;
+$border-color: #e0e0e0;
+
+// ===== CONTAINER PRINCIPAL =====
+.modal-container {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  background: $surface-color;
+  border-radius: 16px;
+  box-shadow:
+    0 24px 38px 3px rgba(0, 0, 0, 0.14),
+    0 9px 46px 8px rgba(0, 0, 0, 0.12),
+    0 11px 15px -7px rgba(0, 0, 0, 0.2);
+  animation: slideInUp 0.3s ease-out;
+}
+
+// ===== HEADER =====
 .modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #dee2e6;
-  background: #f8f9fa;
+  align-items: flex-start;
+  padding: 24px 32px;
+  background: linear-gradient(135deg, $primary-color 0%, lighten($primary-color, 10%) 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-icon {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .header-text {
+    flex: 1;
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+      line-height: 1.2;
+    }
+
+    .modal-subtitle {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+
+  .close-btn {
+    color: white;
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+  }
 }
 
-.modal-title {
-  font-size: 1.25rem;
-  font-weight: 500;
-  margin: 0;
-}
-
+// ===== BODY =====
 .modal-body {
+  padding: 32px;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+  background: $background-color;
+
+  .product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+}
+
+// ===== SEÇÕES DO FORMULÁRIO =====
+.form-section {
+  background: $surface-color;
+  border-radius: 12px;
   padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid $border-color;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid $border-color;
+    position: relative;
+
+    mat-icon {
+      color: $primary-color;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    h5 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $text-primary;
+      margin: 0;
+    }
+
+    .required-badge {
+      background: $error-color;
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: auto;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background: $primary-color;
+      border-radius: 1px;
+    }
+  }
 }
 
-.form-label {
-  font-weight: 500;
-  margin-bottom: 8px;
-  display: block;
+// ===== LAYOUT DOS CAMPOS =====
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.w-100 {
+.form-field-half {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-field-full {
   width: 100%;
 }
 
+// ===== CAMPOS DE FORMULÁRIO =====
 mat-form-field {
   width: 100%;
+
+  &.mat-focused {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+  }
 }
 
-mat-error {
-  font-size: 0.75rem;
-  color: #dc3545;
-}
-
-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
+// ===== UPLOAD DE IMAGEM =====
 .image-upload-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: center;
 }
 
 .image-preview {
   position: relative;
-  width: 120px;
-  height: 120px;
-}
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
 
-.preview-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #dee2e6;
-}
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
 
-.remove-image-btn {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 50%;
-  padding: 2px;
+  .preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover .image-overlay {
+    opacity: 1;
+  }
+
+  .remove-image-btn {
+    color: white;
+    background: $error-color;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: darken($error-color, 10%);
+      transform: scale(1.1);
+    }
+  }
+
+  .image-selected-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #4caf50;
+    color: white;
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    animation: pulse 2s infinite;
+
+    mat-icon {
+      font-size: 0.8rem;
+      width: 0.8rem;
+      height: 0.8rem;
+    }
+
+    span {
+      font-weight: 500;
+    }
+  }
 }
 
 .upload-placeholder {
@@ -76,20 +299,44 @@ textarea {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 120px;
-  border: 2px dashed #dee2e6;
-  border-radius: 4px;
-  color: #6c757d;
-  font-size: 0.875rem;
+  width: 200px;
+  height: 200px;
+  border: 3px dashed $border-color;
+  border-radius: 12px;
+  background: $background-color;
+  color: $text-secondary;
   text-align: center;
-}
+  transition: all 0.3s ease;
+  cursor: pointer;
 
-.upload-placeholder mat-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-  margin-bottom: 8px;
+  &:hover {
+    border-color: $primary-color;
+    background: rgba($primary-color, 0.05);
+    color: $primary-color;
+    transform: translateY(-2px);
+  }
+
+  .upload-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  .upload-text {
+    h6 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+    }
+
+    p {
+      font-size: 0.85rem;
+      margin: 0;
+      opacity: 0.8;
+    }
+  }
 }
 
 .image-input {
@@ -97,34 +344,265 @@ textarea {
 }
 
 .upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: $primary-color;
+  color: white;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  font-size: 0.9rem;
+
+  &:hover {
+    background: darken($primary-color, 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
-.d-flex.gap-2 {
-  gap: 12px;
+// ===== BOTÕES DE AÇÃO =====
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 2px solid $border-color;
+  margin-top: 8px;
 }
 
-@media (max-width: 576px) {
+.cancel-btn {
+  color: $text-secondary;
+  border-color: $border-color;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba($text-secondary, 0.05);
+    border-color: $text-secondary;
+    transform: translateY(-1px);
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+  }
+}
+
+.submit-btn {
+  font-weight: 600;
+  min-width: 160px;
+  height: 48px;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba($primary-color, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .button-spinner {
+    margin: 0;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ===== ANIMAÇÕES =====
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===== RESPONSIVIDADE =====
+@media (max-width: 768px) {
+  .modal-container {
+    max-width: 95vw;
+    max-height: 95vh;
+    margin: 16px;
+  }
+
   .modal-header {
-    padding: 12px 16px;
+    padding: 20px 24px;
+
+    .header-content {
+      gap: 12px;
+    }
+
+    .header-text {
+      .modal-title {
+        font-size: 1.3rem;
+      }
+
+      .modal-subtitle {
+        font-size: 0.85rem;
+      }
+    }
   }
 
   .modal-body {
-    padding: 16px;
+    padding: 24px 20px;
+
+    .product-form {
+      gap: 24px;
+    }
   }
 
-  .modal-title {
-    font-size: 1.1rem;
+  .form-section {
+    padding: 20px;
+
+    .section-header {
+      margin-bottom: 20px;
+    }
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
   }
 
   .image-preview,
   .upload-placeholder {
-    width: 100px;
-    height: 100px;
+    width: 160px;
+    height: 160px;
   }
 
-  .d-flex.gap-2 {
+  .form-actions {
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+  }
+
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-header {
+    padding: 16px 20px;
+
+    .header-icon {
+      padding: 8px;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .header-text {
+      .modal-title {
+        font-size: 1.2rem;
+      }
+
+      .modal-subtitle {
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 20px 16px;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .image-preview,
+  .upload-placeholder {
+    width: 140px;
+    height: 140px;
+  }
+
+  .upload-btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+}
+
+// ===== SCROLLBAR PERSONALIZADA =====
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: $background-color;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: $border-color;
+  border-radius: 3px;
+
+  &:hover {
+    background: $text-secondary;
+  }
+}
+
+// ===== ESTADOS DE FOCO E VALIDAÇÃO =====
+mat-form-field.mat-focused .mat-mdc-form-field-outline {
+  color: $primary-color;
+}
+
+mat-form-field.mat-form-field-invalid .mat-mdc-form-field-outline {
+  color: $error-color;
+}
+
+// ===== HINTS E ERROS =====
+mat-hint {
+  color: $text-secondary;
+  font-size: 0.8rem;
+}
+
+mat-error {
+  color: $error-color;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+// ===== ANIMAÇÕES =====
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
   }
 }

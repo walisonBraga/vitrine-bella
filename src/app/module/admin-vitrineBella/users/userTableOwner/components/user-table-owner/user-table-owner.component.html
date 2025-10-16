@@ -1,24 +1,27 @@
 <app-navigation-admin>
-  <div class="container-fluid py-4">
-    <header class="mb-4">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h1 class="h3 mb-1">Tabela de Usuários</h1>
-          <p class="text-muted">
-            Gerencie funcionários, proprietários e administradores da loja
-          </p>
-        </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary" (click)="openCreateUserModal()">
-            Criar Novo Usuário
-          </button>
-          <button class="btn btn-outline-secondary" (click)="loadUsers()">
-            Atualizar
-          </button>
-        </div>
-      </div>
-    </header>
 
+  <!-- Header -->
+  <header class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 mb-1">Gerenciar Usuários</h1>
+        <p class="text-muted">Gerencie funcionários, proprietários e administradores da loja</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="openCreateUserModal()">
+          <mat-icon>add</mat-icon>
+          Criar Novo Usuário
+        </button>
+        <button class="btn btn-outline-secondary" (click)="loadUsers()">
+          <mat-icon>refresh</mat-icon>
+          Atualizar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabela de Usuários -->
+  <div class="main-container">
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title m-lg-1">Lista de Usuários</h5>
@@ -50,23 +53,13 @@
         <div *ngIf="!isLoading && dataSource.data.length > 0">
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-              <!-- Primeiro Nome -->
-              <ng-container matColumnDef="firstName">
+              <!-- Nome Completo -->
+              <ng-container matColumnDef="fullName">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Primeiro Nome
+                  Nome Completo
                 </th>
                 <td mat-cell *matCellDef="let element">
-                  {{ element.firstName }}
-                </td>
-              </ng-container>
-
-              <!-- Sobrenome -->
-              <ng-container matColumnDef="lastName">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Sobrenome
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.lastName }}
+                  {{ element.fullName }}
                 </td>
               </ng-container>
 
@@ -105,8 +98,8 @@
                 <th mat-header-cell *matHeaderCellDef>Ações</th>
                 <td mat-cell *matCellDef="let element">
                   <div class="d-flex gap-1">
-                    <button mat-icon-button color="primary" (click)="editUser(element)"
-                      matTooltip="Editar Usuário" [disabled]="authenticatedUser?.uid === element.uid">
+                    <button mat-icon-button color="primary" (click)="editUser(element)" matTooltip="Editar Usuário"
+                      [disabled]="authenticatedUser?.uid === element.uid">
                       <mat-icon>person_edit</mat-icon>
                     </button>
                     <button mat-icon-button [color]="element.isActive ? 'warn' : 'primary'" (click)="

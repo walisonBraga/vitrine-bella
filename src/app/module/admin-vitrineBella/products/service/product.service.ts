@@ -30,7 +30,6 @@ export class ProductService {
       });
       await addDoc(this.productsCollection, productWithTimestamp);
     } catch (error) {
-      console.error('Erro ao criar produto:', error);
       throw error;
     }
   }
@@ -50,7 +49,6 @@ export class ProductService {
         throw new Error('Produto não encontrado');
       }
     } catch (error) {
-      console.error('Erro ao buscar produto:', error);
       throw error;
     }
   }
@@ -73,17 +71,29 @@ export class ProductService {
       const productDocRef = doc(this.firestore, 'products', id);
       await updateDoc(productDocRef, updatedData);
     } catch (error) {
-      console.error('Erro ao atualizar produto:', error);
       throw error;
     }
   }
 
   async deleteProduct(id: string): Promise<void> {
     try {
+      // Primeiro, buscar o produto para obter a URL da imagem
+      const product = await this.getProductById(id);
+
+      // Excluir a imagem do Storage se existir
+      if (product.imageUrl && !product.imageUrl.includes('icon-sem-perfil')) {
+        try {
+          const imageRef = ref(this.storage, product.imageUrl);
+          await deleteObject(imageRef);
+        } catch (imageError) {
+          // Continua a exclusão mesmo se não conseguir excluir a imagem
+        }
+      }
+
+      // Excluir o documento do produto do Firestore
       const productDocRef = doc(this.firestore, 'products', id);
       await deleteDoc(productDocRef);
     } catch (error) {
-      console.error('Erro ao deletar produto:', error);
       throw error;
     }
   }
@@ -93,12 +103,10 @@ export class ProductService {
       const deletePromises = imageUrls.map(async (imageUrl) => {
         const imageRef = ref(this.storage, imageUrl);
         await deleteObject(imageRef).catch(error => {
-          console.error(`Erro ao excluir imagem ${imageUrl}:`, error);
         });
       });
       await Promise.all(deletePromises);
     } catch (error) {
-      console.error('Erro ao deletar imagens do produto:', error);
       throw error;
     }
   }

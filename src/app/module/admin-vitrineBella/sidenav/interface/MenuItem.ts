@@ -3,4 +3,6 @@ export interface MenuItem {
   label: string;
   route?: string;
   permission?: string; // Permissão necessária para mostrar o item
+  children?: MenuItem[]; // Submenus
+  expanded?: boolean; // Estado de expansão
 }

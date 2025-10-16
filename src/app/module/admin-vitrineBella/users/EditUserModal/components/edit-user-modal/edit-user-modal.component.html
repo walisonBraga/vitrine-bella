@@ -12,23 +12,13 @@
   <mat-dialog-content class="modal-content">
     <form [formGroup]="editUserForm!" (ngSubmit)="onSubmit()">
       <div class="form-grid">
-        <!-- Nome -->
+        <!-- Nome Completo -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nome</mat-label>
-          <input matInput formControlName="firstName" placeholder="Digite o nome">
+          <mat-label>Nome Completo</mat-label>
+          <input matInput formControlName="fullName" placeholder="Digite o nome completo">
           <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="editUserForm?.get('firstName')?.invalid && editUserForm?.get('firstName')?.touched">
-            {{ getErrorMessage('firstName') }}
-          </mat-error>
-        </mat-form-field>
-
-        <!-- Sobrenome -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Sobrenome</mat-label>
-          <input matInput formControlName="lastName" placeholder="Digite o sobrenome">
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="editUserForm?.get('lastName')?.invalid && editUserForm?.get('lastName')?.touched">
-            {{ getErrorMessage('lastName') }}
+          <mat-error *ngIf="editUserForm?.get('fullName')?.invalid && editUserForm?.get('fullName')?.touched">
+            {{ getErrorMessage('fullName') }}
           </mat-error>
         </mat-form-field>
 

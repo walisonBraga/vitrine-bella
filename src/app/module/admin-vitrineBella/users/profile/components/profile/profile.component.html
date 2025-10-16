@@ -1,254 +1,150 @@
 <app-navigation-admin>
-  <!-- profile.component.html - Versão mais bonita e espaçada -->
-  <div class="container-fluid p-4">
-    <div class="row justify-content-center">
-      <div class="col-12 col-md-10 col-lg-8">
-        <mat-card class="profile-card">
-          <mat-card-header class="text-center bg-gradient-primary rounded-end-2">
-            <div class="avatar-container mb-3">
-              <img
-                [src]="userData?.photoURL || 'assets/img/default-avatar.png'"
-                alt="Avatar"
-                class="avatar-img rounded-circle"
-              />
-              <input
-                type="file"
-                #fileInput
-                (change)="onFileSelected($event)"
-                accept="image/*"
-                class="d-none"
-              />
-              <label for="fileInput" class="upload-btn">
-                <mat-icon>edit</mat-icon>
-              </label>
-            </div>
-            <mat-card-title class="fw-bold text-white p-2"
-              >{{ userData?.firstName }}
-              {{ userData?.lastName }}</mat-card-title
-            >
-            <!-- <mat-card-subtitle class="">{{
-              userData?.role || "Usuário"
-            }}</mat-card-subtitle> -->
-          </mat-card-header>
+  <!-- Conteúdo principal -->
+  <div class="profile-container">
+    <!-- Header MEUS DADOS -->
+    <div class="page-header">
+      <h1>
+        <mat-icon>person</mat-icon>
+        MEUS DADOS
+      </h1>
+    </div>
 
-          <mat-card-content class="bg-light">
-            <!-- View Mode -->
-            <div *ngIf="!editMode" class="view-mode">
-              <div class="row g-3 mb-4">
-                <div class="col-12 col-sm-6">
-                  <div class="info-card border-primary">
-                    <mat-icon class="info-icon text-primary w-25"
-                      >person_outline</mat-icon
-                    >
-                    <h6 class="text-primary w-25">Nome Completo</h6>
-                    <p class="text-muted">
-                      {{ userData?.firstName }} {{ userData?.lastName }}
-                    </p>
-                  </div>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <div class="info-card border-info">
-                    <mat-icon class="info-icon text-info w-25">email</mat-icon>
-                    <h6 class="text-info w-25">Email</h6>
-                    <p class="text-muted">{{ userData?.email }}</p>
-                  </div>
-                </div>
-                <div class="col-12 col-sm-6" *ngIf="userData?.phone">
-                  <div class="info-card border-success">
-                    <mat-icon class="info-icon text-success w-25"
-                      >phone</mat-icon
-                    >
-                    <h6 class="text-success w-25">Telefone</h6>
-                    <p
-                      class="text-muted"
-                      mask="(00) 0000-0000"
-                      placeholder="(11) 99999-9999"
-                    >
-                      {{ userData?.phone }}
-                    </p>
-                  </div>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <div class="info-card border-warning">
-                    <mat-icon class="info-icon text-warning w-25"
-                      >badge</mat-icon
-                    >
-                    <h6 class="text-warning w-25">Cargo</h6>
-                    <p class="role-tag bg-warning text-dark">
-                      {{ userData?.role }}
-                    </p>
-                  </div>
+    <!-- Card principal -->
+    <div class="profile-card">
+      <form [formGroup]="editForm" (ngSubmit)="onSaveEdit()">
+        <!-- Seção principal com foto e campos -->
+        <div class="main-section">
+          <!-- Foto do lado esquerdo -->
+          <div class="photo-section">
+            <div class="photo-container">
+              <img [src]="previewUrl || userData?.photoURL || 'assets/img/icon-sem-perfil.png'" alt="Foto do usuário"
+                class="user-photo" (error)="onImageError($event)" />
+              <button type="button" class="change-photo-btn" (click)="fileInput.click()" [disabled]="photoUploading">
+                <mat-spinner *ngIf="photoUploading" diameter="16"></mat-spinner>
+                <mat-icon *ngIf="!photoUploading">camera_alt</mat-icon>
+                {{ photoUploading ? 'Enviando...' : 'Alterar foto' }}
+              </button>
+
+              <!-- Indicador de foto selecionada -->
+              <div class="photo-selected-indicator" *ngIf="selectedFile && !photoUploading">
+                <mat-icon>check_circle</mat-icon>
+                <span>Foto selecionada</span>
+              </div>
+
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none" />
+            </div>
+          </div>
+
+          <!-- Campos do lado direito -->
+          <div class="fields-section">
+            <!-- E-mail -->
+            <div class="form-field">
+              <label>E-mail</label>
+              <div class="input-container readonly">
+                <input type="email" [value]="userData?.email || ''" readonly />
+                <mat-icon class="lock-icon">lock</mat-icon>
+              </div>
+              <a href="#" class="change-link">ALTERAR E-MAIL</a>
+            </div>
+
+            <!-- CPF e Data de nascimento lado a lado -->
+            <div class="form-row">
+              <div class="form-field">
+                <label>CPF</label>
+                <div class="input-container readonly">
+                  <input type="text" [value]="userData?.cpf || 'Não informado'" readonly />
+                  <mat-icon class="lock-icon">lock</mat-icon>
                 </div>
               </div>
-              <button
-                mat-raised-button
-                color="primary"
-                class="w-100 btn-lg"
-                (click)="onToggleEdit()"
-              >
-                Editar Informações
-              </button>
-            </div>
 
-            <!-- Edit Mode -->
-            <div *ngIf="editMode" class="edit-mode">
-              <form [formGroup]="editForm" (ngSubmit)="onSaveEdit()">
-                <div class="row g-3">
-                  <div class="col-12 col-md-6">
-                    <mat-form-field appearance="outline" class="w-100">
-                      <mat-label>Nome</mat-label>
-                      <input matInput formControlName="firstName" />
-                      <mat-error
-                        >Nome obrigatório (mín. 2 caracteres)</mat-error
-                      >
-                    </mat-form-field>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <mat-form-field appearance="outline" class="w-100">
-                      <mat-label>Sobrenome</mat-label>
-                      <input matInput formControlName="lastName" />
-                      <mat-error
-                        >Sobrenome obrigatório (mín. 2 caracteres)</mat-error
-                      >
-                    </mat-form-field>
-                  </div>
-                  <div class="col-12">
-                    <mat-form-field appearance="outline" class="w-100">
-                      <mat-label>Email</mat-label>
-                      <input matInput formControlName="email" type="email" />
-                      <mat-error>Email inválido</mat-error>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <mat-form-field appearance="outline" class="w-100">
-                      <mat-label>Telefone (opcional)</mat-label>
-                      <input matInput formControlName="phone" />
-                      <mat-error>Telefone inválido</mat-error>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <mat-form-field appearance="outline" class="w-100">
-                      <mat-label>Cargo</mat-label>
-                      <input matInput formControlName="role" readonly />
-                    </mat-form-field>
-                  </div>
+              <div class="form-field">
+                <label>Data de nascimento</label>
+                <div class="input-container readonly">
+                  <input type="text" [value]="formatBirthDate(userData?.birthDate)" readonly />
+                  <mat-icon class="lock-icon">lock</mat-icon>
                 </div>
-                <div class="d-flex gap-3 justify-content-end mt-4">
-                  <button
-                    mat-button
-                    color="warn"
-                    type="button"
-                    class="px-4 py-2"
-                    (click)="onToggleEdit()"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    type="submit"
-                    class="px-4 py-2"
-                    [disabled]="loading || editForm.invalid"
-                  >
-                    <mat-spinner
-                      *ngIf="loading"
-                      diameter="20"
-                      class="me-2"
-                    ></mat-spinner>
-                    {{ loading ? "Salvando..." : "Salvar" }}
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <mat-divider class="my-4"></mat-divider>
-
-            <!-- Password Section -->
-            <div class="password-section">
-              <h5 class="mb-3 text-primary">Segurança da Conta</h5>
-              <button
-                mat-stroked-button
-                class="w-100 mb-4 btn-lg"
-                (click)="onTogglePassword()"
-              >
-                Alterar Senha
-              </button>
-              <form
-                [formGroup]="passwordForm"
-                *ngIf="passwordMode"
-                (ngSubmit)="onSavePassword()"
-              >
-                <mat-form-field appearance="outline" class="w-100 mb-3">
-                  <mat-label>Senha Atual</mat-label>
-                  <input
-                    matInput
-                    formControlName="currentPassword"
-                    type="password"
-                  />
-                  <mat-error>Senha obrigatória</mat-error>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="w-100 mb-3">
-                  <mat-label>Nova Senha</mat-label>
-                  <input
-                    matInput
-                    formControlName="newPassword"
-                    type="password"
-                  />
-                  <mat-error>Mínimo 8 caracteres</mat-error>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="w-100 mb-3">
-                  <mat-label>Confirmar Senha</mat-label>
-                  <input
-                    matInput
-                    formControlName="confirmPassword"
-                    type="password"
-                  />
-                  <mat-error *ngIf="confirmPassword?.invalid"
-                    >Confirmação obrigatória</mat-error
-                  >
-                  <mat-error *ngIf="passwordForm.hasError('mismatch')"
-                    >Senhas não coincidem</mat-error
-                  >
-                </mat-form-field>
-                <div class="d-flex gap-3 justify-content-end">
-                  <button
-                    mat-button
-                    color="warn"
-                    type="button"
-                    class="px-4 py-2"
-                    (click)="onTogglePassword()"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    mat-raised-button
-                    color="warn"
-                    type="submit"
-                    class="px-4 py-2 mb-2"
-                    [disabled]="loading || passwordForm.invalid"
-                  >
-                    <mat-spinner
-                      *ngIf="loading"
-                      diameter="20"
-                      class="me-2"
-                    ></mat-spinner>
-                    {{ loading ? "Alterando..." : "Alterar" }}
-                  </button>
-                </div>
-              </form>
+        <!-- Nome completo e Telefone lado a lado -->
+        <div class="form-row">
+          <div class="form-field">
+            <label>Nome completo*</label>
+            <div class="input-container">
+              <input matInput formControlName="fullName" placeholder="Digite seu nome completo" />
             </div>
-          </mat-card-content>
+            <div class="required-note">(*) Campos obrigatórios</div>
+          </div>
 
-          <button
-            mat-raised-button
-            color="warn"
-            class="w-100 btn-lg"
-            (click)="onLogout()"
-          >
-            <mat-icon class="me-2">logout</mat-icon>
-            Sair
+          <div class="form-field">
+            <label>Telefone celular*</label>
+            <div class="input-container">
+              <input matInput formControlName="phone" placeholder="(00) 00000-0000" mask="(00) 00000-0000" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Checkbox de marketing -->
+        <div class="checkbox-field">
+          <mat-checkbox formControlName="marketing" checked>
+            Quero receber ofertas e novidades por e-mail, SMS, WhatsApp ou mensagens nos Apps's KaBuM
+          </mat-checkbox>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="action-buttons">
+          <div class="left-actions">
+            <a href="#" class="change-link" (click)="onTogglePassword(); $event.preventDefault()">
+              ALTERAR SENHA
+            </a>
+            <a href="#" class="delete-link" (click)="onDeleteAccount(); $event.preventDefault()">
+              <mat-icon>delete</mat-icon>
+              EXCLUIR MINHA CONTA
+            </a>
+          </div>
+          <button mat-raised-button type="submit" class="save-button" [disabled]="loading || editForm.invalid">
+            {{ loading ? "SALVANDO..." : "SALVAR ALTERAÇÕES" }}
           </button>
-        </mat-card>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal de alteração de senha -->
+    <div class="password-modal" *ngIf="passwordMode">
+      <div class="modal-overlay" (click)="onTogglePassword()"></div>
+      <div class="modal-content">
+        <h2>Alterar Senha</h2>
+        <form [formGroup]="passwordForm" (ngSubmit)="onSavePassword()">
+          <mat-form-field appearance="outline">
+            <mat-label>Senha Atual</mat-label>
+            <input matInput formControlName="currentPassword" type="password" />
+            <mat-error>Senha obrigatória</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nova Senha</mat-label>
+            <input matInput formControlName="newPassword" type="password" />
+            <mat-error>Mínimo 8 caracteres</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Confirmar Senha</mat-label>
+            <input matInput formControlName="confirmPassword" type="password" />
+            <mat-error *ngIf="confirmPassword?.invalid">Confirmação obrigatória</mat-error>
+            <mat-error *ngIf="passwordForm.hasError('mismatch')">Senhas não coincidem</mat-error>
+          </mat-form-field>
+
+          <div class="modal-buttons">
+            <button mat-button type="button" (click)="onTogglePassword()">
+              Cancelar
+            </button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="loading || passwordForm.invalid">
+              {{ loading ? "Alterando..." : "Alterar Senha" }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

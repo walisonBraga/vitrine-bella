@@ -7,20 +7,21 @@ $success-color: #4caf50;
 // Custom Colors
 $navbar-height: 64px;
 $brand-color: #ff6f00;
+$navbar-bg: #1976d2; // Gradiente moderno
+$navbar-text: #ffffff;
 $text-color: #333;
 $border-color: #e0e0e0;
 
 // Modern Navbar
 .navbar-modern {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  position: relative; // Mudança de fixed para relative
   height: $navbar-height;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background: white !important;
-  border-bottom: 1px solid $border-color;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: $navbar-bg !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  display: flex;
+  align-items: center;
 
   .navbar-container {
     display: flex;
@@ -31,6 +32,7 @@ $border-color: #e0e0e0;
     margin: 0 auto;
     padding: 0 1rem;
     height: 100%;
+    flex: 1;
   }
 
   // Brand Section
@@ -39,13 +41,13 @@ $border-color: #e0e0e0;
       display: flex;
       align-items: center;
       text-decoration: none;
-      color: $brand-color;
+      color: $navbar-text;
       font-weight: 700;
       font-size: 1.5rem;
       transition: color 0.3s ease;
 
       &:hover {
-        color: darken($brand-color, 10%);
+        color: rgba(255, 255, 255, 0.8);
       }
 
       .brand-logo {
@@ -79,20 +81,20 @@ $border-color: #e0e0e0;
       gap: 0.5rem;
 
       a {
-        color: $text-color;
+        color: $navbar-text;
         font-weight: 500;
-        transition: color 0.3s ease;
+        transition: all 0.3s ease;
         border-radius: 8px;
         padding: 0.5rem 1rem;
 
         &:hover {
-          color: $primary-color;
-          background-color: rgba($primary-color, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+          background-color: rgba(255, 255, 255, 0.1);
         }
 
         &.active {
-          color: $primary-color;
-          background-color: rgba($primary-color, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+          background-color: rgba(255, 255, 255, 0.15);
         }
 
         mat-icon {
@@ -110,11 +112,12 @@ $border-color: #e0e0e0;
       gap: 1rem;
 
       button[mat-icon-button] {
-        color: $text-color;
+        color: $navbar-text;
         transition: color 0.3s ease;
 
         &:hover {
-          color: $primary-color;
+          color: rgba(255, 255, 255, 0.8);
+          background-color: rgba(255, 255, 255, 0.1);
         }
       }
 
@@ -135,11 +138,12 @@ $border-color: #e0e0e0;
 
   // Mobile Menu Button
   .mobile-menu-btn {
-    color: $text-color;
-    transition: color 0.3s ease;
+    color: $navbar-text;
+    transition: all 0.3s ease;
 
     &:hover {
-      color: $primary-color;
+      color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
     }
   }
 }
@@ -214,19 +218,31 @@ $border-color: #e0e0e0;
 
 // Mobile Navigation
 .mobile-nav-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   z-index: 1001;
   pointer-events: none;
+
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    pointer-events: auto;
+  }
 
   .mobile-sidenav {
     width: 320px;
     background: white;
     box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
     pointer-events: auto;
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    z-index: 1002;
 
     .mobile-nav-content {
       height: 100%;
@@ -298,6 +314,12 @@ $border-color: #e0e0e0;
           height: 48px;
           font-weight: 600;
           border-radius: 8px;
+          background-color: rgba(255, 255, 255, 0.9) !important;
+          color: #667eea !important;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 1) !important;
+          }
         }
 
         .mobile-user-info {
@@ -305,7 +327,7 @@ $border-color: #e0e0e0;
           align-items: center;
           margin-bottom: 1rem;
           padding: 0.75rem;
-          background: rgba($primary-color, 0.05);
+          background: rgba(255, 255, 255, 0.1);
           border-radius: 8px;
 
           .mobile-user-avatar {
@@ -391,13 +413,19 @@ $border-color: #e0e0e0;
         }
       }
     }
+
+    // Garantir que o navbar seja visível em telas pequenas
+    background: $navbar-bg !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
 @media (max-width: 575.98px) {
   .navbar-modern {
+    height: 56px; // Reduzir altura em telas muito pequenas
     .navbar-container {
       padding: 0 0.5rem;
+      height: 56px;
     }
 
     .navbar-brand {
@@ -411,6 +439,11 @@ $border-color: #e0e0e0;
         }
       }
     }
+
+    // Garantir visibilidade em telas pequenas
+    background: $navbar-bg !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .mobile-nav-container {

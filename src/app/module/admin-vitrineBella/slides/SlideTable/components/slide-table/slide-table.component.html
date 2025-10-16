@@ -1,0 +1,164 @@
+<app-navigation-admin>
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 mb-1">Gerenciar Slides</h1>
+        <p class="text-muted">Gerencie os slides do banner da página inicial</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <mat-icon>add</mat-icon>
+          Novo Slide
+        </button>
+        <button class="btn btn-outline-secondary" (click)="loadSlides()">
+          <mat-icon>refresh</mat-icon>
+          Atualizar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabela de Slides -->
+  <div class="main-container">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Lista de Slides</h5>
+        <div class="search-box">
+          <div class="input-group">
+            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por título ou subtítulo..."
+              class="form-control" />
+            <button class="btn btn-outline-secondary" type="button" (click)="searchTerm = ''; loadSlides()"
+              matTooltip="Limpar filtro">
+              <mat-icon>clear</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div *ngIf="isLoading" class="text-center py-4 d-flex flex-column align-items-center">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p class="mt-2">Carregando slides...</p>
+        </div>
+        <div *ngIf="!isLoading && dataSource.data.length === 0" class="text-center py-4">
+          <mat-icon class="text-muted" style="font-size: 48px; width: 48px; height: 48px">slideshow</mat-icon>
+          <h6 class="mt-2">Nenhum slide encontrado</h6>
+          <p class="text-muted">Comece criando o primeiro slide.</p>
+          <button class="btn btn-primary" (click)="openCreateModal()">
+            Criar Primeiro Slide
+          </button>
+        </div>
+
+        <div *ngIf="!isLoading && dataSource.data.length > 0" class="table-responsive">
+          <table mat-table [dataSource]="dataSource" matSort class="slides-table">
+
+            <!-- Coluna Imagem -->
+            <ng-container matColumnDef="imagem">
+              <th mat-header-cell *matHeaderCellDef>Imagem</th>
+              <td mat-cell *matCellDef="let slide">
+                <div class="image-cell">
+                  <img [src]="slide.img" [alt]="slide.alt" class="slide-image" (error)="handleImageError($event)">
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Título -->
+            <ng-container matColumnDef="titulo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="header-centered">Título</th>
+              <td mat-cell *matCellDef="let slide">
+                <div class="title-cell centered">
+                  <strong>{{ slide.titulo }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Subtítulo -->
+            <ng-container matColumnDef="subtitulo">
+              <th mat-header-cell *matHeaderCellDef>Subtítulo</th>
+              <td mat-cell *matCellDef="let slide">
+                <div class="subtitle-cell centered">
+                  {{ slide.subtitulo }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Ordem -->
+            <ng-container matColumnDef="ordem">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="header-centered">Ordem</th>
+              <td mat-cell *matCellDef="let slide">
+                <div class="order-cell">
+                  <span class="order-badge">{{ slide.ordem }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Status -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let slide">
+                <div class="status-cell">
+                  <mat-icon [class]="slide.ativo ? 'status-active' : 'status-inactive'"
+                    [matTooltip]="slide.ativo ? 'Ativo' : 'Inativo'">
+                    {{ slide.ativo ? 'check_circle' : 'cancel' }}
+                  </mat-icon>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Ações -->
+            <ng-container matColumnDef="acoes">
+              <th mat-header-cell *matHeaderCellDef>Ações</th>
+              <td mat-cell *matCellDef="let slide">
+                <div class="actions-cell">
+                  <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Ações">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+
+                  <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="openEditModal(slide)">
+                      <mat-icon>edit</mat-icon>
+                      <span>Editar</span>
+                    </button>
+
+                    <button mat-menu-item (click)="toggleSlideStatus(slide)">
+                      <mat-icon>{{ slide.ativo ? 'visibility_off' : 'visibility' }}</mat-icon>
+                      <span>{{ slide.ativo ? 'Desativar' : 'Ativar' }}</span>
+                    </button>
+
+                    <button mat-menu-item (click)="moveSlideUp(slide)"
+                      [disabled]="dataSource.data.indexOf(slide) === 0">
+                      <mat-icon>keyboard_arrow_up</mat-icon>
+                      <span>Mover para Cima</span>
+                    </button>
+
+                    <button mat-menu-item (click)="moveSlideDown(slide)"
+                      [disabled]="dataSource.data.indexOf(slide) === dataSource.data.length - 1">
+                      <mat-icon>keyboard_arrow_down</mat-icon>
+                      <span>Mover para Baixo</span>
+                    </button>
+
+                    <mat-divider></mat-divider>
+
+                    <button mat-menu-item (click)="deleteSlide(slide)" class="delete-action">
+                      <mat-icon>delete</mat-icon>
+                      <span>Excluir</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+
+          <!-- Paginação -->
+          <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons
+            aria-label="Selecionar página de slides">
+          </mat-paginator>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-navigation-admin>

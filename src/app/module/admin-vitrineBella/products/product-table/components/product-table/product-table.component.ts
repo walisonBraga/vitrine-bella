@@ -10,6 +10,8 @@ import { Product } from '../../../interface/products';
 import { ProductService } from '../../../service/product.service';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { ProductRegistrationModalComponent } from '../../../ProductRegistrationModal/components/product-registration-modal/product-registration-modal.component';
+import { DiscountModalComponent } from '../../../DiscountModal/components/discount-modal/discount-modal.component';
+import { StockNotificationService } from '../../../../../../core/services/stock-notification.service';
 
 @Component({
   selector: 'app-product-table',
@@ -33,7 +35,8 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private stockNotificationService: StockNotificationService
   ) { }
 
   ngOnInit(): void {
@@ -54,6 +57,7 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
       this.productsSubscription = this.productService.getProducts().subscribe({
         next: (products: Product[]) => {
           this.dataSource.data = products;
+          this.stockNotificationService.analyzeStockLevels(products);
           this.loading = false;
         },
         error: (error) => {
@@ -75,6 +79,7 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
     this.searchSubscription = this.productService.searchProducts(term).subscribe({
       next: (products: Product[]) => {
         this.dataSource.data = products;
+        this.stockNotificationService.analyzeStockLevels(products);
         this.loading = false;
       },
       error: (error) => {
@@ -88,8 +93,8 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
   openProductModal(): void {
     const dialogRef = this.dialog.open(ProductRegistrationModalComponent, {
       width: 'auto',
-      maxWidth: '100vw',
-      maxHeight: '100vh',
+      maxWidth: 'auto',
+      maxHeight: 'auto',
       disableClose: true,
       data: { mode: 'create' }
     });
@@ -107,8 +112,8 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
       const product = await this.productService.getProductById(id);
       const dialogRef = this.dialog.open(ProductRegistrationModalComponent, {
         width: 'auto',
-        maxWidth: '100vw',
-        maxHeight: '100vh',
+        maxWidth: '250vw',
+        maxHeight: '250vh',
         disableClose: true,
         data: { mode: 'edit', id, product }
       });
@@ -146,4 +151,121 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
     this.productsSubscription?.unsubscribe();
     this.searchSubscription?.unsubscribe();
   }
+
+  // Métodos para análise de estoque
+  isLowStock(product: Product): boolean {
+    return this.stockNotificationService.isProductLowStock(product);
+  }
+
+  isCriticalStock(product: Product): boolean {
+    return this.stockNotificationService.isProductCriticalStock(product);
+  }
+
+  isOutOfStock(product: Product): boolean {
+    return this.stockNotificationService.isProductOutOfStock(product);
+  }
+
+  getStockAlertLevel(product: Product): 'low' | 'critical' | 'out' | 'normal' {
+    return this.stockNotificationService.getProductAlertLevel(product);
+  }
+
+  getStockAlertClass(product: Product): string {
+    const level = this.getStockAlertLevel(product);
+    return this.stockNotificationService.getAlertClass(level);
+  }
+
+  getStockAlertIcon(product: Product): string {
+    const level = this.getStockAlertLevel(product);
+    return this.stockNotificationService.getAlertIcon(level);
+  }
+
+  getStockAlertColor(product: Product): string {
+    const level = this.getStockAlertLevel(product);
+    return this.stockNotificationService.getAlertColor(level);
+  }
+
+  getStockAlertTooltip(product: Product): string {
+    const level = this.getStockAlertLevel(product);
+    const productName = product.productName;
+
+    switch (level) {
+      case 'out':
+        return `${productName} - SEM ESTOQUE!`;
+      case 'critical':
+        return `${productName} - Estoque crítico (${product.stock} unidades)`;
+      case 'low':
+        return `${productName} - Estoque baixo (${product.stock} unidades)`;
+      default:
+        return `${productName} - Estoque normal (${product.stock} unidades)`;
+    }
+  }
+
+  getStockAlertLabel(product: Product): string {
+    const level = this.getStockAlertLevel(product);
+
+    switch (level) {
+      case 'out':
+        return 'SEM ESTOQUE';
+      case 'critical':
+        return 'CRÍTICO';
+      case 'low':
+        return 'BAIXO';
+      default:
+        return '';
+    }
+  }
+
+  // ===== MÉTODOS PARA DESCONTO =====
+
+  getDiscountPercentage(product: Product): number {
+    if (!product.hasDiscount || !product.originalPrice || product.originalPrice <= 0) {
+      return 0;
+    }
+
+    const discount = ((product.originalPrice - product.price) / product.originalPrice) * 100;
+
+    // Garantir que o desconto não seja negativo ou maior que 100%
+    return Math.max(0, Math.min(100, Math.round(discount * 10) / 10));
+  }
+
+  manageDiscount(product: Product): void {
+    const mode = product.hasDiscount ? 'edit' : 'add';
+
+    const dialogRef = this.dialog.open(DiscountModalComponent, {
+      width: '700px',
+      maxHeight: '90vh',
+      data: { product, mode },
+      disableClose: false,
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadProducts();
+        this.snackBar.open(
+          product.hasDiscount ? 'Desconto atualizado com sucesso!' : 'Desconto aplicado com sucesso!',
+          'Fechar',
+          { duration: 3000 }
+        );
+      }
+    });
+  }
+
+  removeDiscount(product: Product): void {
+    const dialogRef = this.dialog.open(DiscountModalComponent, {
+      width: '500px',
+      maxHeight: '90vh',
+      data: { product, mode: 'remove' },
+      disableClose: false,
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadProducts();
+        this.snackBar.open('Desconto removido com sucesso!', 'Fechar', { duration: 3000 });
+      }
+    });
+  }
+
 }

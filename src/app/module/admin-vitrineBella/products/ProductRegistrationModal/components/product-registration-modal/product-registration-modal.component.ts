@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../../service/product.service';
 import { Product } from '../../../interface/products';
@@ -6,23 +6,31 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Storage, ref, uploadBytesResumable, getDownloadURL } from '@angular/fire/storage';
 
+
+import { Subscription } from 'rxjs';
+import { Category } from '../../../../categories/interface/category';
+import { CategoryService } from '../../../../categories/service/category.service';
+
 @Component({
   selector: 'app-product-registration-modal',
   templateUrl: './product-registration-modal.component.html',
   styleUrl: './product-registration-modal.component.scss'
 })
-export class ProductRegistrationModalComponent implements OnInit {
+export class ProductRegistrationModalComponent implements OnInit, OnDestroy {
   productForm!: FormGroup;
   loading = false;
   title: string;
   selectedImageUrl: string | null = null;
   selectedFile: File | null = null;
   imageUrl: string | null = null;
+  categories: Category[] = [];
+  private categoriesSubscription: Subscription | undefined;
 
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<ProductRegistrationModalComponent>,
     private productService: ProductService,
+    private categoryService: CategoryService,
     private snackBar: MatSnackBar,
     private storage: Storage,
     @Inject(MAT_DIALOG_DATA) public data: { mode: 'create' | 'edit'; id?: string; product?: Product }
@@ -40,6 +48,9 @@ export class ProductRegistrationModalComponent implements OnInit {
       // Removed 'image' field from form
     });
 
+    // Carregar categorias ativas
+    this.loadCategories();
+
     if (this.data.mode === 'edit' && this.data.product) {
       this.productForm.patchValue(this.data.product);
       if (this.data.product.imageUrl) {
@@ -52,20 +63,37 @@ export class ProductRegistrationModalComponent implements OnInit {
   onImageSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) { // 5MB limit
-        this.selectedFile = file;
-        // No need to set form value for 'image' since it's not in the form
-
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.selectedImageUrl = e.target.result as string;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        this.snackBar.open('Selecione uma imagem válida (JPG/PNG, máx. 5MB)', 'Fechar', { duration: 3000 });
+      // Validar tipo de arquivo
+      if (!file.type.startsWith('image/')) {
+        this.snackBar.open('Por favor, selecione apenas arquivos de imagem', 'Fechar', {
+          duration: 3000
+        });
         event.target.value = '';
-        this.selectedFile = null;
+        return;
       }
+
+      // Validar tamanho (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.snackBar.open('A imagem deve ter no máximo 5MB', 'Fechar', {
+          duration: 3000
+        });
+        event.target.value = '';
+        return;
+      }
+
+      // Salvar arquivo selecionado
+      this.selectedFile = file;
+
+      // Criar preview da imagem
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.selectedImageUrl = e.target.result as string;
+      };
+      reader.readAsDataURL(file);
+
+      this.snackBar.open('Imagem selecionada. Clique em "Criar Produto" para confirmar.', 'Fechar', {
+        duration: 3000
+      });
     }
   }
 
@@ -73,6 +101,10 @@ export class ProductRegistrationModalComponent implements OnInit {
     this.selectedFile = null;
     this.selectedImageUrl = null;
     this.imageUrl = null; // Clear existing URL if removing
+
+    this.snackBar.open('Imagem removida', 'Fechar', {
+      duration: 2000
+    });
   }
 
   async uploadImage(productName: string): Promise<string | null> {
@@ -146,6 +178,10 @@ export class ProductRegistrationModalComponent implements OnInit {
         this.snackBar.open('Produto atualizado com sucesso!', 'Fechar', { duration: 3000 });
       }
 
+      // Limpar arquivo selecionado e preview
+      this.selectedFile = null;
+      this.selectedImageUrl = null;
+
       this.dialogRef.close(true);
     } catch (error: any) {
       this.snackBar.open('Erro ao salvar produto: ' + error.message, 'Fechar', { duration: 3000 });
@@ -156,5 +192,23 @@ export class ProductRegistrationModalComponent implements OnInit {
 
   onCancel(): void {
     this.dialogRef.close();
+  }
+
+  ngOnDestroy(): void {
+    if (this.categoriesSubscription) {
+      this.categoriesSubscription.unsubscribe();
+    }
+  }
+
+  private loadCategories(): void {
+    this.categoriesSubscription = this.categoryService.getActiveCategories().subscribe({
+      next: (categories: Category[]) => {
+        this.categories = categories;
+      },
+      error: (error: any) => {
+        console.error('Erro ao carregar categorias:', error);
+        this.snackBar.open('Erro ao carregar categorias', 'Fechar', { duration: 3000 });
+      }
+    });
   }
 }

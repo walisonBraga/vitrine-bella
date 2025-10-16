@@ -75,7 +75,6 @@ export class PermissionsManagementComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Erro ao carregar usuários:', error);
           this.errorMessage = 'Erro ao carregar usuários';
           this.snackBar.open('Erro ao carregar usuários.', 'Fechar', { duration: 5000 });
           this.isLoading = false;
@@ -141,7 +140,6 @@ export class PermissionsManagementComponent implements OnInit, OnDestroy {
           this.snackBar.open(`Permissão ${action} com sucesso!`, 'Fechar', { duration: 3000 });
         },
         error: (error) => {
-          console.error('Erro ao atualizar permissões:', error);
           this.snackBar.open('Erro ao atualizar permissões.', 'Fechar', { duration: 5000 });
           // Reverte a mudança
           if (hasPermission) {
@@ -154,15 +152,76 @@ export class PermissionsManagementComponent implements OnInit, OnDestroy {
   }
 
   canEditUser(user: createUsersAdmin): boolean {
-    return this.authenticatedUser?.uid !== user.uid;
+    // Se for admin, pode editar qualquer usuário (incluindo ele mesmo)
+    const isAdmin = this.authenticatedUser?.role === 'admin';
+
+    // Se não for o próprio usuário, pode editar
+    const isNotSelf = this.authenticatedUser?.uid !== user.uid;
+
+    // Se for admin OU não for ele mesmo, pode editar
+    const canEdit = isAdmin || isNotSelf;
+
+    return canEdit;
+  }
+
+  // Verifica se pode editar permissões específicas (proteção para admin)
+  canEditPermission(user: createUsersAdmin, permission: string): boolean {
+    const isAdmin = this.authenticatedUser?.role === 'admin';
+    const isSelf = this.authenticatedUser?.uid === user.uid;
+    const targetIsAdmin = user.role === 'admin';
+
+    // Se for admin editando a si mesmo, bloqueia permissões críticas
+    if (isAdmin && isSelf) {
+      const criticalPermissions = [
+        '/permissions-management',
+        '/admin-management'
+      ];
+
+      if (criticalPermissions.includes(permission)) {
+        return false;
+      }
+    }
+
+    // Se o usuário logado não é admin e está tentando editar um admin, bloqueia tudo
+    if (!isAdmin && targetIsAdmin) {
+      return false;
+    }
+
+    return this.canEditUser(user);
+  }
+
+  // Gera tooltip específico para cada permissão
+  getPermissionTooltip(user: createUsersAdmin, permission: string): string {
+    if (!this.canEditPermission(user, permission)) {
+      const isAdmin = this.authenticatedUser?.role === 'admin';
+      const isSelf = this.authenticatedUser?.uid === user.uid;
+      const targetIsAdmin = user.role === 'admin';
+
+      // Se não é admin tentando editar conta de admin
+      if (!isAdmin && targetIsAdmin) {
+        return '🔒 Não é possível editar permissões de administrador';
+      }
+
+      if (isAdmin && isSelf && (permission === '/permissions-management' || permission === '/admin-management')) {
+        return '🔒 Permissão crítica protegida por segurança';
+      }
+
+      if (isAdmin && isSelf) {
+        return 'Erro: Permissão de edição não carregada';
+      }
+
+      return 'Você não pode editar suas próprias permissões';
+    }
+
+    return 'Clique para alterar permissão';
   }
 
   exportPermissions(): void {
     const data = this.users.map(user => ({
-      nome: `${user.firstName} ${user.lastName}`,
-      email: user.email,
+      nome: user.fullName || '', // Prefer displayName property if available
+      email: user.email || '',
       role: this.getRoleDisplayName(user.role),
-      permissoes: user.managementType?.map(p => this.getPermissionDisplayName(p)).join(', ') || 'Nenhuma'
+      permissoes: user.managementType?.map((p: string) => this.getPermissionDisplayName(p)).join(', ') || 'Nenhuma'
     }));
 
     const csvContent = this.convertToCSV(data);

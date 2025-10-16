@@ -1,0 +1,155 @@
+<app-navigation-admin>
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 mb-1">Gerenciar Categorias</h1>
+        <p class="text-muted">Organize seus produtos em categorias</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="createCategory()">
+          <mat-icon>add</mat-icon>
+          Criar Nova Categoria
+        </button>
+        <button class="btn btn-outline-secondary" (click)="loadCategories()">
+          <mat-icon>refresh</mat-icon>
+          Atualizar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabela de Categorias -->
+  <div class="main-container">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title m-lg-1">Lista de Categorias</h5>
+        <div class="search-box">
+          <div class="input-group">
+            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por nome da categoria..."
+              class="form-control" />
+            <button class="btn btn-secondary" type="button" (click)="dataSource.filter = ''" matTooltip="Limpar filtro">
+              <mat-icon>clear</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div *ngIf="isLoading" class="text-center py-4 d-flex flex-column align-items-center">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p class="mt-2">Carregando categorias...</p>
+        </div>
+        <div *ngIf="!isLoading && dataSource.data.length === 0" class="text-center py-4">
+          <mat-icon class="text-muted" style="font-size: 48px; width: 48px; height: 48px">category</mat-icon>
+          <h6 class="mt-2">Nenhuma categoria encontrada</h6>
+          <p class="text-muted">
+            Comece criando a primeira categoria para organizar seus produtos.
+          </p>
+          <button class="btn btn-primary" (click)="createCategory()">
+            Criar Primeira Categoria
+          </button>
+        </div>
+        <div *ngIf="!isLoading && dataSource.data.length > 0">
+          <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+              <!-- Nome -->
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  Nome da Categoria
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="category-name">
+                    <mat-icon class="category-icon">{{ element.icon || 'category' }}</mat-icon>
+                    <span class="fw-semibold">{{ element.name }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Descrição -->
+              <ng-container matColumnDef="description">
+                <th mat-header-cell *matHeaderCellDef>Descrição</th>
+                <td mat-cell *matCellDef="let element">
+                  <span class="text-muted" *ngIf="!element.description">Sem descrição</span>
+                  <span *ngIf="element.description">{{ element.description | slice:0:50 }}{{ element.description?.length
+                    > 50 ? '...' : '' }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Contagem de Produtos -->
+              <ng-container matColumnDef="productCount">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Produtos</th>
+                <td mat-cell *matCellDef="let element">
+                  <span class="badge badge-info">
+                    <mat-icon class="me-1" style="font-size: 16px; width: 16px; height: 16px;">inventory</mat-icon>
+                    {{ element.productCount || 0 }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <!-- Status -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let element">
+                  <span class="badge" [ngClass]="getStatusBadgeClass(element.isActive)">
+                    <mat-icon inline="true" class="me-1 align-middle">{{ element.isActive ? "check_circle" : "block"
+                      }}</mat-icon>
+                    {{ getStatusDisplayName(element.isActive) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <!-- Data de Criação -->
+              <ng-container matColumnDef="createdAt">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Criada em</th>
+                <td mat-cell *matCellDef="let element">
+                  <span class="text-muted">{{ formatDate(element.createdAt) }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Actions -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="action-buttons">
+                    <button mat-icon-button color="primary" (click)="editCategory(element)"
+                      matTooltip="Editar Categoria">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button [color]="element.isActive ? 'warn' : 'primary'"
+                      (click)="toggleCategoryStatus(element)" [matTooltip]="element.isActive ? 'Desativar' : 'Ativar'">
+                      <mat-icon>{{ element.isActive ? "block" : "check_circle" }}</mat-icon>
+                    </button>
+                    <button mat-icon-button color="accent" (click)="deleteCategory(element)"
+                      matTooltip="Excluir Categoria" [disabled]="element.productCount && element.productCount > 0">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+              <!-- No data row -->
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                  <div class="text-center py-4">
+                    <mat-icon class="text-muted"
+                      style="font-size: 48px; width: 48px; height: 48px">search_off</mat-icon>
+                    <p class="text-muted">
+                      Nenhuma categoria encontrada para o filtro aplicado.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <mat-paginator [pageSizeOptions]="[5, 10, 20, 50]" showFirstLastButtons
+            aria-label="Select page of categories"></mat-paginator>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-navigation-admin>

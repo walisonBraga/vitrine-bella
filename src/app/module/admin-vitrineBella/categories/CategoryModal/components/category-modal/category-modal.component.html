@@ -1,0 +1,124 @@
+<div class="modal-header">
+  <h2 mat-dialog-title class="modal-title">
+    <mat-icon class="title-icon">{{ mode === 'create' ? 'add_circle' : 'edit' }}</mat-icon>
+    {{ modalTitle }}
+  </h2>
+  <button mat-icon-button mat-dialog-close class="close-button" type="button">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<div mat-dialog-content class="modal-content">
+  <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+
+    <!-- Seção de Informações Básicas -->
+    <div class="form-section">
+      <div class="section-header">
+        <mat-icon class="section-icon">info</mat-icon>
+        <h3 class="section-title">Informações Básicas</h3>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome da Categoria *</mat-label>
+          <input matInput formControlName="name" placeholder="Ex: Eletrônicos, Roupas, Casa..." maxlength="50">
+          <mat-icon matSuffix>category</mat-icon>
+          <mat-hint align="end">{{ categoryForm.get('name')?.value?.length || 0 }}/50</mat-hint>
+          <mat-error *ngIf="nameError">{{ nameError }}</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Descrição (Opcional)</mat-label>
+          <textarea matInput formControlName="description" placeholder="Descreva brevemente esta categoria..." rows="3"
+            maxlength="200">
+          </textarea>
+          <mat-icon matSuffix>description</mat-icon>
+          <mat-hint align="end">{{ categoryForm.get('description')?.value?.length || 0 }}/200</mat-hint>
+          <mat-error *ngIf="descriptionError">{{ descriptionError }}</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">
+          <mat-icon class="label-icon">palette</mat-icon>
+          Ícone da Categoria *
+        </label>
+        <app-icon-selector [selectedIcon]="categoryForm.get('icon')?.value || 'category'"
+          (iconSelected)="onIconSelected($event)">
+        </app-icon-selector>
+      </div>
+    </div>
+
+    <!-- Seção de Configurações -->
+    <div class="form-section">
+      <div class="section-header">
+        <mat-icon class="section-icon">settings</mat-icon>
+        <h3 class="section-title">Configurações</h3>
+      </div>
+
+      <div class="form-row">
+        <mat-slide-toggle formControlName="isActive" color="primary">
+          <div class="toggle-content">
+            <mat-icon class="toggle-icon">{{ categoryForm.get('isActive')?.value ? 'check_circle' : 'block'
+              }}</mat-icon>
+            <span class="toggle-text">
+              {{ categoryForm.get('isActive')?.value ? 'Categoria Ativa' : 'Categoria Inativa' }}
+            </span>
+          </div>
+        </mat-slide-toggle>
+        <p class="toggle-hint">
+          Categorias inativas não aparecerão na seleção de produtos
+        </p>
+      </div>
+    </div>
+
+    <!-- Preview da Categoria -->
+    <div class="form-section preview-section" *ngIf="categoryForm.get('name')?.value">
+      <div class="section-header">
+        <mat-icon class="section-icon">visibility</mat-icon>
+        <h3 class="section-title">Prévia</h3>
+      </div>
+
+      <div class="category-preview">
+        <div class="preview-card">
+          <div class="preview-header">
+            <mat-icon class="preview-icon">{{ categoryForm.get('icon')?.value || 'category' }}</mat-icon>
+            <div class="preview-info">
+              <h4 class="preview-name">{{ categoryForm.get('name')?.value || 'Nome da Categoria' }}</h4>
+              <p class="preview-description" *ngIf="categoryForm.get('description')?.value">
+                {{ categoryForm.get('description')?.value }}
+              </p>
+              <p class="preview-description" *ngIf="!categoryForm.get('description')?.value">
+                Sem descrição
+              </p>
+            </div>
+          </div>
+          <div class="preview-status">
+            <span class="badge" [ngClass]="categoryForm.get('isActive')?.value ? 'badge-success' : 'badge-danger'">
+              <mat-icon class="status-icon">{{ categoryForm.get('isActive')?.value ? 'check_circle' : 'block'
+                }}</mat-icon>
+              {{ categoryForm.get('isActive')?.value ? 'Ativo' : 'Inativo' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div mat-dialog-actions class="modal-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isLoading" class="cancel-button">
+    <mat-icon>close</mat-icon>
+    Cancelar
+  </button>
+
+  <button mat-raised-button color="primary" type="submit" (click)="onSubmit()" [disabled]="!isFormValid || isLoading"
+    class="submit-button">
+    <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+    <mat-icon *ngIf="!isLoading">{{ mode === 'create' ? 'add' : 'save' }}</mat-icon>
+    {{ submitButtonText }}
+  </button>
+</div>

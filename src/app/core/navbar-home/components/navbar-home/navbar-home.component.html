@@ -27,9 +27,18 @@
 
       <!-- Actions -->
       <div class="navbar-actions">
+        <!-- Favoritos -->
+        <button mat-icon-button routerLink="/favoritos" matTooltip="Favoritos">
+          <mat-icon matBadge="{{favoritosCount}}" matBadgeColor="warn" [matBadgeHidden]="favoritosCount === 0"
+            aria-hidden="false">
+            favorite
+          </mat-icon>
+        </button>
+
         <!-- Carrinho -->
         <button mat-icon-button routerLink="/carrinho" matTooltip="Carrinho de compras">
-          <mat-icon matBadge="{{cartCount}}" matBadgeColor="warn" [matBadgeHidden]="cartCount === 0">
+          <mat-icon matBadge="{{cartCount}}" matBadgeColor="warn" [matBadgeHidden]="cartCount === 0"
+            aria-hidden="false">
             shopping_cart
           </mat-icon>
         </button>
@@ -52,7 +61,8 @@
             <div class="menu-header">
               <img [src]="(user$ | async)?.photoURL || defaultAvatar" class="menu-avatar" alt="Avatar" />
               <div class="menu-user-info">
-                <div class="user-name">{{ (user$ | async)?.displayName || 'Usuário' }}</div>
+                <div class="user-name">{{ (user$ | async)?.fullName || (user$ | async)?.displayName || 'Usuário' }}
+                </div>
                 <div class="user-email">{{ (user$ | async)?.email }}</div>
               </div>
             </div>
@@ -87,6 +97,9 @@
 
   <!-- Mobile Navigation Drawer -->
   <mat-sidenav-container class="mobile-nav-container d-lg-none">
+    <!-- Overlay para fechar o menu -->
+    <div *ngIf="isMobileMenuOpen" class="mobile-overlay" (click)="closeMobileMenu()"></div>
+
     <mat-sidenav #mobileSidenav mode="over" position="end" [opened]="isMobileMenuOpen"
       (openedChange)="isMobileMenuOpen = $event" class="mobile-sidenav">
 
@@ -121,8 +134,17 @@
             <span matListItemTitle>Sobre</span>
           </a>
 
+          <a mat-list-item routerLink="/favoritos" (click)="closeMobileMenu()">
+            <mat-icon matListItemIcon matBadge="{{favoritosCount}}" matBadgeColor="warn" [matBadgeHidden]="favoritosCount === 0"
+              aria-hidden="false">
+              favorite
+            </mat-icon>
+            <span matListItemTitle>Favoritos</span>
+          </a>
+
           <a mat-list-item routerLink="/carrinho" (click)="closeMobileMenu()">
-            <mat-icon matListItemIcon matBadge="{{cartCount}}" matBadgeColor="warn" [matBadgeHidden]="cartCount === 0">
+            <mat-icon matListItemIcon matBadge="{{cartCount}}" matBadgeColor="warn" [matBadgeHidden]="cartCount === 0"
+              aria-hidden="false">
               shopping_cart
             </mat-icon>
             <span matListItemTitle>Carrinho</span>
@@ -145,7 +167,8 @@
             <div class="mobile-user-info">
               <img [src]="(user$ | async)?.photoURL || defaultAvatar" class="mobile-user-avatar" alt="Avatar" />
               <div class="mobile-user-details">
-                <div class="mobile-user-name">{{ (user$ | async)?.displayName || 'Usuário' }}</div>
+                <div class="mobile-user-name">{{ (user$ | async)?.fullName || (user$ | async)?.displayName || 'Usuário'
+                  }}</div>
                 <div class="mobile-user-email">{{ (user$ | async)?.email }}</div>
               </div>
             </div>

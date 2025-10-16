@@ -1,5 +1,34 @@
-:host * {
-  transition: all 500ms ease-in-out;
+:host {
+  width: auto !important;
+  min-width: 250px;
+  max-width: none;
+  overflow: visible !important;
+
+  * {
+    transition: all 500ms ease-in-out;
+  }
+
+  // Força largura automática em todos os elementos de lista
+  mat-list-item {
+    width: auto !important;
+    max-width: none !important;
+    margin-bottom: 4px !important; // Espaçamento padrão entre itens
+    padding-right: 0 !important; // Remove padding padrão
+
+    &.expandable {
+      display: flex !important;
+      align-items: center !important;
+      flex-direction: row !important;
+      margin-bottom: 4px !important; // Garante espaçamento igual
+      padding-right: 0 !important; // Remove padding padrão
+    }
+  }
+
+  mat-nav-list {
+    overflow: visible !important;
+    width: auto;
+    min-width: 100%;
+  }
 }
 
 .sidenav-header {
@@ -36,9 +65,204 @@
 .menu-item {
   border-left: 5px solid;
   border-left-color: rgba(0, 0, 0, 0);
+  position: relative;
+  white-space: nowrap;
+  overflow: visible;
+
+  span[matListItemTitle] {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  &.expandable {
+    cursor: pointer;
+    display: flex !important;
+    align-items: center !important;
+    position: relative;
+
+    span[matListItemTitle] {
+      flex: 1;
+      display: block;
+      margin-right: 32px; // Espaço para o ícone de expansão
+    }
+
+    // Garante que o ícone principal fique ao lado do texto
+    mat-icon[matListItemIcon] {
+      flex-shrink: 0;
+      margin-right: 8px;
+    }
+
+    // Estilo para o ícone de expansão
+    .expand-icon {
+      transition: transform 0.3s ease;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      flex-shrink: 0;
+      margin-left: auto; // Posiciona à direita
+      margin-right: 0;
+
+      &.expanded {
+        transform: translateY(-50%) rotate(180deg);
+      }
+    }
+  }
 }
 
 .selected-menu-item {
   border-left-color: #3f51b5;
   background: rgba(0, 0, 0, 0.5);
+}
+
+// Container do item de menu
+.menu-item-container {
+  width: auto;
+  min-width: 100%;
+  overflow: visible;
+
+  // Remove margem extra do container para ficar igual aos outros itens
+  a[mat-list-item] {
+    margin-bottom: 4px !important; // Igual aos outros itens
+  }
+
+  .submenu {
+    margin-left: 8px;
+    margin-top: 2px; // Espaçamento menor do submenu
+    overflow: visible;
+    width: auto;
+    min-width: auto;
+    max-width: none;
+    animation: slideDown 0.3s ease-out;
+
+    a[mat-list-item] {
+      width: auto !important;
+      min-width: 100%;
+      margin-bottom: 2px; // Espaçamento menor entre itens do submenu
+    }
+
+    .submenu-item {
+      border-left: 3px solid;
+      border-left-color: rgba(0, 0, 0, 0);
+      padding-left: 32px !important;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: visible;
+      width: auto;
+      min-width: 100%;
+      display: flex;
+      align-items: center;
+
+      span[matListItemTitle] {
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: unset;
+        flex: 1;
+        min-width: 0;
+      }
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        margin-right: 8px;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &.selected-menu-item {
+        border-left-color: #3f51b5;
+        background: rgba(63, 81, 181, 0.3);
+      }
+    }
+  }
+}
+
+// Animação para expansão do submenu
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 200px;
+    opacity: 1;
+  }
+}
+
+// Estilos para notificações de estoque
+.stock-notification-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #f44336;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  animation: pulse-notification 2s infinite;
+  z-index: 1;
+}
+
+.notification-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #f44336 !important;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  animation: pulse-notification 2s infinite;
+}
+
+// Animação para o badge de notificação
+@keyframes pulse-notification {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(244, 67, 54, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
+}
+
+// Ajuste para o menu item com notificação
+.menu-item {
+  position: relative;
+
+  &.has-notification {
+    .mat-mdc-list-item-content {
+      padding-right: 30px; // Espaço para o badge
+    }
+  }
+}
+
+// Hover effect para itens com notificação
+.menu-item:hover {
+  .stock-notification-badge {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+  }
+
+  .notification-icon {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+  }
 }

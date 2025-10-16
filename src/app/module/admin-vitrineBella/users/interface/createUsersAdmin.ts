@@ -1,9 +1,10 @@
 export interface createUsersAdmin {
   uid: string;
-  firstName: string;
-  lastName: string;
+  fullName: string; // Nome completo do usuário
   email: string;
   password?: string;
+  cpf?: string; // CPF do usuário
+  birthDate?: string; // Data de nascimento do usuário
   managementType?: string[];
   userPermission?: string[];
   accessCode: string;

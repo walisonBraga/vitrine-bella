@@ -6,7 +6,8 @@ export const PERMISSIONS = {
   SALES_MANAGEMENT: '/sales-management',
   INTERNAL_SALES: '/internal-sales',
   PERMISSIONS_MANAGEMENT: '/permissions-management',
-  ADMIN_MANAGEMENT: '/admin-management'
+  ADMIN_MANAGEMENT: '/admin-management',
+  SLIDES_MANAGEMENT: '/slides-management'
 } as const;
 
 export const PERMISSION_LABELS = {
@@ -16,7 +17,8 @@ export const PERMISSION_LABELS = {
   '/sales-management': 'Gerenciamento de Vendas',
   '/internal-sales': 'Vendas Internas',
   '/permissions-management': 'Gerenciamento de Permissões',
-  '/admin-management': 'Gerenciamento de Administração'
+  '/admin-management': 'Gerenciamento de Administração',
+  '/slides-management': 'Gerenciamento de Slides'
 } as const;
 
 export const PERMISSION_DESCRIPTIONS = {
@@ -26,7 +28,8 @@ export const PERMISSION_DESCRIPTIONS = {
   '/sales-management': 'Visualizar relatórios de vendas',
   '/internal-sales': 'Realizar vendas diretamente na loja',
   '/permissions-management': 'Configurar permissões de usuários',
-  '/admin-management': 'Acesso completo ao sistema administrativo'
+  '/admin-management': 'Acesso completo ao sistema administrativo',
+  '/slides-management': 'Criar, editar e gerenciar slides do banner'
 } as const;
 
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS);
@@ -39,14 +42,16 @@ export const DEFAULT_PERMISSIONS = {
     '/sales-management',
     '/internal-sales',
     '/permissions-management',
-    '/admin-management'
+    '/admin-management',
+    '/slides-management'
   ],
   STORE_OWNER: [
     '/dashboard',
     '/product-management',
     '/users',
     '/sales-management',
-    '/internal-sales'
+    '/internal-sales',
+    '/slides-management'
   ],
   STORE_EMPLOYEE: [
     '/dashboard',

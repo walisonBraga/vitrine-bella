@@ -1,0 +1,58 @@
+<div class="icon-selector">
+  <!-- Header do Seletor -->
+  <div class="selector-header">
+    <h4 class="selector-title">
+      <mat-icon>palette</mat-icon>
+      Selecionar Ícone
+    </h4>
+    <p class="selector-subtitle">Escolha um ícone para representar esta categoria</p>
+  </div>
+
+  <!-- Busca de Ícones -->
+  <div class="search-section">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar ícone...</mat-label>
+      <input matInput
+             (input)="onSearchChange($event)"
+             placeholder="Digite o nome do ícone">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
+
+  <!-- Ícone Selecionado -->
+  <div class="selected-icon-section">
+    <div class="selected-icon-display">
+      <mat-icon class="selected-icon">{{ selectedIcon }}</mat-icon>
+      <div class="selected-info">
+        <span class="selected-name">{{ getIconDescription(selectedIcon) }}</span>
+        <span class="selected-code">{{ selectedIcon }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Ícones -->
+  <div class="icons-container">
+    <div *ngFor="let category of filteredCategories" class="icon-category">
+      <h5 class="category-title">
+        <mat-icon class="category-icon">expand_more</mat-icon>
+        {{ category.name }}
+      </h5>
+
+      <div class="icons-grid">
+        <button *ngFor="let icon of category.icons"
+                class="icon-button"
+                [class.selected]="selectedIcon === icon"
+                (click)="selectIcon(icon)"
+                [matTooltip]="getIconDescription(icon)">
+          <mat-icon class="grid-icon">{{ icon }}</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensagem quando não há resultados -->
+  <div *ngIf="filteredCategories.length === 0" class="no-results">
+    <mat-icon class="no-results-icon">search_off</mat-icon>
+    <p>Nenhum ícone encontrado para "{{ searchTerm }}"</p>
+  </div>
+</div>

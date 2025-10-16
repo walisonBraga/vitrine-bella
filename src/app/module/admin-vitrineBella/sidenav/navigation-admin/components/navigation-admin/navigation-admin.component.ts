@@ -6,7 +6,7 @@ import { Component, computed, signal } from '@angular/core';
   styleUrl: './navigation-admin.component.scss'
 })
 export class NavigationAdminComponent {
-  collapsed = signal(false);
+  collapsed = signal(false); // Começa aberto
 
   sidenavWidth = computed(() => this.collapsed() ? '65px' : '250px');
 }
