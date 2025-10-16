@@ -195,7 +195,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   adicionarCarrinho(produto: Produto): void {
-    try {    } catch (error) {
+    try { } catch (error) {
       console.error('Error adding to cart:', error);
       // Optionally show error notification
     }
