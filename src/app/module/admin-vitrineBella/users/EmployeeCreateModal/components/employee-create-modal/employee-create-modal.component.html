@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4 class="modal-title">Criar Novo Funcionário ou Proprietário</h4>
+  <h4 class="modal-title">Criar Novo Usuário</h4>
   <button mat-icon-button (click)="closeDialog()" aria-label="Fechar">
     <mat-icon>close</mat-icon>
   </button>
@@ -72,39 +72,46 @@
       </div>
     </div>
 
-    <div class="mb-3">
-      <mat-form-field appearance="fill" class="w-100">
-        <mat-label>Função</mat-label>
-        <mat-select formControlName="role" required>
-          <mat-option *ngFor="let role of roles" [value]="role">
-            {{
-              role === "store_employee"
-                ? "Funcionário da Loja"
-                : "Proprietário da Loja"
-            }}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="createUserForm.get('role')?.hasError('required')">
-          Função é obrigatória
-        </mat-error>
-      </mat-form-field>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Role (Página de Destino)</mat-label>
+          <mat-select formControlName="role" required>
+            <mat-option value="/admin">Admin (/admin)</mat-option>
+            <mat-option value="/home">Home (/home)</mat-option>
+          </mat-select>
+          <mat-error *ngIf="createUserForm.get('role')?.hasError('required')">
+            Role é obrigatório
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Função</mat-label>
+          <mat-select formControlName="userRole" required (selectionChange)="onUserRoleChange()">
+            <mat-option value="store_employee">Funcionário da Loja</mat-option>
+            <mat-option value="store_owner">Proprietário da Loja</mat-option>
+            <mat-option value="admin">Administrador</mat-option>
+          </mat-select>
+          <mat-error *ngIf="createUserForm.get('userRole')?.hasError('required')">
+            Função é obrigatória
+          </mat-error>
+        </mat-form-field>
+      </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Permissões</label>
+      <label class="form-label">Permissões de Navegação (managementType)</label>
+      <p class="text-muted small">Selecione as páginas que o usuário poderá acessar:</p>
       <div class="d-flex flex-wrap gap-2">
         <mat-checkbox
-          *ngFor="let topping of toppingList"
-          [value]="topping"
-          (change)="onCheckboxChange($event)"
+          *ngFor="let permission of availablePermissions"
+          [value]="permission.value"
+          (change)="onPermissionChange($event)"
+          [checked]="selectedPermissions.includes(permission.value)"
         >
-          {{
-            topping === "/home"
-              ? "Usuários"
-              : topping === "/sales-management"
-              ? "Gerenciamento de Vendas"
-              : "Gerenciamento de Produtos"
-          }}
+          {{ permission.label }}
         </mat-checkbox>
         <mat-error
           *ngIf="

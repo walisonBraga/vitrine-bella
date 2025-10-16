@@ -3,9 +3,9 @@
     <header class="mb-4">
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <h1 class="h3 mb-1">Tabela de Funcionários e Proprietários</h1>
+          <h1 class="h3 mb-1">Tabela de Usuários</h1>
           <p class="text-muted">
-            Gerencie os funcionários e proprietários da loja
+            Gerencie funcionários, proprietários e administradores da loja
           </p>
         </div>
         <div class="d-flex gap-2">
@@ -20,49 +20,28 @@
     </header>
 
     <div class="card">
-      <div
-        class="card-header d-flex justify-content-between align-items-center"
-      >
-        <h5 class="card-title m-lg-1">Lista de Funcionários e Proprietários</h5>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title m-lg-1">Lista de Usuários</h5>
         <div class="search-box">
           <div class="input-group">
-            <input
-              matInput
-              (keyup)="applyFilter($event)"
-              placeholder="Buscar por nome, email ou código..."
-              class="form-control"
-            />
-            <button
-              class="btn btn-secondary"
-              type="button"
-              (click)="dataSource.filter = ''"
-              matTooltip="Limpar filtro"
-            >
+            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por nome, email ou código..."
+              class="form-control" />
+            <button class="btn btn-secondary" type="button" (click)="dataSource.filter = ''" matTooltip="Limpar filtro">
               <mat-icon>clear</mat-icon>
             </button>
           </div>
         </div>
       </div>
       <div class="card-body">
-        <div
-          *ngIf="isLoading"
-          class="text-center py-4 d-flex flex-column align-items-center"
-        >
+        <div *ngIf="isLoading" class="text-center py-4 d-flex flex-column align-items-center">
           <mat-spinner diameter="40"></mat-spinner>
           <p class="mt-2">Carregando usuários...</p>
         </div>
-        <div
-          *ngIf="!isLoading && dataSource.data.length === 0"
-          class="text-center py-4"
-        >
-          <mat-icon
-            class="text-muted"
-            style="font-size: 48px; width: 48px; height: 48px"
-            >people_outline</mat-icon
-          >
-          <h6 class="mt-2">Nenhum funcionário ou proprietário encontrado</h6>
+        <div *ngIf="!isLoading && dataSource.data.length === 0" class="text-center py-4">
+          <mat-icon class="text-muted" style="font-size: 48px; width: 48px; height: 48px">people_outline</mat-icon>
+          <h6 class="mt-2">Nenhum usuário encontrado</h6>
           <p class="text-muted">
-            Comece criando o primeiro funcionário ou proprietário.
+            Comece criando o primeiro usuário.
           </p>
           <button class="btn btn-primary" (click)="openCreateUserModal()">
             Criar Primeiro Usuário
@@ -70,12 +49,7 @@
         </div>
         <div *ngIf="!isLoading && dataSource.data.length > 0">
           <div class="table-responsive">
-            <table
-              mat-table
-              [dataSource]="dataSource"
-              matSort
-              class="mat-elevation-z8"
-            >
+            <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
               <!-- Primeiro Nome -->
               <ng-container matColumnDef="firstName">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -100,11 +74,7 @@
               <ng-container matColumnDef="email">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
                 <td mat-cell *matCellDef="let element">
-                  <a
-                    href="mailto:{{ element.email }}"
-                    class="text-decoration-none"
-                    >{{ element.email }}</a
-                  >
+                  <a href="mailto:{{ element.email }}" class="text-decoration-none">{{ element.email }}</a>
                 </td>
               </ng-container>
 
@@ -112,10 +82,7 @@
               <ng-container matColumnDef="role">
                 <th mat-header-cell *matHeaderCellDef>Função</th>
                 <td mat-cell *matCellDef="let element">
-                  <span
-                    class="badge"
-                    [ngClass]="getRoleBadgeClass(element.role)"
-                  >
+                  <span class="badge" [ngClass]="getRoleBadgeClass(element.role)">
                     {{ getRoleDisplayName(element.role) }}
                   </span>
                 </td>
@@ -125,18 +92,11 @@
               <ng-container matColumnDef="isActive">
                 <th mat-header-cell *matHeaderCellDef>Status</th>
                 <td mat-cell *matCellDef="let element">
-                  <mat-chip-list aria-label="User Status">
-                    <mat-chip
-                      [color]="element.isActive ? 'primary' : 'warn'"
-                      selected
-                      [disabled]="true"
-                      class="d-flex justify-content-center align-content-center"
-                    >
-                      <mat-icon matChipAvatar>{{
-                        element.isActive ? "check_circle" : "block"
+                  <span class="badge" [ngClass]="element.isActive ? 'bg-primary text-white' : 'bg-danger text-white'">
+                    <mat-icon inline="true" class="me-1 align-middle">{{ element.isActive ? "check_circle" : "block"
                       }}</mat-icon>
-                    </mat-chip>
-                  </mat-chip-list>
+                    {{ element.isActive ? 'Ativo' : 'Inativo' }}
+                  </span>
                 </td>
               </ng-container>
 
@@ -145,72 +105,40 @@
                 <th mat-header-cell *matHeaderCellDef>Ações</th>
                 <td mat-cell *matCellDef="let element">
                   <div class="d-flex gap-1">
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      (click)="editUser(element)"
-                      matTooltip="Editar Usuário"
-                      [disabled]="authenticatedUser?.uid === element.uid"
-                    >
-                      <mat-icon>edit</mat-icon>
+                    <button mat-icon-button color="primary" (click)="editUser(element)"
+                      matTooltip="Editar Usuário" [disabled]="authenticatedUser?.uid === element.uid">
+                      <mat-icon>person_edit</mat-icon>
                     </button>
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      (click)="openPermissionModal(element)"
-                      matTooltip="Gerenciar Permissões"
-                      [disabled]="authenticatedUser?.uid === element.uid"
-                    >
-                      <mat-icon>security</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      [color]="element.isActive ? 'warn' : 'primary'"
-                      (click)="
+                    <button mat-icon-button [color]="element.isActive ? 'warn' : 'primary'" (click)="
                         element.isActive
                           ? deactivateUser(element)
                           : activateUser(element)
-                      "
-                      matTooltip="{{
+                      " matTooltip="{{
                         element.isActive ? 'Desativar' : 'Ativar'
-                      }}"
-                      [disabled]="authenticatedUser?.uid === element.uid"
-                    >
+                      }}" [disabled]="authenticatedUser?.uid === element.uid">
                       <mat-icon>{{
                         element.isActive ? "block" : "check_circle"
-                      }}</mat-icon>
+                        }}</mat-icon>
                     </button>
-                    <button
-                      mat-icon-button
-                      color="accent"
-                      (click)="deleteUser(element)"
-                      matTooltip="Excluir Usuário"
-                      [disabled]="authenticatedUser?.uid === element.uid"
-                    >
+                    <button mat-icon-button color="accent" (click)="deleteUser(element)" matTooltip="Excluir Usuário"
+                      [disabled]="authenticatedUser?.uid === element.uid">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
                 </td>
               </ng-container>
 
-              <tr
-                mat-header-row
-                *matHeaderRowDef="displayedColumns; sticky: true"
-              ></tr>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
               <!-- No data row -->
               <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell" [attr.colspan]="displayedColumns.length">
                   <div class="text-center py-4">
-                    <mat-icon
-                      class="text-muted"
-                      style="font-size: 48px; width: 48px; height: 48px"
-                      >search_off</mat-icon
-                    >
+                    <mat-icon class="text-muted"
+                      style="font-size: 48px; width: 48px; height: 48px">search_off</mat-icon>
                     <p class="text-muted">
-                      Nenhum funcionário ou proprietário encontrado para o
-                      filtro aplicado.
+                      Nenhum usuário encontrado para o filtro aplicado.
                     </p>
                   </div>
                 </td>
@@ -218,11 +146,8 @@
             </table>
           </div>
 
-          <mat-paginator
-            [pageSizeOptions]="[5, 10, 20, 50]"
-            showFirstLastButtons
-            aria-label="Select page of users"
-          ></mat-paginator>
+          <mat-paginator [pageSizeOptions]="[5, 10, 20, 50]" showFirstLastButtons
+            aria-label="Select page of users"></mat-paginator>
         </div>
       </div>
     </div>

@@ -1,0 +1,127 @@
+<div class="edit-user-modal">
+  <div class="modal-header">
+    <h2 mat-dialog-title>
+      <mat-icon>person_edit</mat-icon>
+      Editar Usuário
+    </h2>
+    <button mat-icon-button (click)="onCancel()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="modal-content">
+    <form [formGroup]="editUserForm!" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <!-- Nome -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome</mat-label>
+          <input matInput formControlName="firstName" placeholder="Digite o nome">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="editUserForm?.get('firstName')?.invalid && editUserForm?.get('firstName')?.touched">
+            {{ getErrorMessage('firstName') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Sobrenome -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Sobrenome</mat-label>
+          <input matInput formControlName="lastName" placeholder="Digite o sobrenome">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="editUserForm?.get('lastName')?.invalid && editUserForm?.get('lastName')?.touched">
+            {{ getErrorMessage('lastName') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" placeholder="Digite o email" type="email">
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error *ngIf="editUserForm?.get('email')?.invalid && editUserForm?.get('email')?.touched">
+            {{ getErrorMessage('email') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Função -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Função</mat-label>
+          <mat-select formControlName="role">
+            <mat-option value="store_employee">Funcionário da Loja</mat-option>
+            <mat-option value="store_owner">Proprietário da Loja</mat-option>
+            <mat-option value="admin">Administrador</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>work</mat-icon>
+          <mat-error *ngIf="editUserForm?.get('role')?.invalid && editUserForm?.get('role')?.touched">
+            {{ getErrorMessage('role') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Senha -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nova Senha (opcional)</mat-label>
+          <input matInput
+                 [type]="hidePassword ? 'password' : 'text'"
+                 formControlName="password"
+                 placeholder="Digite a nova senha">
+          <button mat-icon-button matSuffix
+                  type="button"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="'Hide password'"
+                  [attr.aria-pressed]="hidePassword">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="editUserForm?.get('password')?.invalid && editUserForm?.get('password')?.touched">
+            {{ getErrorMessage('password') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Confirmar Senha -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirmar Nova Senha</mat-label>
+          <input matInput
+                 [type]="hideConfirmPassword ? 'password' : 'text'"
+                 formControlName="confirmPassword"
+                 placeholder="Confirme a nova senha">
+          <button mat-icon-button matSuffix
+                  type="button"
+                  (click)="toggleConfirmPasswordVisibility()"
+                  [attr.aria-label]="'Hide password'"
+                  [attr.aria-pressed]="hideConfirmPassword">
+            <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="editUserForm?.hasError('passwordMismatch') && editUserForm?.get('confirmPassword')?.touched">
+            {{ getErrorMessage('confirmPassword') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Status Ativo -->
+        <div class="status-section">
+          <mat-slide-toggle formControlName="isActive" color="primary">
+            <span class="toggle-label">
+              <mat-icon>{{ editUserForm?.get('isActive')?.value ? 'check_circle' : 'block' }}</mat-icon>
+              {{ editUserForm?.get('isActive')?.value ? 'Usuário Ativo' : 'Usuário Inativo' }}
+            </span>
+          </mat-slide-toggle>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="modal-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isLoading">
+      <mat-icon>cancel</mat-icon>
+      Cancelar
+    </button>
+    <button mat-raised-button
+            color="primary"
+            (click)="onSubmit()"
+            [disabled]="editUserForm?.invalid || isLoading"
+            class="save-button">
+      <div class="button-content">
+        <mat-spinner *ngIf="isLoading" diameter="16" class="button-spinner"></mat-spinner>
+        <mat-icon *ngIf="!isLoading">save</mat-icon>
+        <span>{{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}</span>
+      </div>
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -6,6 +6,8 @@ import { AuthService } from '../../../../../../core/auth/auth.service';
 import { CreateUserService } from '../../../service/create-user.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { createUsersAdmin } from '../../../interface/createUsersAdmin';
+import { ALL_PERMISSIONS, getDefaultPermissionsByRole, PERMISSION_LABELS } from '../../../../shared/constants/permissions.constants';
+
 
 @Component({
   selector: 'app-employee-create-modal',
@@ -15,8 +17,14 @@ import { createUsersAdmin } from '../../../interface/createUsersAdmin';
 export class EmployeeCreateModalComponent {
   createUserForm: FormGroup;
   errorMessage: string = '';
-  toppingList: string[] = ['/users', '/sales-management', '/product-management'];
-  roles: string[] = ['store_employee', 'store_owner'];
+  selectedPermissions: string[] = ['/dashboard']; // Permissão padrão selecionada
+
+  // Permissões disponíveis para managementType
+  availablePermissions = ALL_PERMISSIONS.map((permission: string) => ({
+    value: permission,
+    label: PERMISSION_LABELS[permission as keyof typeof PERMISSION_LABELS]
+  }));
+
   isLoading = false;
 
   constructor(
@@ -29,27 +37,42 @@ export class EmployeeCreateModalComponent {
     this.createUserForm = this.formBuilder.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
-      managementType: [[], Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      role: ['/admin', Validators.required], // Página de destino após login
+      userRole: ['store_employee', Validators.required], // Função do usuário
+      managementType: [['/dashboard'], Validators.required], // Permissões de navegação - Dashboard selecionado por padrão
       isActive: [true],
-      role: ['', Validators.required],
     });
   }
 
-  onCheckboxChange(event: MatCheckboxChange): void {
-    const managementTypeControl = this.createUserForm.get('managementType');
-    let managementTypeArray = managementTypeControl?.value || [];
+  onUserRoleChange(): void {
+    const userRole = this.createUserForm.get('userRole')?.value;
+    this.setDefaultPermissionsForRole(userRole);
+  }
+
+  private setDefaultPermissionsForRole(userRole: string): void {
+    const defaultPermissions = getDefaultPermissionsByRole(userRole);
+    this.selectedPermissions = [...defaultPermissions];
+    this.createUserForm.get('managementType')?.setValue([...defaultPermissions]);
+  }
+
+  onPermissionChange(event: MatCheckboxChange): void {
+    const permission = event.source.value;
 
     if (event.checked) {
-      managementTypeArray.push(event.source.value);
+      if (!this.selectedPermissions.includes(permission)) {
+        this.selectedPermissions.push(permission);
+      }
     } else {
-      const index = managementTypeArray.indexOf(event.source.value);
+      const index = this.selectedPermissions.indexOf(permission);
       if (index > -1) {
-        managementTypeArray.splice(index, 1);
+        this.selectedPermissions.splice(index, 1);
       }
     }
-    managementTypeControl?.setValue(managementTypeArray);
+
+    // Atualiza o form control
+    this.createUserForm.get('managementType')?.setValue([...this.selectedPermissions]);
   }
 
   async onSubmit(): Promise<void> {
@@ -62,7 +85,7 @@ export class EmployeeCreateModalComponent {
     }
 
     try {
-      const { email, password, firstName, lastName, managementType, isActive, role } = this.createUserForm.value;
+      const { email, password, firstName, lastName, managementType, isActive, role, userRole } = this.createUserForm.value;
       const authResponse = await this.authService.createUser(email, password);
 
       if (!authResponse.user) {
@@ -80,11 +103,12 @@ export class EmployeeCreateModalComponent {
         managementType,
         accessCode: userId.substring(0, 10),
         isActive,
-        role
+        role: userRole, // Função do usuário (store_employee, store_owner, admin)
+        redirectRoute: role // Página de destino após login (/admin ou /home)
       };
 
       await this.createUserService.createUser(userData);
-      this.snackBar.open('Funcionário ou proprietário criado com sucesso!', 'Fechar', { duration: 5000 });
+      this.snackBar.open('Usuário criado com sucesso!', 'Fechar', { duration: 5000 });
       this.dialogRef.close(true); // Close modal and signal success
     } catch (error: any) {
       this.handleError(error.message || 'Erro ao criar conta.');

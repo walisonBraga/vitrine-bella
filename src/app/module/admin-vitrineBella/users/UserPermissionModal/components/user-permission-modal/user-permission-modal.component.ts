@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CreateUserService } from '../../../service/create-user.service';
 import { createUsersAdmin } from '../../../interface/createUsersAdmin';
+import { ALL_PERMISSIONS, PERMISSION_LABELS } from '../../../../shared/constants/permissions.constants';
 
 @Component({
   selector: 'app-user-permission-modal',
@@ -13,13 +14,7 @@ import { createUsersAdmin } from '../../../interface/createUsersAdmin';
 export class UserPermissionModalComponent implements OnInit {
   permissionForm: FormGroup;
   loading = false;
-  availablePermissions = [
-    '/admin-management',
-    '/users',
-    '/sales-management',
-    '/product-management',
-    '/dashboard'
-  ];
+  availablePermissions = ALL_PERMISSIONS;
 
   constructor(
     private fb: FormBuilder,
@@ -44,20 +39,14 @@ export class UserPermissionModalComponent implements OnInit {
   getRoleDisplayName(role: string): string {
     const roleMap: { [key: string]: string } = {
       store_owner: 'Proprietário da Loja',
-      store_employee: 'Funcionário da Loja'
+      store_employee: 'Funcionário da Loja',
+      admin: 'Administrador'
     };
     return roleMap[role] || role;
   }
 
   getPermissionDisplayName(permission: string): string {
-    const permissionMap: { [key: string]: string } = {
-      '/admin-management': 'Gerenciamento de Administração',
-      '/users': 'Gerenciamento de Usuários',
-      '/sales-management': 'Gerenciamento de Vendas',
-      '/product-management': 'Gerenciamento de Produtos',
-      '/dashboard': 'Dashboard'
-    };
-    return permissionMap[permission] || permission;
+    return PERMISSION_LABELS[permission as keyof typeof PERMISSION_LABELS] || permission;
   }
 
   async onSubmit(): Promise<void> {

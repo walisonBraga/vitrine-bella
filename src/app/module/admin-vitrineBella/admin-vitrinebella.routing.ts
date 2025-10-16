@@ -4,6 +4,8 @@ import { DashboardComponent } from './dashboard/components/dashboard/dashboard.c
 import { UserTableOwnerComponent } from './users/userTableOwner/components/user-table-owner/user-table-owner.component';
 import { EmployeeCreateModalComponent } from './users/EmployeeCreateModal/components/employee-create-modal/employee-create-modal.component';
 import { ProfileComponent } from './users/profile/components/profile/profile.component';
+import { PermissionsManagementComponent } from './permissions/components/permissions-management/permissions-management.component';
+import { InternalSalesComponent } from './sales/components/internal-sales/internal-sales.component';
 
 export const Admin_vitrinebellaRouting: Routes = [
   { path: '', redirectTo: 'admin-dashboard', pathMatch: 'full' },
@@ -12,7 +14,8 @@ export const Admin_vitrinebellaRouting: Routes = [
   { path: 'adminEmployeeCreateModal', component: EmployeeCreateModalComponent },
   { path: 'adminUserTableOwner', component: UserTableOwnerComponent },
   { path: 'profile', component: ProfileComponent },
-
+  { path: 'permissions-management', component: PermissionsManagementComponent },
+  { path: 'internal-sales', component: InternalSalesComponent },
 ];
 
 export const AdminVitrinebellaRoutes = RouterModule.forChild(Admin_vitrinebellaRouting);

@@ -90,7 +90,6 @@ export class ProductRegistrationModalComponent implements OnInit {
         'state_changed',
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
         },
         (error) => {
           console.error('Upload failed:', error);
@@ -100,7 +99,6 @@ export class ProductRegistrationModalComponent implements OnInit {
         async () => {
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log('File available at', downloadURL);
             resolve(downloadURL);
           } catch (error) {
             console.error('Error getting download URL:', error);

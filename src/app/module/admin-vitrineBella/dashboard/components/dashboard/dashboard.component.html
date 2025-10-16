@@ -1,84 +1,134 @@
 <app-navigation-admin>
+  <div class="dashboard-main">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-content">
+        <h1 class="header-title">Dashboard de Análise</h1>
+        <p class="header-subtitle">Estatísticas de produtos, vendas e lucros</p>
+      </div>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" (click)="exportData()" class="header-btn" [disabled]="isLoading">
+          <mat-icon>download</mat-icon>
+          Exportar Relatório
+        </button>
+        <button mat-button (click)="refreshData()" class="header-btn" [disabled]="isLoading">
+          <mat-icon>refresh</mat-icon>
+          Atualizar
+        </button>
+      </div>
+    </header>
 
-<div class="dashboard-main">
-  <!-- Header -->
-  <header class="dashboard-header">
-    <div class="header-content">
-      <h1 class="header-title">Dashboard de Análise</h1>
-      <p class="header-subtitle">Estatísticas de produtos, vendas e lucros</p>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Carregando dados do dashboard...</p>
     </div>
-    <div class="header-actions">
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="exportData()"
-        class="header-btn"
-      >
-        Exportar Relatório
-      </button>
-      <button mat-button (click)="refreshData()" class="header-btn">
-        Atualizar
-      </button>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-container">
+      <mat-icon color="warn">error</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <button mat-button (click)="refreshData()">Tentar Novamente</button>
     </div>
-  </header>
 
-  <!-- Stats Cards -->
+    <!-- Stats Cards -->
+    <section *ngIf="!isLoading && !errorMessage" class="stats-section">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>{{ totalProducts }}</h3>
+            <p>Total de Produtos</p>
+            <span class="growth positive">+{{ productsGrowth }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-  <!-- Charts Section -->
-  <section class="charts-section">
-    <mat-card class="chart-card animated-card">
-      <mat-card-header>
-        <mat-card-title>Total de Vendas por Mês</mat-card-title>
-        <mat-card-subtitle>Valor total em R$</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div style="min-height: 300px">
-          <apx-chart
-            [series]="salesAmountByMonthChartData.series"
-            [chart]="salesAmountByMonthChartData.chart"
-            [xaxis]="salesAmountByMonthChartData.xaxis"
-            [dataLabels]="salesAmountByMonthChartData.dataLabels"
-            [title]="salesAmountByMonthChartData.title"
-          ></apx-chart>
-        </div>
-      </mat-card-content>
-    </mat-card>
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>R$ {{ dailySales | number:'1.2-2' }}</h3>
+            <p>Vendas Diárias</p>
+            <span class="growth positive">+{{ salesGrowth }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-    <mat-card class="chart-card animated-card">
-      <mat-card-header>
-        <mat-card-title>Quantidade de Produtos Vendidos por Mês</mat-card-title>
-        <mat-card-subtitle>Unidades vendidas</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div style="min-height: 300px">
-          <apx-chart
-            [series]="quantitySoldByMonthChartData.series"
-            [chart]="quantitySoldByMonthChartData.chart"
-            [xaxis]="quantitySoldByMonthChartData.xaxis"
-            [dataLabels]="quantitySoldByMonthChartData.dataLabels"
-            [title]="quantitySoldByMonthChartData.title"
-          ></apx-chart>
-        </div>
-      </mat-card-content>
-    </mat-card>
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>account_balance</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>R$ {{ annualProfit | number:'1.2-2' }}</h3>
+            <p>Lucro Anual</p>
+            <span class="growth positive">+{{ profitGrowth }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-    <mat-card class="chart-card animated-card">
-      <mat-card-header>
-        <mat-card-title>Vendas ao Longo do Tempo</mat-card-title>
-        <mat-card-subtitle>Valor em R$ por mês e ano</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div style="min-height: 300px">
-          <apx-chart
-            [series]="salesOverTimeChartData.series"
-            [chart]="salesOverTimeChartData.chart"
-            [xaxis]="salesOverTimeChartData.xaxis"
-            [dataLabels]="salesOverTimeChartData.dataLabels"
-            [title]="salesOverTimeChartData.title"
-          ></apx-chart>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </section>
-</div>
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>category</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>{{ topCategory }}</h3>
+            <p>Categoria Top</p>
+            <span class="growth">{{ categoryPercentage }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
+    <!-- Charts Section -->
+    <section *ngIf="!isLoading && !errorMessage" class="charts-section">
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Total de Vendas por Mês</mat-card-title>
+          <mat-card-subtitle>Valor total em R$</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart [series]="salesAmountByMonthChartData.series" [chart]="salesAmountByMonthChartData.chart"
+              [xaxis]="salesAmountByMonthChartData.xaxis" [dataLabels]="salesAmountByMonthChartData.dataLabels"
+              [title]="salesAmountByMonthChartData.title"></apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Quantidade de Produtos Vendidos por Mês</mat-card-title>
+          <mat-card-subtitle>Unidades vendidas</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart [series]="quantitySoldByMonthChartData.series" [chart]="quantitySoldByMonthChartData.chart"
+              [xaxis]="quantitySoldByMonthChartData.xaxis" [dataLabels]="quantitySoldByMonthChartData.dataLabels"
+              [title]="quantitySoldByMonthChartData.title"></apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Vendas ao Longo do Tempo</mat-card-title>
+          <mat-card-subtitle>Valor em R$ por mês e ano</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart [series]="salesOverTimeChartData.series" [chart]="salesOverTimeChartData.chart"
+              [xaxis]="salesOverTimeChartData.xaxis" [dataLabels]="salesOverTimeChartData.dataLabels"
+              [title]="salesOverTimeChartData.title"></apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </section>
+  </div>
 </app-navigation-admin>

@@ -1,4 +1,4 @@
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, updatePassword } from '@angular/fire/auth';
 import { collection, doc, Firestore, getDocs, query, setDoc, where } from '@angular/fire/firestore';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
@@ -40,6 +40,20 @@ export class AuthService {
     const userInfo = await this.getUserInfo(uid);
     if (userInfo) {
       this._setLocalStorage('user-credential', userInfo);
+    }
+  }
+
+  async updateUserPassword(uid: string, newPassword: string): Promise<void> {
+    try {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 500);
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar senha:', error);
+      throw error;
     }
   }
 

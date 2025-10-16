@@ -120,7 +120,6 @@ userData: any | null = null;
     if (this.passwordForm.valid && this.userData) {
       this.loading = true;
       // Implemente mudança de senha no AuthService
-      console.log('Senha alterada para:', this.passwordForm.value.newPassword);
       this.loading = false;
       this.passwordMode = false;
       this.passwordForm.reset();
@@ -129,7 +128,7 @@ userData: any | null = null;
   }
 
   onFileSelected(event: any): void {
- 
+
   }
 
   onLogout(): void {

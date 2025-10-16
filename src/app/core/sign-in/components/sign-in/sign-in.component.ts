@@ -68,41 +68,36 @@ export class SignInComponent implements OnInit {
       return;
     }
 
+    this.loading = true;
     const email = this.signInForm.value.email;
     const password = this.signInForm.value.password;
 
     try {
       const user: any = await this.authService.signIn(email, password);
 
-      if (user && user.role) {
-        const role = user.role;
-
-        // 🔹 Se for um array com múltiplos papéis
-        if (Array.isArray(role)) {
-          if (role.length === 1) {
-            this.router.navigate([role[0]]); // Exemplo: "/home"
-          } else if (role.length > 1) {
-            this.router.navigate(['/choose-role']);
+      if (user) {
+        // Usa redirectRoute se disponível, senão usa role para determinar redirecionamento
+        if (user.redirectRoute) {
+          this.router.navigate([user.redirectRoute]);
+        } else if (user.role) {
+          // Se role for admin, store_owner ou store_employee, vai para admin
+          if (user.role === 'admin' || user.role === 'store_owner' || user.role === 'store_employee') {
+            this.router.navigate(['/admin']);
           } else {
-            console.warn('Array de roles vazio.');
+            this.router.navigate(['/home']);
           }
+        } else {
+          this.router.navigate(['/home']);
         }
-        // 🔹 Se for apenas uma string
-        else if (typeof role === 'string' && role.trim() !== '') {
-          this.router.navigate([role]);
-        }
-        // 🔹 Se não houver role
-        else {
-          console.warn('Usuário sem role definida. Permanecendo na página atual.');
-        }
-
       } else {
-        console.warn('Usuário sem role definida. Permanecendo na página atual.');
+        this.snackBar.open('Erro ao fazer login. Verifique suas credenciais.', 'Fechar', { duration: 5000 });
       }
 
     } catch (error) {
       console.error('Erro ao fazer login:', error);
-      alert('Erro ao fazer login. Verifique suas credenciais e tente novamente.');
+      this.snackBar.open('Erro ao fazer login. Verifique suas credenciais e tente novamente.', 'Fechar', { duration: 5000 });
+    } finally {
+      this.loading = false;
     }
   }
 

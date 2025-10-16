@@ -1,0 +1,122 @@
+<app-navigation-admin>
+  <div class="permissions-container">
+    <!-- Header -->
+    <header class="permissions-header">
+      <div class="header-content">
+        <h1 class="header-title">Gerenciamento de Permissões</h1>
+        <p class="header-subtitle">Configure as permissões de acesso para cada usuário</p>
+      </div>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" (click)="exportPermissions()" class="header-btn">
+          <mat-icon>download</mat-icon>
+          Exportar Relatório
+        </button>
+        <button mat-button (click)="loadUsers()" class="header-btn">
+          <mat-icon>refresh</mat-icon>
+          Atualizar
+        </button>
+      </div>
+    </header>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Carregando usuários...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-container">
+      <mat-icon color="warn">error</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <button mat-button (click)="loadUsers()">Tentar Novamente</button>
+    </div>
+
+    <!-- Permission Map Reference -->
+    <mat-card class="permission-map-card" *ngIf="!isLoading && !errorMessage">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>map</mat-icon>
+          Permission Map - Referência
+        </mat-card-title>
+        <mat-card-subtitle>Mapeamento de permissões disponíveis no sistema</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="permission-map-grid">
+          <div class="permission-item" *ngFor="let permission of availablePermissions">
+            <div class="permission-header">
+              <mat-icon class="permission-icon">security</mat-icon>
+              <div class="permission-info">
+                <h4>{{ permission.label }}</h4>
+                <p>{{ permission.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Users Permissions Table -->
+    <mat-card class="users-permissions-card" *ngIf="!isLoading && !errorMessage">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>people</mat-icon>
+          Permissões por Usuário
+        </mat-card-title>
+        <mat-card-subtitle>Gerencie as permissões individuais de cada usuário</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="users-grid">
+          <div class="user-card" *ngFor="let user of users">
+            <div class="user-header">
+              <div class="user-info">
+                <img [src]="user.photoURL ? user.photoURL : 'assets/img/icon-sem-perfil.png'" [alt]="user.firstName"
+                  class="user-avatar" />
+                <div class="user-details">
+                  <h3>{{ user.firstName }} {{ user.lastName }}</h3>
+                  <p class="user-email">{{ user.email }}</p>
+                  <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+                    {{ getRoleDisplayName(user.role) }}
+                  </span>
+                </div>
+              </div>
+              <div class="user-status">
+                <mat-icon [color]="user.isActive ? 'primary' : 'warn'">
+                  {{ user.isActive ? 'check_circle' : 'block' }}
+                </mat-icon>
+                <span [class]="user.isActive ? 'status-active' : 'status-inactive'">
+                  {{ user.isActive ? 'Ativo' : 'Inativo' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="permissions-section">
+              <h4>Permissões Atuais</h4>
+              <div class="permissions-grid">
+                <div class="permission-toggle" *ngFor="let permission of availablePermissions"
+                  [class.disabled]="!canEditUser(user)">
+                  <div class="permission-info">
+                    <mat-icon class="permission-icon">{{
+                      hasPermission(user, permission.value) ? 'check_circle' : 'radio_button_unchecked'
+                      }}</mat-icon>
+                    <div class="permission-details">
+                      <span class="permission-label">{{ permission.label }}</span>
+                    </div>
+                  </div>
+                  <mat-slide-toggle [checked]="hasPermission(user, permission.value)" [disabled]="!canEditUser(user)"
+                    (change)="togglePermission(user, permission.value)" color="primary"></mat-slide-toggle>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !errorMessage && users.length === 0" class="empty-state">
+      <mat-icon class="empty-icon">people_outline</mat-icon>
+      <h3>Nenhum usuário encontrado</h3>
+      <p>Não há usuários para gerenciar permissões.</p>
+    </div>
+  </div>
+</app-navigation-admin>

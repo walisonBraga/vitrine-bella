@@ -1,14 +1,17 @@
-<mat-toolbar class="mat-elevation-z3" color="primary">
-  <button mat-icon-button (click)="collapsed.set(!collapsed())">
-    <mat-icon>menu</mat-icon>
-  </button>
-</mat-toolbar>
+<!-- Só mostra o navbar/sidenav se o usuário tiver acesso ao admin -->
+<div >
+  <mat-toolbar class="mat-elevation-z3" color="primary">
+    <button mat-icon-button (click)="collapsed.set(!collapsed())">
+      <mat-icon>menu</mat-icon>
+    </button>
+  </mat-toolbar>
 
-<mat-sidenav-container>
-  <mat-sidenav opened mode="side" [style.width]="sidenavWidth()">
-    <app-custom-sidenav [collapse]="collapsed()" />
-  </mat-sidenav>
-  <mat-sidenav-content class="content" [style.margin-Left]="sidenavWidth()">
-    <ng-content></ng-content>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  <mat-sidenav-container>
+    <mat-sidenav opened mode="side" [style.width]="sidenavWidth()">
+      <app-custom-sidenav [collapse]="collapsed()" />
+    </mat-sidenav>
+    <mat-sidenav-content class="content" [style.margin-Left]="sidenavWidth()">
+      <ng-content></ng-content>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,26 +1,32 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { createUsersAdmin } from '../../../interface/createUsersAdmin';
 import { CreateUserService } from '../../../service/create-user.service';
 import { EmployeeCreateModalComponent } from '../../../EmployeeCreateModal/components/employee-create-modal/employee-create-modal.component';
 import { UserPermissionModalComponent } from '../../../UserPermissionModal/components/user-permission-modal/user-permission-modal.component';
+import { EditUserModalComponent } from '../../../EditUserModal/components/edit-user-modal/edit-user-modal.component';
 
 @Component({
   selector: 'app-user-table-owner',
   templateUrl: './user-table-owner.component.html',
   styleUrls: ['./user-table-owner.component.scss']
 })
-export class UserTableOwnerComponent implements OnInit, AfterViewInit {
+export class UserTableOwnerComponent implements OnInit, AfterViewInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
   displayedColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'isActive', 'actions'];
   dataSource = new MatTableDataSource<createUsersAdmin>();
+  users: createUsersAdmin[] = [];
   isLoading = true;
   authenticatedUser: any | null = null;
+  errorMessage = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -34,28 +40,7 @@ export class UserTableOwnerComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    // this.authService.currentUser$.subscribe(user => {
-    //   this.authenticatedUser = user;
-    //   if (!user) {
-    //     this.snackBar.open('Você precisa estar autenticado.', 'Fechar', { duration: 5000 });
-    //     this.router.navigate(['/signin']);
-    //     this.isLoading = false;
-    //     return;
-    //   }
-    //   this.authService.getUserManagementRoutes(user.uid).then(routes => {
-    //     if (!routes.includes('/users') && !routes.includes('/admin-management')) {
-    //       this.snackBar.open('Acesso não autorizado.', 'Fechar', { duration: 5000 });
-    //       this.router.navigate(['/admin/admin-dashboard']);
-    //       this.isLoading = false;
-    //       return;
-    //     }
-    //     this.loadUsers();
-    //   }).catch(error => {
-    //     console.error('Erro ao verificar permissões:', error);
-    //     this.snackBar.open('Erro ao verificar permissões.', 'Fechar', { duration: 5000 });
-    //     this.isLoading = false;
-    //   });
-    // });
+    this.checkAuthentication();
   }
 
   ngAfterViewInit(): void {
@@ -63,19 +48,44 @@ export class UserTableOwnerComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private checkAuthentication(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        if (!user) {
+          this.router.navigate(['/signin']);
+          return;
+        }
+        this.authenticatedUser = user;
+        this.loadUsers();
+      });
+  }
+
   loadUsers(): void {
     this.isLoading = true;
-    this.createUserService.getUsersByRole(['store_employee', 'store_owner']).subscribe({
-      next: (users) => {
-        this.dataSource.data = users;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar usuários:', error);
-        this.snackBar.open('Erro ao carregar usuários.', 'Fechar', { duration: 5000 });
-        this.isLoading = false;
-      }
-    });
+    this.errorMessage = '';
+
+
+    this.createUserService.getUsersByRole(['store_employee', 'store_owner', 'admin'])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (users) => {
+          this.users = users;
+          this.dataSource.data = users;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Erro ao carregar usuários:', error);
+          this.errorMessage = 'Erro ao carregar usuários';
+          this.snackBar.open('Erro ao carregar usuários.', 'Fechar', { duration: 5000 });
+          this.isLoading = false;
+        }
+      });
   }
 
   applyFilter(event: Event): void {
@@ -92,6 +102,8 @@ export class UserTableOwnerComponent implements OnInit, AfterViewInit {
         return 'Funcionário da Loja';
       case 'store_owner':
         return 'Proprietário da Loja';
+      case 'admin':
+        return 'Administrador';
       default:
         return role;
     }
@@ -103,6 +115,8 @@ export class UserTableOwnerComponent implements OnInit, AfterViewInit {
         return 'badge-primary';
       case 'store_owner':
         return 'badge-success';
+      case 'admin':
+        return 'badge-warning';
       default:
         return 'badge-secondary';
     }
@@ -120,38 +134,46 @@ export class UserTableOwnerComponent implements OnInit, AfterViewInit {
   }
 
   activateUser(user: createUsersAdmin): void {
-    this.createUserService.updateUserStatus(user.uid, true).subscribe({
-      next: () => {
-        this.snackBar.open('Usuário ativado com sucesso!', 'Fechar', { duration: 3000 });
-        this.loadUsers();
-      },
-      error: (error) => {
-        console.error('Erro ao ativar usuário:', error);
-        this.snackBar.open('Erro ao ativar usuário.', 'Fechar', { duration: 5000 });
-      }
-    });
+    this.createUserService.updateUserStatus(user.uid, true)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Usuário ativado com sucesso!', 'Fechar', { duration: 3000 });
+          this.loadUsers();
+        },
+        error: (error) => {
+          console.error('Erro ao ativar usuário:', error);
+          this.snackBar.open('Erro ao ativar usuário.', 'Fechar', { duration: 5000 });
+        }
+      });
   }
 
   deactivateUser(user: createUsersAdmin): void {
-    this.createUserService.updateUserStatus(user.uid, false).subscribe({
-      next: () => {
-        this.snackBar.open('Usuário desativado com sucesso!', 'Fechar', { duration: 3000 });
-        this.loadUsers();
-      },
-      error: (error) => {
-        console.error('Erro ao desativar usuário:', error);
-        this.snackBar.open('Erro ao desativar usuário.', 'Fechar', { duration: 5000 });
-      }
-    });
+    this.createUserService.updateUserStatus(user.uid, false)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Usuário desativado com sucesso!', 'Fechar', { duration: 3000 });
+          this.loadUsers();
+        },
+        error: (error) => {
+          console.error('Erro ao desativar usuário:', error);
+          this.snackBar.open('Erro ao desativar usuário.', 'Fechar', { duration: 5000 });
+        }
+      });
   }
 
-  editUser(user: createUsersAdmin): void {
-    this.router.navigate(['/admin/createUser', user.uid]);
-  }
 
   deleteUser(user: createUsersAdmin): void {
-    if (confirm('Tem certeza que deseja excluir este usuário?')) {
-      this.createUserService.deleteUser(user.uid).subscribe({
+    const confirmed = confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.');
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.createUserService.deleteUser(user.uid)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: () => {
           this.snackBar.open('Usuário excluído com sucesso!', 'Fechar', { duration: 3000 });
           this.loadUsers();
@@ -161,14 +183,29 @@ export class UserTableOwnerComponent implements OnInit, AfterViewInit {
           this.snackBar.open('Erro ao excluir usuário.', 'Fechar', { duration: 5000 });
         }
       });
-    }
+  }
+
+  editUser(user: createUsersAdmin): void {
+    const dialogRef = this.dialog.open(EditUserModalComponent, {
+      width: '600px',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      disableClose: true,
+      data: { user }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadUsers();
+      }
+    });
   }
 
   openPermissionModal(user: createUsersAdmin): void {
     const dialogRef = this.dialog.open(UserPermissionModalComponent, {
       width: '600px',
-      maxWidth: '90vw',
-      maxHeight: '90vh',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
       disableClose: true,
       data: { user }
     });
@@ -183,8 +220,8 @@ export class UserTableOwnerComponent implements OnInit, AfterViewInit {
   openCreateUserModal(): void {
     const dialogRef = this.dialog.open(EmployeeCreateModalComponent, {
       width: '600px',
-      maxWidth: '90vw',
-      maxHeight: '90vh',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
       disableClose: true
     });
 

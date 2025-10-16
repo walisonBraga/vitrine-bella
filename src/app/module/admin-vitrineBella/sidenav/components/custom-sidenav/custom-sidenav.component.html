@@ -22,7 +22,7 @@
   <a
     mat-list-item
     class="menu-item"
-    *ngFor="let item of menuItems()"
+    *ngFor="let item of filteredMenuItems()"
     [routerLink]="item.route"
     routerLinkActive="selected-menu-item"
     #rla="routerLinkActive"

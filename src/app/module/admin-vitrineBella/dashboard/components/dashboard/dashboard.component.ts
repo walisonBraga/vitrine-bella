@@ -1,6 +1,9 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { ChartComponent, ApexAxisChartSeries, ApexChart, ApexXAxis, ApexTitleSubtitle, ApexDataLabels, ApexStroke } from 'ng-apexcharts';
 import { ProductService } from '../../../products/service/product.service';
+import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -16,9 +19,10 @@ export type ChartOptions = {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent {
-  today = new Date('2025-09-15T16:21:00-05:00');
+export class DashboardComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
 
+  // Dashboard data
   totalProducts = 0;
   dailySales = 0;
   annualProfit = 0;
@@ -27,13 +31,20 @@ export class DashboardComponent {
   productsGrowth = 15;
   salesGrowth = 8;
   profitGrowth = 12;
+  isLoading = true;
+  errorMessage = '';
 
+  // Chart components
   @ViewChild('chart') chart!: ChartComponent;
   public salesAmountByMonthChartData: ChartOptions;
   public quantitySoldByMonthChartData: ChartOptions;
   public salesOverTimeChartData: ChartOptions;
 
-  constructor(private productService: ProductService) {
+  constructor(
+    private productService: ProductService,
+    private authService: AuthService,
+    private router: Router
+  ) {
     // Initialize with empty charts
     this.salesAmountByMonthChartData = this.getEmptyChartOptions('bar', 'Total de Vendas por Mês (R$)');
     this.quantitySoldByMonthChartData = this.getEmptyChartOptions('bar', 'Quantidade de Produtos Vendidos por Mês');
@@ -41,41 +52,101 @@ export class DashboardComponent {
   }
 
   ngOnInit(): void {
-    this.today = new Date();
-    this.loadDashboardData();
+    this.checkAuthentication();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private checkAuthentication(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user: any) => {
+        if (!user) {
+          this.router.navigate(['/signin']);
+          return;
+        }
+        this.loadDashboardData();
+      });
   }
 
   loadDashboardData(): void {
-    this.productService.getProducts().subscribe(products => {
-      this.totalProducts = products.length;
-      this.dailySales = Math.floor(Math.random() * 50) + 10;
-      this.annualProfit = Math.floor(Math.random() * 100000) + 50000;
-      this.topCategory = products.length > 0 ? products[0].category : 'N/A';
-      this.categoryPercentage = products.length > 0 ? (products.filter(p => p.category === this.topCategory).length / products.length * 100) : 0;
+    this.isLoading = true;
+    this.errorMessage = '';
 
-      // Process sales data for charts
-      this.processSalesData(products);
+    this.productService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (products) => {
+          this.processDashboardData(products);
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Erro ao carregar dados do dashboard:', error);
+          this.errorMessage = 'Erro ao carregar dados do dashboard';
+          this.isLoading = false;
+        }
+      });
+  }
+
+  private processDashboardData(products: any[]): void {
+    this.totalProducts = products.length;
+    this.dailySales = Math.floor(Math.random() * 50) + 10;
+    this.annualProfit = Math.floor(Math.random() * 100000) + 50000;
+
+    // Calculate top category
+    const categoryCount: { [key: string]: number } = {};
+    products.forEach(product => {
+      if (product.category) {
+        categoryCount[product.category] = (categoryCount[product.category] || 0) + 1;
+      }
     });
+
+    const sortedCategories = Object.entries(categoryCount)
+      .sort(([,a], [,b]) => b - a);
+
+    this.topCategory = sortedCategories.length > 0 ? sortedCategories[0][0] : 'N/A';
+    this.categoryPercentage = sortedCategories.length > 0
+      ? Math.round((sortedCategories[0][1] / products.length) * 100)
+      : 0;
+
+    // Process sales data for charts
+    this.processSalesData(products);
   }
 
   processSalesData(products: any[]): void {
+    if (!products || products.length === 0) {
+      return;
+    }
+
     // Group by month/year
     const salesByMonth: { [key: string]: { amount: number; quantity: number } } = {};
+
     products.forEach(product => {
-      const date = new Date(product.createdAt);
-      const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // e.g., "2025-01"
-      if (!salesByMonth[monthYear]) {
-        salesByMonth[monthYear] = { amount: 0, quantity: 0 };
+      if (product.createdAt) {
+        const date = new Date(product.createdAt);
+        const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+        if (!salesByMonth[monthYear]) {
+          salesByMonth[monthYear] = { amount: 0, quantity: 0 };
+        }
+
+        salesByMonth[monthYear].amount += product.price || 0;
+        salesByMonth[monthYear].quantity += 1;
       }
-      salesByMonth[monthYear].amount += product.price; // Sum price for total sales
-      salesByMonth[monthYear].quantity += 1; // Assume 1 product = 1 sale
     });
 
     // Prepare chart data
-    const months = Object.keys(salesByMonth).sort(); // Sort by month/year
+    const months = Object.keys(salesByMonth).sort();
     const salesAmounts = months.map(month => salesByMonth[month].amount);
     const quantities = months.map(month => salesByMonth[month].quantity);
 
+    this.updateCharts(months, salesAmounts, quantities);
+  }
+
+  private updateCharts(months: string[], salesAmounts: number[], quantities: number[]): void {
     // Sales Amount by Month (Bar)
     this.salesAmountByMonthChartData = {
       series: [{ name: 'Vendas (R$)', data: salesAmounts }],
@@ -136,7 +207,7 @@ export class DashboardComponent {
   }
 
   exportData(): void {
-    console.log('Exporting data...');
+    // TODO: Implement data export functionality
   }
 
   refreshData(): void {
@@ -144,6 +215,10 @@ export class DashboardComponent {
   }
 
   logout(): void {
-    console.log('Logout clicked');
+    this.authService.signOut().then(() => {
+      this.router.navigate(['/signin']);
+    }).catch((error: any) => {
+      console.error('Erro ao fazer logout:', error);
+    });
   }
 }

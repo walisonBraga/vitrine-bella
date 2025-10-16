@@ -34,29 +34,69 @@ sideNavCollapsed = signal(false);
     {
       icon: 'dashboard',
       label: 'Dashboard',
-      route: '/admin/admin-dashboard'
+      route: '/admin/admin-dashboard',
+      permission: '/dashboard'
     },
     {
       icon: 'inventory_2',
       label: 'Produtos',
-      route: '/admin/adminProductTable'
+      route: '/admin/adminProductTable',
+      permission: '/product-management'
     },
     {
       icon: 'people',
       label: 'Usuários',
-      route: '/admin/adminUserTableOwner'
+      route: '/admin/adminUserTableOwner',
+      permission: '/users'
     },
     {
-      icon: 'settings',
+      icon: 'point_of_sale',
+      label: 'Vendas Internas',
+      route: '/admin/internal-sales',
+      permission: '/internal-sales'
+    },
+    {
+      icon: 'trending_up',
+      label: 'Vendas',
+      route: '/admin/sales-management',
+      permission: '/sales-management'
+    },
+    {
+      icon: 'security',
+      label: 'Permissões',
+      route: '/admin/permissions-management',
+      permission: '/permissions-management'
+    },
+    {
+      icon: 'person',
       label: 'Perfil',
       route: '/admin/profile'
-    },
-    // { icon: 'category', label: 'Categorias', route: '/admin-vitrineBella/categories' },
-    // { icon: 'shopping_cart', label: 'Pedidos', route: '/admin/orders' },
-    // { icon: 'bar_chart', label: 'Relatórios', route: '/admin/reports' },
-    // { icon: 'settings', label: 'Configurações', route: '/admin/settings' },
-    // { icon: 'settings', label: 'Configurações', route: '/admin/settings' },
+      // Perfil não precisa de permissão específica
+    }
   ])
+
+  // Filtra os itens do menu baseado nas permissões do usuário
+  filteredMenuItems = computed(() => {
+    const user = this.userData();
+
+    if (!user || !user.managementType) {
+      return this.menuItems().filter(item => !item.permission); // Mostra apenas itens sem permissão
+    }
+
+    const userPermissions = user.managementType;
+
+    const filteredItems = this.menuItems().filter(item => {
+      // Se não tem permissão definida, sempre mostra (ex: Perfil)
+      if (!item.permission) {
+        return true;
+      }
+      // Se tem permissão definida, verifica se o usuário tem essa permissão
+      const hasPermission = userPermissions.includes(item.permission);
+      return hasPermission;
+    });
+
+    return filteredItems;
+  })
 
   profilePicSize = computed(() => this.sideNavCollapsed() ? '32' : '100');
 
