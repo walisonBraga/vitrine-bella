@@ -49,7 +49,6 @@ export class SignUpComponent implements OnInit {
   loading = false;
   hidePassword = true;
   hideConfirmPassword = true;
-  acceptTerms = false;
 
   constructor(
     private fb: FormBuilder,
@@ -202,24 +201,32 @@ export class SignUpComponent implements OnInit {
       const userId = authResponse.user.uid;
 
       // Preparar dados do usuário para salvar no Firestore
-      const userData: SignUp = {
+      const userData = {
         uid: userId,
-        firstName: formData.nome.split(' ')[0] || formData.nome,
-        lastName: formData.nome.split(' ').slice(1).join(' ') || '',
+        fullName: formData.nome,
         email: formData.email,
         accessCode: userId.substring(0, 10),
         isActive: true,
-        role: 'home'
+        role: 'home',
+        cpf: formData.cpf,
+        phone: formData.telefone,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        // Campos adicionais para cliente
+        birthDate: null,
+        photoURL: null,
+        photoFileName: null,
+        marketing: true,
+        // Campos de endereço (opcionais)
+        addresses: [],
+        // Campos de pedidos
+        orders: [],
+        // Campos de favoritos
+        favorites: []
       };
 
-      // Salvar informações adicionais do usuário no Firestore
-      await this.authService.saveUserInfo({
-        ...userData,
-        cpf: formData.cpf,
-        telefone: formData.telefone,
-        criadoEm: new Date(),
-        ultimaAtualizacao: new Date()
-      });
+      // Salvar informações do usuário no Firestore
+      await this.authService.saveUserInfo(userData);
 
       this.showSuccessMessage('Conta criada com sucesso! Agora você pode acessar.');
       this.router.navigate(['/sign-in']);

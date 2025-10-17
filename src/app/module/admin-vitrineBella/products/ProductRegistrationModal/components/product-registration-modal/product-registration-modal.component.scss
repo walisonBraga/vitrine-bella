@@ -434,6 +434,82 @@ mat-form-field {
   }
 }
 
+// ===== GARANTIA ESTENDIDA =====
+.warranty-content {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.warranty-checkbox {
+  margin-bottom: 20px;
+  font-weight: 500;
+  color: #333;
+}
+
+.warranty-options {
+  h6 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::before {
+      content: '🔧';
+      font-size: 18px;
+    }
+  }
+}
+
+.warranty-option {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: 0 2px 8px rgba($primary-color, 0.1);
+  }
+
+  .option-header {
+    margin-bottom: 12px;
+
+    mat-checkbox {
+      font-weight: 500;
+      color: #333;
+    }
+  }
+
+  .option-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-left: 24px;
+    border-left: 3px solid $primary-color;
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 4px;
+    margin-top: 8px;
+
+    .form-field-half {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .form-field-full {
+      width: 100%;
+    }
+  }
+}
+
 // ===== ANIMAÇÕES =====
 @keyframes slideInUp {
   from {
@@ -604,5 +680,162 @@ mat-error {
   }
   100% {
     transform: scale(1);
+  }
+}
+
+// ===== IMAGENS ADICIONAIS =====
+.additional-images-container {
+  .additional-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .additional-image-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
+      .additional-preview-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .remove-additional-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(244, 67, 54, 0.9);
+        color: white;
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        border-radius: 50%;
+
+        &:hover {
+          background: rgba(244, 67, 54, 1);
+        }
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+
+  .add-additional-images {
+    text-align: center;
+
+    .additional-images-input {
+      display: none;
+    }
+
+    .add-additional-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, $primary-color, lighten($primary-color, 10%));
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+
+      &:hover {
+        background: linear-gradient(135deg, darken($primary-color, 5%), $primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+      }
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+}
+
+// ===== INFORMAÇÕES TÉCNICAS =====
+.technical-info-content {
+  background: rgba($primary-color, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid rgba($primary-color, 0.1);
+
+  .form-field-full {
+    margin-bottom: 1rem;
+  }
+
+  mat-form-field {
+    .mat-mdc-form-field-hint {
+      color: $text-secondary;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// ===== BADGES =====
+.optional-badge {
+  background: rgba($text-secondary, 0.1);
+  color: $text-secondary;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+// ===== TOGGLE BUTTON =====
+.toggle-btn {
+  margin-left: auto;
+  color: $primary-color;
+
+  &:hover {
+    background: rgba($primary-color, 0.1);
+  }
+
+  mat-icon {
+    transition: transform 0.3s ease;
+  }
+}
+
+// ===== CAMPOS ESPECÍFICOS POR CATEGORIA =====
+.category-specific-fields {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #e0e0e0;
+
+  h4 {
+    color: #1976d2;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::before {
+      content: '⚙️';
+      font-size: 1.2rem;
+    }
+  }
+
+  .form-row {
+    margin-bottom: 16px;
   }
 }

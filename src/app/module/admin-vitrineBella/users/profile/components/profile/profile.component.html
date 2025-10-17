@@ -17,8 +17,12 @@
           <!-- Foto do lado esquerdo -->
           <div class="photo-section">
             <div class="photo-container">
-              <img [src]="previewUrl || userData?.photoURL || 'assets/img/icon-sem-perfil.png'" alt="Foto do usuário"
-                class="user-photo" (error)="onImageError($event)" />
+              <app-avatar
+                [name]="userData?.fullName || 'Usuário'"
+                [photoUrl]="previewUrl || userData?.photoURL"
+                [size]="120"
+                [showBorder]="true">
+              </app-avatar>
               <button type="button" class="change-photo-btn" (click)="fileInput.click()" [disabled]="photoUploading">
                 <mat-spinner *ngIf="photoUploading" diameter="16"></mat-spinner>
                 <mat-icon *ngIf="!photoUploading">camera_alt</mat-icon>

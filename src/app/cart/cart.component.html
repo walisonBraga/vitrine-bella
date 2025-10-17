@@ -1,0 +1,213 @@
+<app-navbar-home></app-navbar-home>
+
+<div class="cart-container">
+  <!-- Barra de progresso -->
+  <div class="progress-bar">
+    <div class="progress-step completed">
+      <mat-icon>shopping_cart</mat-icon>
+      <span>Carrinho</span>
+    </div>
+    <div class="progress-line completed"></div>
+    <div class="progress-step">
+      <mat-icon>location_on</mat-icon>
+      <span>Endereço</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>local_shipping</mat-icon>
+      <span>Entrega</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>payment</mat-icon>
+      <span>Pagamento</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>visibility</mat-icon>
+      <span>Confirmação</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>check</mat-icon>
+      <span>Concluir</span>
+    </div>
+  </div>
+
+  <div class="cart-content">
+    <!-- Carrinho vazio -->
+    <div *ngIf="!cart || !cart.items || cart.items.length === 0" class="empty-cart">
+      <mat-icon class="empty-icon">shopping_cart</mat-icon>
+      <h2>Seu carrinho está vazio</h2>
+      <p>Adicione produtos para começar suas compras!</p>
+      <button mat-raised-button color="primary" (click)="goHome()">
+        <mat-icon>home</mat-icon>
+        Continuar Comprando
+      </button>
+    </div>
+
+    <!-- Layout de duas colunas quando há itens -->
+    <div *ngIf="cart && cart.items && cart.items.length > 0" class="cart-layout">
+      <!-- Coluna esquerda - PRODUTO E SERVIÇO -->
+      <div class="cart-items-column">
+        <mat-card class="product-service-card">
+          <h2>
+            <mat-icon>shopping_cart</mat-icon>
+            PRODUTO E SERVIÇO
+          </h2>
+
+          <div class="cart-actions">
+            <button mat-button color="warn" (click)="clearCart()" class="remove-all-btn">
+              <mat-icon>delete_sweep</mat-icon>
+              REMOVER TODOS OS PRODUTOS
+            </button>
+          </div>
+
+          <mat-card *ngFor="let item of cart.items" class="cart-item">
+            <div class="item-content">
+              <div class="item-image">
+                <img [src]="item.product.imageUrl" [alt]="item.product.productName" (error)="handleImageError($event)"
+                  (click)="goToProduct(item.product.id)">
+              </div>
+
+              <div class="item-details">
+                <p class="seller-info">Vendido e entregue por: Vitrine Bella</p>
+                <h3 (click)="goToProduct(item.product.id)">{{ item.product.productName }}</h3>
+                <div class="price-info">
+                  <span class="pix-price">Com desconto no PIX: {{ formatPrice(item.product.price * 0.88) }}</span>
+                  <span class="card-price">Parcelado no cartão sem juros: {{ formatPrice(item.product.price) }}</span>
+                </div>
+                <div class="offer-badge">
+                  <mat-icon>local_fire_department</mat-icon>
+                  OFERTA NINJA
+                </div>
+              </div>
+
+              <div class="item-controls">
+                <div class="quantity-controls">
+                  <button mat-icon-button (click)="updateQuantity(item, item.quantity - 1)"
+                    [disabled]="item.quantity <= 1" class="quantity-btn">
+                    <mat-icon>remove</mat-icon>
+                  </button>
+                  <span class="quantity">{{ item.quantity }}</span>
+                  <button mat-icon-button (click)="updateQuantity(item, item.quantity + 1)"
+                    [disabled]="item.quantity >= (item.product.stock || 10)" class="quantity-btn">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+                <div class="pix-price-display">
+                  Preço à vista no PIX: {{ formatPrice(item.product.price * 0.88) }}
+                </div>
+              </div>
+
+              <button mat-icon-button color="warn" (click)="removeItem(item.product.id)" class="delete-item-btn">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </mat-card>
+
+          <!-- Seção de Serviços -->
+          <div class="services-section">
+            <h3 (click)="toggleServicesExpansion()">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <mat-icon>build</mat-icon>
+                SERVIÇOS
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="services-subtotal">Subtotal serviços: {{ formatPrice(0) }}</span>
+                <mat-icon class="expand-icon">{{ isServicesExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </div>
+            </h3>
+
+            <div class="warranty-section" *ngIf="isServicesExpanded">
+              <h4>
+                <mat-icon>security</mat-icon>
+                GARANTIA ESTENDIDA ORIGINAL AMPLIADA
+              </h4>
+              <div class="warranty-options">
+                <mat-radio-group>
+                  <mat-radio-button value="none">Sem garantia</mat-radio-button>
+                  <mat-radio-button value="12" checked>
+                    12 Meses de Garantia Estendida Vitrine Bella
+                    <mat-icon class="info-icon">info</mat-icon>
+                    <span class="installment-info">Até 10x sem juros de {{ formatPrice(7.68) }}</span>
+                  </mat-radio-button>
+                  <mat-radio-button value="24">
+                    24 Meses de Garantia Estendida Vitrine Bella
+                    <mat-icon class="info-icon">info</mat-icon>
+                    <span class="installment-info">Até 10x sem juros de {{ formatPrice(15.36) }}</span>
+                  </mat-radio-button>
+                  <mat-radio-button value="36">
+                    36 Meses de Garantia Estendida Vitrine Bella
+                    <mat-icon class="info-icon">info</mat-icon>
+                    <span class="installment-info">Até 10x sem juros de {{ formatPrice(23.03) }}</span>
+                  </mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <p class="disclaimer">
+                Ao adicionar a Garantia Estendida Original Ampliada, declaro que tive acesso, li e aceito as Condições
+                gerais
+              </p>
+              <div class="selected-service">
+                Garantia Estendida Vitrine Bella - 12 Meses
+              </div>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+
+      <!-- Coluna direita - Resumo do pedido -->
+      <div class="order-summary-column">
+        <mat-card class="order-summary">
+          <h2>
+            <mat-icon>search</mat-icon>
+            RESUMO
+          </h2>
+          <mat-divider></mat-divider>
+
+          <div class="summary-row">
+            <span>Valor dos Produtos:</span>
+            <span>{{ formatPrice(cart.totalPrice) }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Serviços Adicionais:</span>
+            <span>{{ formatPrice(76.78) }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Frete:</span>
+            <span>{{ formatPrice(120.56) }}</span>
+          </div>
+
+          <div class="summary-row total">
+            <span>Total a prazo:</span>
+            <span>{{ formatPrice(cart.totalPrice + 76.78 + 120.56) }}</span>
+          </div>
+          <p class="installment-info">(em até 10x de {{ formatPrice((cart.totalPrice + 76.78 + 120.56) / 10) }} sem
+            juros)</p>
+
+          <div class="pix-discount">
+            <div class="summary-row">
+              <span>Valor à vista no PIX:</span>
+              <span>{{ formatPrice((cart.totalPrice + 76.78 + 120.56) * 0.92) }}</span>
+            </div>
+            <p class="savings-info">(Economize: {{ formatPrice((cart.totalPrice + 76.78 + 120.56) * 0.08) }})</p>
+          </div>
+
+          <div class="action-buttons">
+            <button mat-raised-button color="primary" class="checkout-button" (click)="checkout()"
+              [disabled]="isLoading">
+              <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+              <mat-icon *ngIf="!isLoading">shopping_cart</mat-icon>
+              {{ isLoading ? 'Processando...' : 'CONTINUAR' }}
+            </button>
+            <span class="back-btn" (click)="goHome()">
+              VOLTAR
+            </span>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

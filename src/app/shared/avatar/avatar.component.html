@@ -1,0 +1,15 @@
+<div class="avatar" [ngStyle]="avatarStyles">
+  <img
+    *ngIf="avatarUrl"
+    [src]="avatarUrl"
+    [alt]="name"
+    class="avatar-image"
+    (error)="onImageError()"
+  >
+  <span
+    *ngIf="!avatarUrl"
+    class="avatar-letter"
+  >
+    {{ displayName }}
+  </span>
+</div>

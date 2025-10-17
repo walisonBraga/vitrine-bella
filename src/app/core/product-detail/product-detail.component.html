@@ -1,0 +1,436 @@
+<app-navbar-home></app-navbar-home>
+
+
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-container">
+  <div class="container">
+    <div class="loading-skeleton">
+      <div class="skeleton-left">
+        <div class="skeleton-image"></div>
+      </div>
+      <div class="skeleton-right">
+        <div class="skeleton-title"></div>
+        <div class="skeleton-description"></div>
+        <div class="skeleton-price"></div>
+        <div class="skeleton-button"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error && !isLoading" class="error-container">
+  <div class="container">
+    <div class="error-content">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h2>Produto não encontrado</h2>
+      <p>O produto que você está procurando não foi encontrado.</p>
+      <button class="btn btn-primary" (click)="voltar()">
+        <mat-icon>home</mat-icon>
+        Voltar para Home
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Detail -->
+<div *ngIf="product && !isLoading" class="product-detail-container">
+  <div class="container">
+    <div class="product-detail">
+      <!-- Left Column - Images -->
+      <div class="product-images">
+        <div class="main-image">
+          <img [src]="getCurrentImage()" [alt]="product.productName" class="product-image"
+            (error)="handleImageError($event)">
+        </div>
+
+        <!-- Galeria de Fotos -->
+        <div class="image-gallery" *ngIf="product.images && product.images.length > 0">
+          <div class="gallery-container">
+            <button class="gallery-nav prev" (click)="previousImage()" [disabled]="currentImageIndex === 0">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+
+            <div class="gallery-images">
+              <div *ngFor="let image of product.images; let i = index" class="gallery-thumbnail"
+                [class.active]="i === currentImageIndex" (click)="selectImage(i)">
+                <img [src]="image" [alt]="product.productName + ' - Imagem ' + (i + 1)"
+                  (error)="handleImageError($event)">
+              </div>
+            </div>
+
+            <button class="gallery-nav next" (click)="nextImage()"
+              [disabled]="currentImageIndex === product.images!.length - 1">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+
+            <button class="gallery-nav slideshow" (click)="toggleSlideshow()" [class.active]="isSlideshowActive">
+              <mat-icon>{{ isSlideshowActive ? 'pause' : 'play_arrow' }}</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product Badge -->
+        <div class="product-badge">
+          <span class="badge-new">Novo</span>
+        </div>
+
+        <!-- Informações Técnicas -->
+        <div class="technical-info" *ngIf="product.technicalInfo">
+          <h3>
+            <mat-icon>info</mat-icon>
+            Informações Técnicas
+          </h3>
+
+          <div class="tech-content">
+            <!-- Características Básicas -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.brand || product.technicalInfo.model || product.technicalInfo.color">
+              <h4>Características Básicas</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.brand"><strong>Marca:</strong> {{ product.technicalInfo.brand }}</li>
+                <li *ngIf="product.technicalInfo.model"><strong>Modelo:</strong> {{ product.technicalInfo.model }}</li>
+                <li *ngIf="product.technicalInfo.color"><strong>Cor:</strong> {{ product.technicalInfo.color }}</li>
+              </ul>
+            </div>
+
+            <!-- Especificações para Computadores -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.processor || product.technicalInfo.ram || product.technicalInfo.storage || product.technicalInfo.operatingSystem">
+              <h4>Especificações do Sistema</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.processor"><strong>Processador:</strong> {{
+                  product.technicalInfo.processor }}</li>
+                <li *ngIf="product.technicalInfo.ram"><strong>Memória RAM:</strong> {{ product.technicalInfo.ram }}</li>
+                <li *ngIf="product.technicalInfo.storage"><strong>Armazenamento:</strong> {{
+                  product.technicalInfo.storage }}</li>
+                <li *ngIf="product.technicalInfo.operatingSystem"><strong>Sistema Operacional:</strong> {{
+                  product.technicalInfo.operatingSystem }}</li>
+              </ul>
+            </div>
+
+            <!-- Especificações para Telefones -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.screenSize || product.technicalInfo.resolution || product.technicalInfo.battery || product.technicalInfo.camera">
+              <h4>Especificações da Tela e Câmera</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.screenSize"><strong>Tamanho da Tela:</strong> {{
+                  product.technicalInfo.screenSize }}</li>
+                <li *ngIf="product.technicalInfo.resolution"><strong>Resolução:</strong> {{
+                  product.technicalInfo.resolution }}</li>
+                <li *ngIf="product.technicalInfo.battery"><strong>Bateria:</strong> {{ product.technicalInfo.battery }}
+                </li>
+                <li *ngIf="product.technicalInfo.camera"><strong>Câmera:</strong> {{ product.technicalInfo.camera }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Conectividade e Portas -->
+            <div class="tech-section" *ngIf="product.technicalInfo.connectivity || product.technicalInfo.ports">
+              <h4>Conectividade</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.connectivity"><strong>Conectividade:</strong> {{
+                  product.technicalInfo.connectivity }}</li>
+                <li *ngIf="product.technicalInfo.ports"><strong>Portas:</strong> {{ product.technicalInfo.ports }}</li>
+              </ul>
+            </div>
+
+            <!-- Especificações Físicas -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.dimensions || product.technicalInfo.weight || product.technicalInfo.material">
+              <h4>Especificações Físicas</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.dimensions"><strong>Dimensões:</strong> {{
+                  product.technicalInfo.dimensions }}</li>
+                <li *ngIf="product.technicalInfo.weight"><strong>Peso:</strong> {{ product.technicalInfo.weight }}</li>
+                <li *ngIf="product.technicalInfo.material"><strong>Material:</strong> {{ product.technicalInfo.material
+                  }}</li>
+              </ul>
+            </div>
+
+            <!-- Especificações de Áudio -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.frequency || product.technicalInfo.channels || product.technicalInfo.audioFormat">
+              <h4>Especificações de Áudio</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.frequency"><strong>Frequência:</strong> {{
+                  product.technicalInfo.frequency }}</li>
+                <li *ngIf="product.technicalInfo.channels"><strong>Canais:</strong> {{ product.technicalInfo.channels }}
+                </li>
+                <li *ngIf="product.technicalInfo.audioFormat"><strong>Formato de Áudio:</strong> {{
+                  product.technicalInfo.audioFormat }}</li>
+              </ul>
+            </div>
+
+            <!-- Especificações de Vídeo -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.videoFormat || product.technicalInfo.powerConsumption">
+              <h4>Especificações de Vídeo e Energia</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.videoFormat"><strong>Formato de Vídeo:</strong> {{
+                  product.technicalInfo.videoFormat }}</li>
+                <li *ngIf="product.technicalInfo.powerConsumption"><strong>Consumo de Energia:</strong> {{
+                  product.technicalInfo.powerConsumption }}</li>
+              </ul>
+            </div>
+
+            <!-- Garantia e Fabricante -->
+            <div class="tech-section" *ngIf="product.technicalInfo.warranty || product.technicalInfo.manufacturer">
+              <h4>Garantia e Fabricante</h4>
+              <ul>
+                <li *ngIf="product.technicalInfo.warranty"><strong>Garantia:</strong> {{ product.technicalInfo.warranty
+                  }}</li>
+                <li *ngIf="product.technicalInfo.manufacturer"><strong>Fabricante:</strong> {{
+                  product.technicalInfo.manufacturer }}</li>
+              </ul>
+            </div>
+
+            <!-- Instruções de Cuidado -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.careInstructions && product.technicalInfo.careInstructions.length > 0">
+              <h4>Instruções de Cuidado</h4>
+              <ul>
+                <li *ngFor="let instruction of product.technicalInfo.careInstructions">
+                  {{ instruction }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Conteúdo da Embalagem -->
+            <div class="tech-section"
+              *ngIf="product.technicalInfo.packageContents && product.technicalInfo.packageContents.length > 0">
+              <h4>Conteúdo da Embalagem</h4>
+              <ul>
+                <li *ngFor="let item of product.technicalInfo.packageContents">
+                  {{ item }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Acessórios -->
+            <div class="tech-section" *ngIf="product.technicalInfo.accessories">
+              <h4>Acessórios</h4>
+              <ul>
+                <li>{{ product.technicalInfo.accessories }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Product Info -->
+      <div class="product-info">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+          <span>Você está em: Home > Produtos > {{ product.productName }}</span>
+        </div>
+
+        <!-- Product Title -->
+        <h1 class="product-title">{{ product.productName }}</h1>
+
+        <!-- Rating -->
+        <div class="product-rating">
+          <div class="stars">
+            <mat-icon *ngFor="let star of [1,2,3,4,5]" class="star" [class.filled]="star <= averageRating">
+              {{ star <= averageRating ? 'star' : 'star_border' }} </mat-icon>
+          </div>
+          <span class="rating-text">
+            {{ averageRating > 0 ? averageRating + ' (' + reviewCount + ' avaliações)' : 'Sem avaliações' }}
+          </span>
+        </div>
+
+        <!-- Seller Info -->
+        <div class="seller-info">
+          <span class="seller-text">Vendido e entregue por: <strong>VitrineBella</strong></span>
+        </div>
+
+        <!-- Price Section -->
+        <div class="price-section">
+          <div class="current-price">
+            <span class="price-label">Preço à vista:</span>
+            <span class="price-value">R$ {{ product.price | number : "1.2-2" }}</span>
+          </div>
+
+          <div class="original-price" *ngIf="product.hasDiscount">
+            <span class="original-price-value">R$ {{ product.originalPrice | number : "1.2-2" }}</span>
+            <span class="discount-badge">
+              {{ product.discountValue }}{{ product.discountType === 'percentage' ? '%' : ' OFF' }}
+            </span>
+          </div>
+
+          <div class="installment-info">
+            <span>ou em até 12x de R$ {{ (product.price / 12) | number : "1.2-2" }} sem juros</span>
+          </div>
+        </div>
+
+        <!-- Stock Info -->
+        <div class="stock-info" [ngClass]="getStockStatusClass()">
+          <mat-icon class="stock-icon" [ngClass]="getStockIconClass()">{{ getStockIcon() }}</mat-icon>
+          <span class="stock-text">{{ getStockStatusText() }}</span>
+        </div>
+
+        <!-- Stock Notification Form (when out of stock) -->
+        <div class="stock-notification" *ngIf="isOutOfStock()">
+          <h4>Notifique-me quando estiver disponível</h4>
+          <p>Deixe seu email para ser avisado quando este produto voltar ao estoque:</p>
+          <form (ngSubmit)="subscribeToStockNotification()" #stockForm="ngForm">
+            <div class="notification-form">
+              <mat-form-field appearance="outline" class="email-field">
+                <mat-label>Seu email</mat-label>
+                <input matInput type="email" name="email" [(ngModel)]="notificationEmail" required email
+                  #email="ngModel" placeholder="seu@email.com">
+                <mat-icon matSuffix>email</mat-icon>
+                <mat-error *ngIf="email.invalid && email.touched">
+                  Por favor, insira um email válido
+                </mat-error>
+              </mat-form-field>
+              <button type="submit" mat-raised-button color="primary" [disabled]="stockForm.invalid || isSubscribing">
+                <mat-spinner *ngIf="isSubscribing" diameter="20"></mat-spinner>
+                <mat-icon *ngIf="!isSubscribing">notifications</mat-icon>
+                {{ isSubscribing ? 'Cadastrando...' : 'Notificar-me' }}
+              </button>
+            </div>
+          </form>
+          <div class="notification-success" *ngIf="notificationSuccess">
+            <mat-icon>check_circle</mat-icon>
+            <span>Email cadastrado com sucesso! Você será notificado quando o produto voltar ao estoque.</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons" *ngIf="!isOutOfStock()">
+          <button class="btn btn-primary btn-large" (click)="adicionarCarrinho()">
+            <mat-icon>shopping_cart</mat-icon>
+            Adicionar ao Carrinho
+          </button>
+
+          <button class="btn btn-secondary btn-large" (click)="toggleFavorito()">
+            <mat-icon>{{ isFavorito ? 'favorite' : 'favorite_border' }}</mat-icon>
+            {{ isFavorito ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos' }}
+          </button>
+        </div>
+
+        <!-- Product Description -->
+        <div class="product-description">
+          <h3>Sobre o Produto</h3>
+          <p>{{ product.description }}</p>
+
+          <div class="product-specs" *ngIf="product.stock">
+            <h4>Especificações:</h4>
+            <ul>
+              <li><strong>Estoque disponível:</strong> {{ product.stock }} unidades</li>
+              <li><strong>Categoria:</strong> {{ product.categoryName || product.category }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Shipping Info -->
+        <div class="shipping-info">
+          <mat-icon class="shipping-icon">local_shipping</mat-icon>
+          <div class="shipping-details">
+            <h4>Informações de Entrega</h4>
+            <p>Frete grátis para compras acima de R$ 199,00</p>
+            <p>Entrega em até 5 dias úteis</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Seção de Avaliações -->
+<div *ngIf="product && !isLoading" class="reviews-section">
+  <div class="container">
+    <div class="reviews-header">
+      <h2>Avaliações dos Clientes</h2>
+      <button class="btn btn-primary" (click)="toggleReviewForm()">
+        <mat-icon>rate_review</mat-icon>
+        {{ userReview ? 'Editar Avaliação' : 'Avaliar Produto' }}
+      </button>
+    </div>
+
+    <!-- Formulário de Avaliação -->
+    <div *ngIf="showReviewForm" class="review-form">
+      <h3>{{ userReview ? 'Editar sua avaliação' : 'Avalie este produto' }}</h3>
+
+      <!-- Sistema de Estrelas -->
+      <div class="rating-input">
+        <label>Avaliação:</label>
+        <div class="stars-input">
+          <mat-icon *ngFor="let star of [1,2,3,4,5]" class="star-input" [class.filled]="star <= newRating"
+            (click)="setRating(star)">
+            {{ star <= newRating ? 'star' : 'star_border' }} </mat-icon>
+        </div>
+        <span class="rating-text">{{ newRating > 0 ? newRating + ' estrela' + (newRating > 1 ? 's' : '') : 'Selecione
+          uma avaliação' }}</span>
+      </div>
+
+      <!-- Comentário -->
+      <div class="comment-input">
+        <label for="comment">Comentário (opcional):</label>
+        <textarea id="comment" [(ngModel)]="newComment" placeholder="Compartilhe sua experiência com este produto..."
+          rows="4">
+        </textarea>
+      </div>
+
+      <!-- Botões -->
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="showReviewForm = false">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" (click)="submitReview()" [disabled]="isSubmittingReview || newRating === 0">
+          <mat-icon *ngIf="isSubmittingReview">hourglass_empty</mat-icon>
+          <mat-icon *ngIf="!isSubmittingReview">send</mat-icon>
+          {{ isSubmittingReview ? 'Enviando...' : (userReview ? 'Atualizar' : 'Enviar Avaliação') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de Avaliações -->
+    <div class="reviews-list" *ngIf="reviews.length > 0">
+      <div *ngFor="let review of reviews" class="review-item">
+        <div class="review-header">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar" [class.has-photo]="review.userPhoto && review.userPhoto !== ''">
+              <img *ngIf="review.userPhoto && review.userPhoto !== ''" [src]="review.userPhoto" [alt]="review.userName"
+                class="avatar-image" (error)="handleAvatarError($event, review)">
+              <span *ngIf="!review.userPhoto || review.userPhoto === ''" class="avatar-letter">{{
+                review.userName.charAt(0).toUpperCase() }}</span>
+            </div>
+            <div class="reviewer-details">
+              <h4>{{ review.userName }}</h4>
+              <span class="review-date">{{ review.createdAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          <div class="review-actions">
+            <div class="review-rating">
+              <mat-icon *ngFor="let star of [1,2,3,4,5]" class="star-small" [class.filled]="star <= review.rating">
+                {{ star <= review.rating ? 'star' : 'star_border' }} </mat-icon>
+            </div>
+
+            <!-- Botões de ação para avaliações do usuário -->
+            <div class="review-buttons" *ngIf="isUserReview(review)">
+              <button class="btn-action edit-btn" (click)="editReview(review)" matTooltip="Editar avaliação">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="btn-action delete-btn" (click)="deleteReview(review.id!)" matTooltip="Excluir avaliação">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-content" *ngIf="review.comment">
+          <p>{{ review.comment }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensagem quando não há avaliações -->
+    <div *ngIf="reviews.length === 0" class="no-reviews">
+      <mat-icon class="no-reviews-icon">rate_review</mat-icon>
+      <h3>Nenhuma avaliação ainda</h3>
+      <p>Seja o primeiro a avaliar este produto!</p>
+    </div>
+  </div>
+</div>

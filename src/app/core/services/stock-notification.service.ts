@@ -1,173 +1,205 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Firestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from '@angular/fire/firestore';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { Product } from '../../module/admin-vitrineBella/products/interface/products';
 
-export interface StockAlert {
+export interface StockNotification {
+  id?: string;
   productId: string;
   productName: string;
-  currentStock: number;
-  minStockLevel: number;
-  alertLevel: 'low' | 'critical' | 'out';
+  email: string;
+  createdAt: Date;
+  notified: boolean;
+  notifiedAt?: Date;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class StockNotificationService {
-  private readonly MIN_STOCK_LEVEL = 10; // Nível mínimo de estoque
-  private readonly CRITICAL_STOCK_LEVEL = 5; // Nível crítico de estoque
+  private firestore = inject(Firestore);
 
-  private stockAlertsSubject = new BehaviorSubject<StockAlert[]>([]);
+  // Observable para contagem de produtos com estoque baixo
   private lowStockCountSubject = new BehaviorSubject<number>(0);
-
-  public stockAlerts$ = this.stockAlertsSubject.asObservable();
   public lowStockCount$ = this.lowStockCountSubject.asObservable();
 
-  constructor() {}
+  // Cadastrar email para notificação
+  async subscribeToStockNotification(productId: string, productName: string, email: string): Promise<void> {
+    try {
+      // Verificar se já existe uma notificação para este email e produto
+      const existingQuery = query(
+        collection(this.firestore, 'stockNotifications'),
+        where('productId', '==', productId),
+        where('email', '==', email),
+        where('notified', '==', false)
+      );
 
-  /**
-   * Analisa produtos e gera alertas de estoque baixo
-   */
+      const existingDocs = await getDocs(existingQuery);
+
+      if (!existingDocs.empty) {
+        throw new Error('Você já está cadastrado para receber notificações deste produto');
+      }
+
+      // Criar nova notificação
+      const notification: Omit<StockNotification, 'id'> = {
+        productId,
+        productName,
+        email,
+        createdAt: new Date(),
+        notified: false
+      };
+
+      await addDoc(collection(this.firestore, 'stockNotifications'), notification);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Marcar notificações como enviadas
+  async markNotificationsAsSent(productId: string): Promise<void> {
+    try {
+      const q = query(
+        collection(this.firestore, 'stockNotifications'),
+        where('productId', '==', productId),
+        where('notified', '==', false)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      const updatePromises = querySnapshot.docs.map(docSnapshot => {
+        return updateDoc(docSnapshot.ref, {
+          notified: true,
+          notifiedAt: new Date()
+        });
+      });
+
+      await Promise.all(updatePromises);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Buscar notificações pendentes para um produto
+  async getPendingNotifications(productId: string): Promise<StockNotification[]> {
+    try {
+      const q = query(
+        collection(this.firestore, 'stockNotifications'),
+        where('productId', '==', productId),
+        where('notified', '==', false)
+      );
+
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as StockNotification));
+    } catch (error) {
+      return [];
+    }
+  }
+
+  // Métodos para controle de estoque (usados pelo product-table)
+  isProductOutOfStock(product: Product): boolean {
+    return !product || product.stock <= 0;
+  }
+
+  isProductLowStock(product: Product): boolean {
+    return product ? product.stock > 0 && product.stock <= 10 : false;
+  }
+
+  isProductCriticalStock(product: Product): boolean {
+    return product ? product.stock > 0 && product.stock <= 3 : false;
+  }
+
+  getProductAlertLevel(product: Product): 'low' | 'critical' | 'out' | 'normal' {
+    if (!product) return 'out';
+
+    if (product.stock <= 0) {
+      return 'out';
+    } else if (product.stock <= 3) {
+      return 'critical';
+    } else if (product.stock <= 10) {
+      return 'low';
+    } else {
+      return 'normal';
+    }
+  }
+
+  getAlertClass(level: 'low' | 'critical' | 'out' | 'normal'): string {
+    switch (level) {
+      case 'normal':
+        return 'stock-normal';
+      case 'low':
+        return 'stock-low';
+      case 'critical':
+        return 'stock-critical';
+      case 'out':
+        return 'stock-out';
+      default:
+        return 'stock-out';
+    }
+  }
+
+  getAlertIcon(level: 'low' | 'critical' | 'out' | 'normal'): string {
+    switch (level) {
+      case 'normal':
+        return 'check_circle';
+      case 'low':
+        return 'warning';
+      case 'critical':
+        return 'error';
+      case 'out':
+        return 'cancel';
+      default:
+        return 'cancel';
+    }
+  }
+
+  getAlertColor(level: 'low' | 'critical' | 'out' | 'normal'): string {
+    switch (level) {
+      case 'normal':
+        return '#4caf50';
+      case 'low':
+        return '#ff9800';
+      case 'critical':
+        return '#f44336';
+      case 'out':
+        return '#d32f2f';
+      default:
+        return '#d32f2f';
+    }
+  }
+
+  // Analisar níveis de estoque de uma lista de produtos
   analyzeStockLevels(products: Product[]): void {
-    const alerts: StockAlert[] = [];
+    if (!products) return;
+
+    let lowStockCount = 0;
+    let criticalStockCount = 0;
+    let outOfStockCount = 0;
 
     products.forEach(product => {
-      if (product.stock <= 0) {
-        alerts.push({
-          productId: product.id,
-          productName: product.productName,
-          currentStock: product.stock,
-          minStockLevel: this.MIN_STOCK_LEVEL,
-          alertLevel: 'out'
-        });
-      } else if (product.stock <= this.CRITICAL_STOCK_LEVEL) {
-        alerts.push({
-          productId: product.id,
-          productName: product.productName,
-          currentStock: product.stock,
-          minStockLevel: this.MIN_STOCK_LEVEL,
-          alertLevel: 'critical'
-        });
-      } else if (product.stock <= this.MIN_STOCK_LEVEL) {
-        alerts.push({
-          productId: product.id,
-          productName: product.productName,
-          currentStock: product.stock,
-          minStockLevel: this.MIN_STOCK_LEVEL,
-          alertLevel: 'low'
-        });
+      const level = this.getProductAlertLevel(product);
+      switch (level) {
+        case 'low':
+          lowStockCount++;
+          break;
+        case 'critical':
+          criticalStockCount++;
+          break;
+        case 'out':
+          outOfStockCount++;
+          break;
       }
     });
 
-    this.stockAlertsSubject.next(alerts);
-    this.lowStockCountSubject.next(alerts.length);
+    // Atualizar contagem total de produtos com problemas de estoque
+    const totalProblematicStock = lowStockCount + criticalStockCount + outOfStockCount;
+    this.updateLowStockCount(totalProblematicStock);
   }
 
-  /**
-   * Retorna os alertas atuais
-   */
-  getCurrentAlerts(): StockAlert[] {
-    return this.stockAlertsSubject.value;
-  }
-
-  /**
-   * Retorna o número de produtos com estoque baixo
-   */
-  getLowStockCount(): number {
-    return this.lowStockCountSubject.value;
-  }
-
-  /**
-   * Retorna alertas por nível
-   */
-  getAlertsByLevel(level: 'low' | 'critical' | 'out'): StockAlert[] {
-    return this.getCurrentAlerts().filter(alert => alert.alertLevel === level);
-  }
-
-  /**
-   * Verifica se um produto específico tem estoque baixo
-   */
-  isProductLowStock(product: Product): boolean {
-    return product.stock <= this.MIN_STOCK_LEVEL;
-  }
-
-  /**
-   * Verifica se um produto específico tem estoque crítico
-   */
-  isProductCriticalStock(product: Product): boolean {
-    return product.stock <= this.CRITICAL_STOCK_LEVEL;
-  }
-
-  /**
-   * Verifica se um produto está sem estoque
-   */
-  isProductOutOfStock(product: Product): boolean {
-    return product.stock <= 0;
-  }
-
-  /**
-   * Retorna o nível de alerta para um produto
-   */
-  getProductAlertLevel(product: Product): 'low' | 'critical' | 'out' | 'normal' {
-    if (this.isProductOutOfStock(product)) return 'out';
-    if (this.isProductCriticalStock(product)) return 'critical';
-    if (this.isProductLowStock(product)) return 'low';
-    return 'normal';
-  }
-
-  /**
-   * Retorna a classe CSS para o nível de alerta
-   */
-  getAlertClass(level: 'low' | 'critical' | 'out' | 'normal'): string {
-    switch (level) {
-      case 'out':
-        return 'stock-out';
-      case 'critical':
-        return 'stock-critical';
-      case 'low':
-        return 'stock-low';
-      default:
-        return 'stock-normal';
-    }
-  }
-
-  /**
-   * Retorna o ícone para o nível de alerta
-   */
-  getAlertIcon(level: 'low' | 'critical' | 'out' | 'normal'): string {
-    switch (level) {
-      case 'out':
-        return 'error';
-      case 'critical':
-        return 'warning';
-      case 'low':
-        return 'info';
-      default:
-        return 'check_circle';
-    }
-  }
-
-  /**
-   * Retorna a cor para o nível de alerta
-   */
-  getAlertColor(level: 'low' | 'critical' | 'out' | 'normal'): string {
-    switch (level) {
-      case 'out':
-        return '#f44336'; // Vermelho
-      case 'critical':
-        return '#ff9800'; // Laranja
-      case 'low':
-        return '#ffeb3b'; // Amarelo
-      default:
-        return '#4caf50'; // Verde
-    }
-  }
-
-  /**
-   * Limpa todos os alertas
-   */
-  clearAlerts(): void {
-    this.stockAlertsSubject.next([]);
-    this.lowStockCountSubject.next(0);
+  // Atualizar contagem de produtos com estoque baixo
+  updateLowStockCount(count: number): void {
+    this.lowStockCountSubject.next(count);
   }
 }

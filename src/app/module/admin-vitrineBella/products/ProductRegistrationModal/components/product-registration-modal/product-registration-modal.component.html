@@ -104,7 +104,7 @@
         <div class="form-field-half">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Categoria</mat-label>
-            <mat-select formControlName="category" required>
+            <mat-select formControlName="category" required (selectionChange)="onCategoryChange($event.value)">
               <mat-option *ngFor="let category of categories" [value]="category.name">
                 <mat-icon>{{ category.icon }}</mat-icon>
                 {{ category.name }}
@@ -157,6 +157,258 @@
           <mat-icon>add_photo_alternate</mat-icon>
           <span>Selecionar Imagem</span>
         </label>
+      </div>
+    </div>
+
+    <!-- Imagens Adicionais -->
+    <div class="form-section">
+      <div class="section-header">
+        <mat-icon>photo_library</mat-icon>
+        <h5>Imagens Adicionais</h5>
+        <span class="optional-badge">Opcional</span>
+      </div>
+
+      <div class="additional-images-container">
+        <div class="additional-images-grid" *ngIf="additionalImagePreviews.length > 0">
+          <div *ngFor="let preview of additionalImagePreviews; let i = index" class="additional-image-item">
+            <img [src]="preview" alt="Imagem adicional" class="additional-preview-image" />
+            <button mat-icon-button class="remove-additional-btn" (click)="removeAdditionalImage(i)"
+              matTooltip="Remover imagem">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="add-additional-images">
+          <input type="file" accept="image/*" multiple (change)="onAdditionalImagesSelected($event)"
+            class="additional-images-input" id="additionalImagesUpload" />
+          <label for="additionalImagesUpload" class="add-additional-btn">
+            <mat-icon>add_photo_alternate</mat-icon>
+            <span>Adicionar Mais Imagens</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informações Técnicas -->
+    <div class="form-section">
+      <div class="section-header">
+        <mat-icon>engineering</mat-icon>
+        <h5>Informações Técnicas</h5>
+        <button type="button" mat-icon-button class="toggle-btn" (click)="toggleTechnicalInfo()"
+          matTooltip="Mostrar/ocultar informações técnicas">
+          <mat-icon>{{ showTechnicalInfo ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
+
+      <div class="technical-info-content" *ngIf="showTechnicalInfo">
+        <div class="form-row">
+          <div class="form-field-half">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Marca</mat-label>
+              <input matInput formControlName="brand" placeholder="Ex: Nike, Samsung, Apple" />
+              <mat-icon matSuffix>business</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-field-half">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Modelo</mat-label>
+              <input matInput formControlName="model" placeholder="Ex: iPhone 15, Galaxy S24" />
+              <mat-icon matSuffix>model_training</mat-icon>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field-half">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Composição</mat-label>
+              <input matInput formControlName="composition" placeholder="Ex: 100% Algodão, Aço Inox" />
+              <mat-icon matSuffix>science</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-field-half">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Tamanho</mat-label>
+              <input matInput formControlName="size" placeholder="Ex: M, L, XL, 42" />
+              <mat-icon matSuffix>straighten</mat-icon>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field-half">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Peso</mat-label>
+              <input matInput formControlName="weight" placeholder="Ex: 150g, 1.2kg" />
+              <mat-icon matSuffix>fitness_center</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-field-half">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Garantia</mat-label>
+              <input matInput formControlName="warranty" placeholder="Ex: 12 meses, 2 anos" />
+              <mat-icon matSuffix>verified</mat-icon>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="form-field-full">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Fabricante</mat-label>
+            <input matInput formControlName="manufacturer" placeholder="Nome do fabricante" />
+            <mat-icon matSuffix>factory</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field-full">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Instruções de Cuidado</mat-label>
+            <textarea matInput formControlName="careInstructions"
+              placeholder="Ex: Lavar à mão, Não usar alvejante, Secar na sombra" rows="3"></textarea>
+            <mat-icon matSuffix>cleaning_services</mat-icon>
+            <mat-hint>Uma instrução por linha</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field-full">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Conteúdo da Embalagem</mat-label>
+            <textarea matInput formControlName="packageContents"
+              placeholder="Ex: Produto principal, Manual de instruções, Cabo USB" rows="3"></textarea>
+            <mat-icon matSuffix>inventory_2</mat-icon>
+            <mat-hint>Um item por linha</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <!-- Garantia Estendida -->
+    <div class="form-section">
+      <div class="section-header">
+        <mat-icon>security</mat-icon>
+        <h5>Garantia Estendida</h5>
+        <button type="button" mat-icon-button (click)="toggleExtendedWarranty()" class="toggle-btn">
+          <mat-icon>{{ showExtendedWarranty ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
+
+      <div *ngIf="showExtendedWarranty" class="warranty-content">
+        <div class="form-field-full">
+          <mat-checkbox formControlName="extendedWarrantyAvailable" class="warranty-checkbox">
+            Oferecer Garantia Estendida para este produto
+          </mat-checkbox>
+        </div>
+
+        <div *ngIf="productForm.get('extendedWarrantyAvailable')?.value" class="warranty-options">
+          <h6>Opções de Garantia:</h6>
+
+          <!-- 12 Meses -->
+          <div class="warranty-option">
+            <div class="option-header">
+              <mat-checkbox [checked]="warranty12Active" (change)="toggleWarranty12($event.checked)">
+                12 Meses de Garantia Estendida
+              </mat-checkbox>
+            </div>
+            <div class="option-fields" *ngIf="warranty12Active">
+              <div class="form-field-half">
+                <mat-form-field appearance="outline">
+                  <mat-label>Preço (R$)</mat-label>
+                  <input matInput type="number" formControlName="warranty12Months" min="0" step="0.01"
+                    placeholder="76.80" (input)="onWarranty12PriceChange($event)" />
+                  <mat-icon matSuffix>attach_money</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="form-field-half">
+                <mat-form-field appearance="outline">
+                  <mat-label>Parcelamento (R$)</mat-label>
+                  <input matInput type="number" formControlName="warranty12Installment" min="0" step="0.01"
+                    placeholder="7.68" />
+                  <mat-icon matSuffix>credit_card</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="form-field-full">
+                <mat-form-field appearance="outline">
+                  <mat-label>Descrição</mat-label>
+                  <input matInput formControlName="warranty12Description"
+                    placeholder="12 Meses de Garantia Estendida Vitrine Bella" />
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- 24 Meses -->
+          <div class="warranty-option">
+            <div class="option-header">
+              <mat-checkbox [checked]="warranty24Active" (change)="toggleWarranty24($event.checked)">
+                24 Meses de Garantia Estendida
+              </mat-checkbox>
+            </div>
+            <div class="option-fields" *ngIf="warranty24Active">
+              <div class="form-field-half">
+                <mat-form-field appearance="outline">
+                  <mat-label>Preço (R$)</mat-label>
+                  <input matInput type="number" formControlName="warranty24Months" min="0" step="0.01"
+                    placeholder="153.60" (input)="onWarranty24PriceChange($event)" />
+                  <mat-icon matSuffix>attach_money</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="form-field-half">
+                <mat-form-field appearance="outline">
+                  <mat-label>Parcelamento (R$)</mat-label>
+                  <input matInput type="number" formControlName="warranty24Installment" min="0" step="0.01"
+                    placeholder="15.36" />
+                  <mat-icon matSuffix>credit_card</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="form-field-full">
+                <mat-form-field appearance="outline">
+                  <mat-label>Descrição</mat-label>
+                  <input matInput formControlName="warranty24Description"
+                    placeholder="24 Meses de Garantia Estendida Vitrine Bella" />
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- 36 Meses -->
+          <div class="warranty-option">
+            <div class="option-header">
+              <mat-checkbox [checked]="warranty36Active" (change)="toggleWarranty36($event.checked)">
+                36 Meses de Garantia Estendida
+              </mat-checkbox>
+            </div>
+            <div class="option-fields" *ngIf="warranty36Active">
+              <div class="form-field-half">
+                <mat-form-field appearance="outline">
+                  <mat-label>Preço (R$)</mat-label>
+                  <input matInput type="number" formControlName="warranty36Months" min="0" step="0.01"
+                    placeholder="230.40" (input)="onWarranty36PriceChange($event)" />
+                  <mat-icon matSuffix>attach_money</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="form-field-half">
+                <mat-form-field appearance="outline">
+                  <mat-label>Parcelamento (R$)</mat-label>
+                  <input matInput type="number" formControlName="warranty36Installment" min="0" step="0.01"
+                    placeholder="23.04" />
+                  <mat-icon matSuffix>credit_card</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="form-field-full">
+                <mat-form-field appearance="outline">
+                  <mat-label>Descrição</mat-label>
+                  <input matInput formControlName="warranty36Description"
+                    placeholder="36 Meses de Garantia Estendida Vitrine Bella" />
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 

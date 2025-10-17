@@ -112,28 +112,49 @@
       <p class="section-subtitle">Encontre o que você precisa com qualidade e preço justo</p>
     </div>
 
-    <div class="products-grid">
-      <div *ngFor="let p of produtosFiltrados; trackBy: trackByProduct" class="product-card">
+    <!-- Loading State -->
+    <div *ngIf="isLoadingProducts" class="products-loading">
+      <div class="loading-skeleton" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-description"></div>
+          <div class="skeleton-price"></div>
+          <div class="skeleton-button"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div *ngIf="!isLoadingProducts && produtosFiltrados.length > 0" class="products-grid">
+      <div *ngFor="let p of produtosFiltrados; trackBy: trackByProduct" class="product-card" (click)="verDetalhesProduto(p.id)">
         <div class="product-image-container">
           <img [src]="p.img" [alt]="'Imagem do produto ' + p.nome" class="product-image" loading="lazy"
             (error)="handleImageError($event)" />
 
-          <!-- Botão de Favorito no Card -->
-          <button class="favorite-card-btn" (click)="toggleFavorito(p)" [class.favorited]="isFavorito(p.id)"
-            [matTooltip]="!isUserLoggedIn ? 'Faça login para salvar favoritos' : (isFavorito(p.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')">
-            <mat-icon>{{ isFavorito(p.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
-          </button>
+          <!-- Estrelas de Avaliação -->
+          <div class="rating-stars">
+            <div class="stars-container">
+              <mat-icon *ngFor="let star of [1,2,3,4,5]" class="star-icon" [class.filled]="star <= getProductRating(p)">
+                star
+              </mat-icon>
+              <span class="rating-text">{{ getProductRating(p) }}/5</span>
+            </div>
+          </div>
 
+          <!-- Overlay com botões de ação (aparece no hover) -->
           <div class="product-overlay">
-            <button class="btn btn-light btn-sm" (click)="adicionarCarrinho(p)" matTooltip="Adicionar ao carrinho">
-              <mat-icon>add_shopping_cart</mat-icon>
-            </button>
-            <button class="btn btn-light btn-sm favorite-btn" (click)="toggleFavorito(p)"
+            <button class="overlay-btn favorite-btn" (click)="toggleFavorito(p); $event.stopPropagation()"
               [class.favorited]="isFavorito(p.id)"
               [matTooltip]="!isUserLoggedIn ? 'Faça login para salvar favoritos' : (isFavorito(p.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')">
               <mat-icon>{{ isFavorito(p.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
             </button>
+            <button class="overlay-btn cart-btn" (click)="adicionarCarrinho(p); $event.stopPropagation()"
+              matTooltip="Adicionar ao carrinho">
+              <mat-icon>add_shopping_cart</mat-icon>
+            </button>
           </div>
+
           <div class="product-badge">
             <span class="badge-new">Novo</span>
           </div>
@@ -146,11 +167,24 @@
             <span class="current-price">R$ {{ p.preco | number : "1.2-2" }}</span>
             <span class="original-price">R$ {{ (p.preco * 1.2) | number : "1.2-2" }}</span>
           </div>
-          <button class="btn btn-primary w-100" (click)="adicionarCarrinho(p)">
+          <button class="btn btn-primary w-100" (click)="adicionarCarrinho(p); $event.stopPropagation()">
             <mat-icon>shopping_cart</mat-icon>
             Adicionar ao Carrinho
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- No Products Message -->
+    <div *ngIf="!isLoadingProducts && produtosFiltrados.length === 0" class="no-products">
+      <div class="no-products-content">
+        <mat-icon class="no-products-icon">inventory_2</mat-icon>
+        <h3>Nenhum produto encontrado</h3>
+        <p *ngIf="categoriaSelecionada === 'todos'">Não há produtos disponíveis no momento.</p>
+        <p *ngIf="categoriaSelecionada !== 'todos'">Não há produtos nesta categoria.</p>
+        <button class="btn btn-primary" (click)="filtrar('todos')" *ngIf="categoriaSelecionada !== 'todos'">
+          Ver todos os produtos
+        </button>
       </div>
     </div>
   </div>

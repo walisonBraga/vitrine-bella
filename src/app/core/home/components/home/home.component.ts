@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { NavbarHomeComponent } from '../../../navbar-home/components/navbar-home/navbar-home.component';
 import { SlideService } from '../../../../module/admin-vitrineBella/slides/service/slide.service';
 import { Slide } from '../../../../module/admin-vitrineBella/slides/interface/slide';
@@ -16,7 +17,9 @@ import { ProductService } from '../../../../module/admin-vitrineBella/products/s
 import { Category } from '../../../../module/admin-vitrineBella/categories/interface/category';
 import { FavoritosService } from '../../../services/favoritos.service';
 import { FavoritosFirebaseService } from '../../../services/favoritos-firebase.service';
+import { CartService } from '../../../services/cart.service';
 import { Auth, authState } from '@angular/fire/auth';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 interface Produto {
@@ -27,8 +30,6 @@ interface Produto {
   categoria: string;
   img: string;
 }
-
-
 
 @Component({
   selector: 'app-home',
@@ -62,12 +63,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   private categoryService = inject(CategoryService);
   private productService = inject(ProductService);
   private favoritosFirebaseService = inject(FavoritosFirebaseService);
+  private cartService = inject(CartService);
   private auth = inject(Auth);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
 
   slides: Slide[] = [];
   isLoadingSlides = true;
   categorias: Category[] = [];
   isLoadingCategories = true;
+  isLoadingProducts = true;
 
   categoriaSelecionada: string = 'todos';
   produtos: Produto[] = [];
@@ -82,6 +87,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   defaultImage = 'assets/img/placeholder.png';
   isAutoPlayActive = true;
   autoPlayInterval: any;
+
+  // Subscriptions para gerenciar unsubscribe
+  private productsSubscription?: Subscription;
+  private categoriesSubscription?: Subscription;
+  private slidesSubscription?: Subscription;
 
   constructor() {
     if (this.isBrowser) {
@@ -98,7 +108,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadSlides(): void {
-    this.slideService.getSlidesAtivos().subscribe({
+    this.slidesSubscription?.unsubscribe(); // Cancelar subscription anterior
+    this.slidesSubscription = this.slideService.getSlidesAtivos().subscribe({
       next: (slides) => {
         // Ordenar slides por ordem no cliente
         this.slides = slides.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
@@ -120,7 +131,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadCategories(): void {
-    this.categoryService.getActiveCategories().subscribe({
+    this.categoriesSubscription?.unsubscribe(); // Cancelar subscription anterior
+    this.categoriesSubscription = this.categoryService.getActiveCategories().subscribe({
       next: (categories) => {
         // Adicionar categoria "Todos" no início
         const todosCategory: Category = {
@@ -147,17 +159,23 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadProducts(): void {
-    this.productService.getProducts().subscribe({
+    this.isLoadingProducts = true;
+    this.productsSubscription?.unsubscribe(); // Cancelar subscription anterior
+    this.productsSubscription = this.productService.getProducts().subscribe({
       next: (products) => {
-        // Converter produtos do Firebase para o formato local
-        this.produtos = products.map(product => ({
-          id: product.id || '',
-          nome: product.productName || '',
-          descricao: product.description || '',
-          preco: product.price || 0,
-          categoria: product.category || '',
-          img: product.imageUrl || 'assets/img/placeholder.png'
-        }));
+        // Filtrar apenas produtos ativos e converter para o formato local
+        this.produtos = products
+          .filter(product => product.isActive !== false) // Filtrar produtos ativos
+          .map(product => ({
+            id: product.id || '',
+            nome: product.productName || '',
+            descricao: product.description || '',
+            preco: product.price || 0,
+            categoria: product.category || '',
+            img: product.imageUrl || 'assets/img/placeholder.png'
+          }));
+
+        this.isLoadingProducts = false;
         this.filtrar(this.categoriaSelecionada);
         if (this.isBrowser) {
           this.chunkProducts();
@@ -167,6 +185,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         console.error('Erro ao carregar produtos:', error);
         // Fallback para produtos mock
         this.produtos = this.getMockProducts();
+        this.isLoadingProducts = false;
         this.filtrar(this.categoriaSelecionada);
         if (this.isBrowser) {
           this.chunkProducts();
@@ -179,26 +198,67 @@ export class HomeComponent implements OnInit, OnDestroy {
     const w = this.isBrowser ? window.innerWidth : 1200;
     const size = w >= 992 ? 4 : w >= 768 ? 3 : 2;
     this.produtosChunked = [];
-    for (let i = 0; i < this.produtos.length; i += size) {
-      this.produtosChunked.push(this.produtos.slice(i, i + size));
+
+    // Usar produtosFiltrados em vez de produtos para o chunking
+    for (let i = 0; i < this.produtosFiltrados.length; i += size) {
+      this.produtosChunked.push(this.produtosFiltrados.slice(i, i + size));
     }
   }
 
   filtrar(catId: string): void {
     this.categoriaSelecionada = catId;
-    this.produtosFiltrados = catId === 'todos'
-      ? [...this.produtos]
-      : this.produtos.filter(p => p.categoria === catId);
+
+    if (catId === 'todos') {
+      this.produtosFiltrados = [...this.produtos];
+    } else {
+      this.produtosFiltrados = this.produtos.filter(p => p.categoria === catId);
+    }
+
     if (this.isBrowser) {
       this.chunkProducts();
     }
   }
 
   adicionarCarrinho(produto: Produto): void {
-    try { } catch (error) {
-      console.error('Error adding to cart:', error);
-      // Optionally show error notification
+    try {
+      // Converter Produto para Product (interface do serviço)
+      const product = {
+        id: produto.id,
+        productName: produto.nome,
+        description: produto.descricao,
+        price: produto.preco,
+        category: produto.categoria,
+        imageUrl: produto.img,
+        stock: 10, // Valor padrão
+        isActive: true
+      };
+
+      this.cartService.addToCart(product);
+
+      this.snackBar.open(`${produto.nome} adicionado ao carrinho!`, 'Fechar', {
+        duration: 2000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top'
+      });
+    } catch (error) {
+      this.snackBar.open('Erro ao adicionar ao carrinho', 'Fechar', {
+        duration: 3000
+      });
     }
+  }
+
+  // Método para obter avaliação do produto (simulado)
+  getProductRating(produto: Produto): number {
+    // Simular avaliação baseada no ID do produto
+    const hash = produto.id.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    return Math.abs(hash % 5) + 1; // Retorna entre 1 e 5
+  }
+
+  verDetalhesProduto(produtoId: string): void {
+    this.router.navigate(['/produto', produtoId]);
   }
 
   loadFavoritos(): void {
@@ -386,6 +446,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopCarousel();
+    // Unsubscribe de todas as subscriptions para evitar memory leaks
+    if (this.productsSubscription) {
+      this.productsSubscription.unsubscribe();
+    }
+    if (this.categoriesSubscription) {
+      this.categoriesSubscription.unsubscribe();
+    }
+    if (this.slidesSubscription) {
+      this.slidesSubscription.unsubscribe();
+    }
   }
 
   private getDefaultCategories(): Category[] {

@@ -1,0 +1,215 @@
+<app-navbar-home></app-navbar-home>
+
+<div class="checkout-container">
+  <!-- Barra de progresso -->
+  <div class="progress-bar">
+    <div class="progress-step completed">
+      <mat-icon>shopping_cart</mat-icon>
+      <span>Carrinho</span>
+    </div>
+    <div class="progress-line completed"></div>
+    <div class="progress-step active">
+      <mat-icon>location_on</mat-icon>
+      <span>Endereço</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>local_shipping</mat-icon>
+      <span>Entrega</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>payment</mat-icon>
+      <span>Pagamento</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>visibility</mat-icon>
+      <span>Confirmação</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>check</mat-icon>
+      <span>Concluir</span>
+    </div>
+  </div>
+
+  <div class="checkout-content">
+    <!-- Coluna esquerda - Seleção de endereço -->
+    <div class="address-column">
+      <mat-card class="address-card">
+        <h2>Selecione seu endereço:</h2>
+
+        <!-- Endereços existentes -->
+        <div *ngIf="enderecos.length > 0" class="existing-addresses">
+          <div *ngFor="let endereco of enderecos" class="address-option"
+            [class.selected]="enderecoSelecionado === endereco.id" (click)="selecionarEndereco(endereco.id!)">
+            <mat-radio-button [value]="endereco.id" [checked]="enderecoSelecionado === endereco.id"
+              (change)="selecionarEndereco(endereco.id!)">
+            </mat-radio-button>
+            <div class="address-info">
+              <p>{{ endereco.logradouro }}, {{ endereco.numero }} - {{ endereco.bairro }} - {{ endereco.cidade }}/{{
+                endereco.uf }}, CEP {{ endereco.cep }}</p>
+            </div>
+            <button mat-icon-button class="edit-btn">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Botão para cadastrar novo endereço -->
+        <button mat-button color="primary" (click)="mostrarNovoEndereco()" class="new-address-btn">
+          CADASTRAR NOVO ENDEREÇO
+        </button>
+
+        <!-- Modal de novo endereço -->
+        <div *ngIf="showNovoEndereco" class="new-address-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>NOVO ENDEREÇO</h3>
+              <button mat-icon-button (click)="cancelarNovoEndereco()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <form [formGroup]="novoEnderecoForm" class="address-form">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>CEP*</mat-label>
+                  <input matInput formControlName="cep" placeholder="00000-000" (blur)="buscarCep()" maxlength="9" mask="00000-000">
+                  <mat-spinner *ngIf="isLoadingCep" diameter="20"></mat-spinner>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Identificação*</mat-label>
+                  <input matInput formControlName="identificacao" placeholder="Ex: Casa, Trabalho">
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Logradouro*</mat-label>
+                  <input matInput formControlName="logradouro" placeholder="Rua, Avenida, etc.">
+                  <mat-icon matSuffix>lock</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Número*</mat-label>
+                  <input matInput formControlName="numero" placeholder="123">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Complemento</mat-label>
+                  <input matInput formControlName="complemento" placeholder="Apto, Bloco, etc.">
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Referência</mat-label>
+                  <input matInput formControlName="referencia" placeholder="Ponto de referência">
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Bairro*</mat-label>
+                  <input matInput formControlName="bairro" placeholder="Nome do bairro">
+                  <mat-icon matSuffix>lock</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Cidade*</mat-label>
+                  <input matInput formControlName="cidade" placeholder="Nome da cidade">
+                  <mat-icon matSuffix>lock</mat-icon>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>UF*</mat-label>
+                  <input matInput formControlName="uf" placeholder="AC" maxlength="2">
+                  <mat-icon matSuffix>lock</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <div class="form-actions">
+                <button mat-button type="button" (click)="cancelarNovoEndereco()">
+                  Cancelar
+                </button>
+                <button mat-raised-button color="primary" (click)="salvarNovoEndereco()">
+                  CADASTRAR ENDEREÇO
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Coluna direita - Resumo -->
+    <div class="summary-column">
+      <mat-card class="summary-card">
+        <h2>
+          <mat-icon>receipt</mat-icon>
+          RESUMO
+        </h2>
+        <mat-divider></mat-divider>
+
+        <div class="summary-row">
+          <span>Valor dos Produtos:</span>
+          <span>{{ formatPrice(cart.totalPrice) }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Serviços Adicionais:</span>
+          <span>R$ 76,78</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Frete:</span>
+          <span>R$ 120,56</span>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="summary-row">
+          <span>Total a prazo:</span>
+          <span>{{ formatPrice(cart.totalPrice + 76.78 + 120.56) }}</span>
+        </div>
+        <p class="installment-info">(em até 10x de {{ formatPrice((cart.totalPrice + 76.78 + 120.56) / 10) }} sem juros)
+        </p>
+
+        <div class="pix-discount">
+          <div class="summary-row">
+            <span>Valor à vista no PIX:</span>
+            <span>{{ formatPrice((cart.totalPrice + 76.78 + 120.56) * 0.92) }}</span>
+          </div>
+          <p class="savings-info">(Economize: {{ formatPrice((cart.totalPrice + 76.78 + 120.56) * 0.08) }})</p>
+        </div>
+
+        <!-- Campo de cupom -->
+        <div class="coupon-section">
+          <mat-form-field appearance="outline" class="coupon-field">
+            <mat-label>Cupom de desconto</mat-label>
+            <input matInput placeholder="Cupom de desconto">
+          </mat-form-field>
+          <button mat-raised-button color="primary" class="coupon-btn">
+            OK
+          </button>
+        </div>
+
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" (click)="continuar()" class="continue-btn">
+            CONTINUAR
+          </button>
+          <button mat-button (click)="voltar()" class="back-btn">
+            VOLTAR
+          </button>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,18 @@
   width: 100%;
 }
 
+// ===== USER INFO STYLES =====
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .user-name {
+    font-weight: 500;
+    color: #333;
+  }
+}
+
 // ===== HEADER =====
 .page-header {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);

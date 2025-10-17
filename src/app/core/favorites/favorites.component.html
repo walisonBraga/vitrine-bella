@@ -1,0 +1,84 @@
+<app-navbar-home></app-navbar-home>
+<div class="navbar-spacer"></div>
+
+<div class="favorites-container">
+  <!-- Header -->
+  <div class="page-header">
+    <button mat-icon-button (click)="voltar()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>
+      <mat-icon>favorite</mat-icon>
+      Meus Favoritos
+    </h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-icon class="loading-icon">favorite</mat-icon>
+    <p>Carregando favoritos...</p>
+  </div>
+
+  <!-- Not Logged In -->
+  <div *ngIf="!isUserLoggedIn && !isLoading" class="not-logged-in">
+    <mat-icon class="empty-icon">favorite_border</mat-icon>
+    <h2>Faça login para ver seus favoritos</h2>
+    <p>Entre na sua conta para acessar seus produtos favoritos</p>
+    <button mat-raised-button color="primary" (click)="goToSignIn()">
+      <mat-icon>login</mat-icon>
+      Fazer Login
+    </button>
+  </div>
+
+  <!-- Empty Favorites -->
+  <div *ngIf="isUserLoggedIn && !isLoading && favorites.length === 0" class="empty-favorites">
+    <mat-icon class="empty-icon">favorite_border</mat-icon>
+    <h2>Nenhum favorito ainda</h2>
+    <p>Adicione produtos aos seus favoritos para vê-los aqui</p>
+    <button mat-raised-button color="primary" (click)="voltar()">
+      <mat-icon>shopping</mat-icon>
+      Ver Produtos
+    </button>
+  </div>
+
+  <!-- Favorites Grid -->
+  <div *ngIf="isUserLoggedIn && !isLoading && favorites.length > 0" class="favorites-grid">
+    <div *ngFor="let product of favorites" class="product-card">
+      <div class="product-image" (click)="verDetalhesProduto(product.id)">
+        <img [src]="product.imageUrl || defaultImage" [alt]="product.productName" (error)="handleImageError($event)"
+          loading="lazy">
+
+        <!-- Botão de favorito no canto superior direito -->
+        <button mat-icon-button class="favorite-btn-top" (click)="toggleFavorito(product.id); $event.stopPropagation()"
+          matTooltip="Remover dos favoritos">
+          <mat-icon>favorite</mat-icon>
+        </button>
+
+        <div class="product-overlay">
+          <button mat-icon-button class="quick-view-btn"
+            (click)="verDetalhesProduto(product.id); $event.stopPropagation()">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="product-info">
+        <h3 class="product-name" (click)="verDetalhesProduto(product.id)">{{ product.productName }}</h3>
+        <p class="product-description">{{ product.description }}</p>
+
+        <div class="product-price">
+          <span class="current-price">R$ {{ product.price | number:'1.2-2' }}</span>
+          <span *ngIf="product.originalPrice && product.originalPrice > product.price" class="original-price">R$ {{
+            product.originalPrice | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="product-actions">
+          <button mat-raised-button color="primary" class="add-to-cart-btn" (click)="adicionarCarrinho(product)">
+            <mat-icon>shopping_cart</mat-icon>
+            Adicionar ao Carrinho
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

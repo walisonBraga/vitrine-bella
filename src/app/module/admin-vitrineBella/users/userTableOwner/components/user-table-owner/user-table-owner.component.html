@@ -59,7 +59,15 @@
                   Nome Completo
                 </th>
                 <td mat-cell *matCellDef="let element">
-                  {{ element.fullName }}
+                  <div class="user-info">
+                    <app-avatar
+                      [name]="element.fullName"
+                      [photoUrl]="element.photoURL"
+                      [size]="32"
+                      [showBorder]="false">
+                    </app-avatar>
+                    <span class="user-name">{{ element.fullName }}</span>
+                  </div>
                 </td>
               </ng-container>
 

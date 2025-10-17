@@ -1,10 +1,11 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, OnInit, OnDestroy } from '@angular/core';
 import { Auth, authState, signOut, User } from '@angular/fire/auth';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../auth/auth.service';
 import { FavoritosFirebaseService } from '../../../services/favoritos-firebase.service';
-import { Observable } from 'rxjs';
+import { CartService } from '../../../services/cart.service';
+import { Observable, map, switchMap, Subscription } from 'rxjs';
 
 // Angular Material Imports
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -35,27 +36,47 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatListModule,
     MatDividerModule,
     MatSnackBarModule,
-    MatTooltipModule
+    MatTooltipModule,
   ],
   templateUrl: './navbar-home.component.html',
   styleUrl: './navbar-home.component.scss'
 })
-export class NavbarHomeComponent {
+export class NavbarHomeComponent implements OnInit, OnDestroy {
   private auth = inject(Auth);
   private router = inject(Router);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private favoritosFirebaseService = inject(FavoritosFirebaseService);
+  private cartService = inject(CartService);
 
   user$: Observable<any> = authState(this.auth);
+  userInfo$: Observable<any> = this.user$.pipe(
+    switchMap(user => {
+      if (user) {
+        return this.authService.getUserInfo(user.uid);
+      }
+      return [null];
+    })
+  );
+
   cartCount: number = 0;
   favoritosCount: number = 0;
   logoPath: string = 'assets/img/logo.png';
   defaultAvatar: string = 'assets/img/icon-sem-perfil.png';
   isMobileMenuOpen = false;
+  private cartSubscription?: Subscription;
 
   constructor() {
     this.setupFavoritosListener();
+    this.setupCartListener();
+  }
+
+  ngOnInit(): void {
+    // Inicialização do componente
+  }
+
+  ngOnDestroy(): void {
+    this.cartSubscription?.unsubscribe();
   }
 
   toggleMobileMenu(): void {
@@ -79,6 +100,13 @@ export class NavbarHomeComponent {
         this.favoritosCount = JSON.parse(favoritosSalvos).length;
       }
     }
+  }
+
+  setupCartListener(): void {
+    // Escutar mudanças no carrinho
+    this.cartSubscription = this.cartService.cart$.subscribe(cart => {
+      this.cartCount = cart.totalItems;
+    });
   }
 
   @HostListener('window:resize', ['$event'])

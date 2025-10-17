@@ -153,7 +153,7 @@
 
                 <!-- Botão de Submit -->
                 <button mat-raised-button color="primary" type="submit" class="submit-button"
-                  [disabled]="signUpForm.invalid || loading || !acceptTerms">
+                  [disabled]="signUpForm.invalid || loading">
                   <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
                   <mat-icon *ngIf="!loading">person_add</mat-icon>
                   <span *ngIf="!loading">Criar Conta</span>

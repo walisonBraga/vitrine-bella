@@ -1,16 +1,26 @@
-<div class="sidenav-header">
-  <img [width]="profilePicSize()" [height]="profilePicSize()" [src]="
-      userData()?.photoURL || '../../../../../../assets/img/icon-sem-perfil.png'
-    " [alt]="userData()?.photoURL ? 'Foto de perfil' : 'Logo'" class="profile-img" />
-  <div class="header-text" [class.hide-header-text]="sideNavCollapsed()">
-    <h2 class="no-margin">
-      {{ userData()?.fullName || "" }}
-    </h2>
-    <p class="no-margin">
-      {{ userData()?.role || "Gerencie sua loja com facilidade" }}
-    </p>
-  </div>
-</div>
+        <div class="sidenav-header">
+          <!-- Avatar usando imagem ou primeira letra -->
+          <div class="avatar-container" [class.collapsed]="sideNavCollapsed()">
+            <img *ngIf="userData()?.photoURL"
+                 [src]="userData()?.photoURL"
+                 [alt]="userData()?.fullName || 'Avatar'"
+                 class="user-avatar">
+            <div *ngIf="!userData()?.photoURL"
+                 class="avatar-placeholder"
+                 [style.width.px]="profilePicSize()"
+                 [style.height.px]="profilePicSize()">
+              {{ getFirstLetter(userData()?.fullName || 'U') }}
+            </div>
+          </div>
+          <div class="header-text" [class.hide-header-text]="sideNavCollapsed()">
+            <h2 class="no-margin">
+              {{ userData()?.fullName || "" }}
+            </h2>
+            <p class="no-margin">
+              {{ userData()?.role || "Gerencie sua loja com facilidade" }}
+            </p>
+          </div>
+        </div>
 
 <mat-nav-list>
   <ng-container *ngFor="let item of filteredMenuItems()">
@@ -62,3 +72,11 @@
 
   </ng-container>
 </mat-nav-list>
+
+<!-- Botão de Logout -->
+<div class="logout-section">
+  <button mat-button class="logout-button" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span *ngIf="!sideNavCollapsed()">Sair</span>
+  </button>
+</div>

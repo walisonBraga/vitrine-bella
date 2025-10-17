@@ -203,6 +203,23 @@ export class CustomSidenavComponent {
     }
   }
 
+  // Método para fazer logout
+  logout(): void {
+    this._authService.signOut().then(() => {
+      this._router.navigate(['/signin']);
+    }).catch((error: any) => {
+      console.error('Erro ao fazer logout:', error);
+    });
+  }
+
+  // Método para obter a primeira letra do nome
+  getFirstLetter(name: string): string {
+    if (!name || name.trim().length === 0) {
+      return 'U';
+    }
+    return name.trim().charAt(0).toUpperCase();
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

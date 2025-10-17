@@ -35,10 +35,40 @@
   padding-top: 24px;
   text-align: center;
 
-  > img {
-    border-radius: 100%;
-    object-fit: cover;
-    margin-bottom: 10px;
+  .avatar-container {
+    margin: 0 auto 10px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .avatar-placeholder {
+      border-radius: 50%;
+      background: #ff6b35;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    &.collapsed {
+      .user-avatar,
+      .avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+    }
   }
 
   .header-text {
@@ -264,5 +294,65 @@
   .notification-icon {
     transform: scale(1.1);
     transition: transform 0.2s ease;
+  }
+}
+
+// Estilos para o botão de logout
+.logout-section {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  padding: 0 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+}
+
+.logout-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ff6b6b;
+  font-weight: 500;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+
+  &:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: rgba(255, 107, 107, 0.4);
+    transform: translateY(-1px);
+  }
+
+  mat-icon {
+    color: #ff6b6b;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  span {
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+// Quando a sidenav está collapsed
+.sidenav-collapsed {
+  .logout-section {
+    padding: 0 8px;
+  }
+
+  .logout-button {
+    justify-content: center;
+    padding: 12px 8px;
+    min-width: 40px;
+
+    span {
+      display: none;
+    }
   }
 }

@@ -65,6 +65,7 @@ import { DashboardComponent } from './dashboard/components/dashboard/dashboard.c
 import { ProfileComponent } from './users/profile/components/profile/profile.component';
 import { ConfirmDialogComponent } from './event/confirm-dialog/confirm-dialog.component';
 import { Admin_vitrinebellaRouting } from './admin-vitrinebella.routing';
+import { AvatarComponent } from '../../shared/avatar/avatar.component';
 
 
 
@@ -92,6 +93,7 @@ import { Admin_vitrinebellaRouting } from './admin-vitrinebella.routing';
     SlideTableComponent,
     DashboardComponent,
     ProfileComponent,
+    AvatarComponent,
   ],
   imports: [
     CommonModule,
@@ -134,6 +136,9 @@ import { Admin_vitrinebellaRouting } from './admin-vitrinebella.routing';
 
     // Routing
     RouterModule.forChild(Admin_vitrinebellaRouting)
+  ],
+  exports: [
+    AvatarComponent
   ],
   providers: [
     provideNgxMask(),

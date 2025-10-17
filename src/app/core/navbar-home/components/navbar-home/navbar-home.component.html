@@ -61,7 +61,7 @@
             <div class="menu-header">
               <img [src]="(user$ | async)?.photoURL || defaultAvatar" class="menu-avatar" alt="Avatar" />
               <div class="menu-user-info">
-                <div class="user-name">{{ (user$ | async)?.fullName || (user$ | async)?.displayName || 'Usuário' }}
+                <div class="user-name">{{ (userInfo$ | async)?.fullName || (user$ | async)?.displayName || 'Usuário' }}
                 </div>
                 <div class="user-email">{{ (user$ | async)?.email }}</div>
               </div>
@@ -135,8 +135,8 @@
           </a>
 
           <a mat-list-item routerLink="/favoritos" (click)="closeMobileMenu()">
-            <mat-icon matListItemIcon matBadge="{{favoritosCount}}" matBadgeColor="warn" [matBadgeHidden]="favoritosCount === 0"
-              aria-hidden="false">
+            <mat-icon matListItemIcon matBadge="{{favoritosCount}}" matBadgeColor="warn"
+              [matBadgeHidden]="favoritosCount === 0" aria-hidden="false">
               favorite
             </mat-icon>
             <span matListItemTitle>Favoritos</span>
@@ -167,7 +167,8 @@
             <div class="mobile-user-info">
               <img [src]="(user$ | async)?.photoURL || defaultAvatar" class="mobile-user-avatar" alt="Avatar" />
               <div class="mobile-user-details">
-                <div class="mobile-user-name">{{ (user$ | async)?.fullName || (user$ | async)?.displayName || 'Usuário'
+                <div class="mobile-user-name">{{ (userInfo$ | async)?.fullName || (user$ | async)?.displayName ||
+                  'Usuário'
                   }}</div>
                 <div class="mobile-user-email">{{ (user$ | async)?.email }}</div>
               </div>

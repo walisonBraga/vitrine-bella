@@ -7,6 +7,7 @@ import { AuthService } from '../../../../../../core/auth/auth.service'; // Ajust
 import { CreateUserService } from '../../../service/create-user.service'; // Ajuste o path
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Storage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from '@angular/fire/storage';
+import { AvatarComponent } from '../../../../../../shared/avatar/avatar.component';
 
 @Component({
   selector: 'app-profile',

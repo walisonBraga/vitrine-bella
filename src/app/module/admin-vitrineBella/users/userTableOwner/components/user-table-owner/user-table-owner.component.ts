@@ -12,6 +12,7 @@ import { CreateUserService } from '../../../service/create-user.service';
 import { EmployeeCreateModalComponent } from '../../../EmployeeCreateModal/components/employee-create-modal/employee-create-modal.component';
 import { UserPermissionModalComponent } from '../../../UserPermissionModal/components/user-permission-modal/user-permission-modal.component';
 import { EditUserModalComponent } from '../../../EditUserModal/components/edit-user-modal/edit-user-modal.component';
+import { AvatarComponent } from '../../../../../../shared/avatar/avatar.component';
 
 @Component({
   selector: 'app-user-table-owner',
