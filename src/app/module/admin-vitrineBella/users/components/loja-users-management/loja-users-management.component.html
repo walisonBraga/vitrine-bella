@@ -1,0 +1,93 @@
+<app-navigation-admin>
+  <div class="loja-users-management">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Gerenciamento de Usuários da Loja</h1>
+      <p>Gerencie todos os usuários do sistema: administradores, proprietários, funcionários e clientes</p>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="createNewUser()">
+        <mat-icon>person_add</mat-icon>
+        Novo Usuário
+      </button>
+    </div>
+  </div>
+
+  <!-- Ações em lote -->
+  <div class="bulk-actions" *ngIf="selectedUsers.length > 0">
+    <div class="bulk-info">
+      <mat-icon>group</mat-icon>
+      <span>{{ selectedUsers.length }} usuário(s) selecionado(s)</span>
+    </div>
+    <div class="bulk-buttons">
+      <button mat-button color="primary" (click)="bulkAction('activate')">
+        <mat-icon>check_circle</mat-icon>
+        Ativar
+      </button>
+      <button mat-button color="accent" (click)="bulkAction('deactivate')">
+        <mat-icon>cancel</mat-icon>
+        Desativar
+      </button>
+      <button mat-button color="warn" (click)="bulkAction('delete')">
+        <mat-icon>delete</mat-icon>
+        Excluir
+      </button>
+    </div>
+  </div>
+
+  <!-- Estatísticas -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-icon admin">
+        <mat-icon>admin_panel_settings</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getAdminCount() }}</h3>
+        <p>Administradores</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon owner">
+        <mat-icon>store</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getStoreOwnerCount() }}</h3>
+        <p>Proprietários</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon employee">
+        <mat-icon>badge</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getStoreEmployeeCount() }}</h3>
+        <p>Funcionários</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon client">
+        <mat-icon>person</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getClienteCount() }}</h3>
+        <p>Clientes</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela de usuários -->
+  <app-loja-user-table
+    [users]="users"
+    [config]="tableConfig"
+    [loading]="loading"
+    searchPlaceholder="Buscar por nome, email ou CPF..."
+    (userSelected)="onUserSelected($event)"
+    (actionClicked)="onActionClicked($event)"
+    (usersSelected)="onUsersSelected($event)">
+  </app-loja-user-table>
+  </div>
+</app-navigation-admin>

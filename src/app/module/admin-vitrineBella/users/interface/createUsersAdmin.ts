@@ -10,6 +10,6 @@ export interface createUsersAdmin {
   accessCode: string;
   isActive: boolean;
   role: string;
-  redirectRoute?: string; // Página de destino após login (/admin ou /home)
+  redirectRoute?: string | string[]; // Página(s) de destino após login (/admin, /loja ou array)
   photoURL?: string; // URL da foto de perfil do usuário
 }

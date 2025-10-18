@@ -1,0 +1,42 @@
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+  <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 600px; width: 100%;">
+    <div class="card-body text-center">
+      <div class="welcome-header mb-4">
+        <mat-icon class="welcome-icon">account_circle</mat-icon>
+        <h3 class="fw-bold mb-2 text-primary">Bem-vindo(a), {{ currentUser?.fullName }}!</h3>
+        <p class="text-muted">Você tem acesso a múltiplas áreas. Escolha onde deseja começar:</p>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <mat-card class="area-card admin-card h-100" (click)="goToAdmin()">
+            <mat-card-content class="text-center p-4">
+              <mat-icon class="area-icon admin-icon">admin_panel_settings</mat-icon>
+              <h4 class="fw-bold mb-3">Área Administrativa</h4>
+              <p class="text-muted mb-3">Gerencie produtos, usuários, vendas e configurações do sistema</p>
+              <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="col-md-6">
+          <mat-card class="area-card loja-card h-100" (click)="goToLoja()">
+            <mat-card-content class="text-center p-4">
+              <mat-icon class="area-icon loja-icon">store</mat-icon>
+              <h4 class="fw-bold mb-3">Loja Virtual</h4>
+              <p class="text-muted mb-3">Navegue pelos produtos, faça compras e gerencie seu carrinho</p>
+              <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button mat-button color="warn" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Sair da Conta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

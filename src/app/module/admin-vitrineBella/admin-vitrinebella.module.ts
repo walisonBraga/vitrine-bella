@@ -1,6 +1,7 @@
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 
 // Angular Material Modules
@@ -30,6 +31,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
 
 // Importações Ngx-Mask
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
@@ -44,12 +46,10 @@ import { SlideService } from './slides/service/slide.service';
 
 // Componentes
 import { ProductRegistrationModalComponent } from './products/ProductRegistrationModal/components/product-registration-modal/product-registration-modal.component';
-import { EmployeeCreateModalComponent } from './users/EmployeeCreateModal/components/employee-create-modal/employee-create-modal.component';
-import { UserPermissionModalComponent } from './users/UserPermissionModal/components/user-permission-modal/user-permission-modal.component';
 import { PermissionsManagementComponent } from './permissions/components/permissions-management/permissions-management.component';
 import { NavigationAdminComponent } from './sidenav/navigation-admin/components/navigation-admin/navigation-admin.component';
-import { UserTableOwnerComponent } from './users/userTableOwner/components/user-table-owner/user-table-owner.component';
-import { SlideModalComponent } from './slides/SlideModal/components/slide-modal/slide-modal.component';
+import { CreateLojaUserModalComponent } from './users/components/create-loja-user-modal/create-loja-user-modal.component';
+import { LojaUsersManagementComponent } from './users/components/loja-users-management/loja-users-management.component';
 import { CategoryTableComponent } from './categories/category-table/components/category-table/category-table.component';
 import { CategoryModalComponent } from './categories/CategoryModal/components/category-modal/category-modal.component';
 import { DiscountModalComponent } from './products/DiscountModal/components/discount-modal/discount-modal.component';
@@ -57,9 +57,11 @@ import { EditUserModalComponent } from './users/EditUserModal/components/edit-us
 import { ProductTableComponent } from './products/product-table/components/product-table/product-table.component';
 import { CouponModalComponent } from './products/CouponModal/components/coupon-modal/coupon-modal.component';
 import { CouponTableComponent } from './coupons/coupon-table/components/coupon-table/coupon-table.component';
+import { SlideModalComponent } from './slides/SlideModal/components/slide-modal/slide-modal.component';
 import { SlideTableComponent } from './slides/SlideTable/components/slide-table/slide-table.component';
 import { CustomSidenavComponent } from './sidenav/components/custom-sidenav/custom-sidenav.component';
 import { IconSelectorComponent } from './categories/components/icon-selector/icon-selector.component';
+import { LojaUserTableComponent } from './users/components/loja-user-table/loja-user-table.component';
 import { InternalSalesComponent } from './sales/components/internal-sales/internal-sales.component';
 import { DashboardComponent } from './dashboard/components/dashboard/dashboard.component';
 import { ProfileComponent } from './users/profile/components/profile/profile.component';
@@ -67,22 +69,19 @@ import { ConfirmDialogComponent } from './event/confirm-dialog/confirm-dialog.co
 import { Admin_vitrinebellaRouting } from './admin-vitrinebella.routing';
 import { AvatarComponent } from '../../shared/avatar/avatar.component';
 
-
-
-
 @NgModule({
   declarations: [
     ProductRegistrationModalComponent,
     PermissionsManagementComponent,
-    UserPermissionModalComponent,
-    EmployeeCreateModalComponent,
+    LojaUsersManagementComponent,
+    CreateLojaUserModalComponent,
     NavigationAdminComponent,
-    UserTableOwnerComponent,
     CustomSidenavComponent,
     EditUserModalComponent,
     ConfirmDialogComponent,
     InternalSalesComponent,
     DiscountModalComponent,
+    LojaUserTableComponent,
     CategoryTableComponent,
     CategoryModalComponent,
     IconSelectorComponent,
@@ -98,6 +97,7 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
   imports: [
     CommonModule,
     FormsModule,
+    HttpClientModule,
     MatProgressSpinnerModule,
     MatSlideToggleModule,
     MatProgressBarModule,
@@ -126,6 +126,7 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     MatIconModule,
     MatSnackBarModule,
     MatCardModule,
+    MatChipsModule,
 
     //Material Mask
     NgxMaskDirective,

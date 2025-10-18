@@ -1,182 +1,174 @@
 <app-navigation-admin>
-
-  <!-- Header -->
-  <header class="page-header">
-    <div class="d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="h3 mb-1">Gerenciar Produtos</h1>
-        <p class="text-muted">Gerencie os produtos da loja</p>
-      </div>
-      <div class="d-flex gap-2">
-        <button class="btn btn-primary" (click)="openProductModal()">
-          <mat-icon>add</mat-icon>
-          Criar Novo Produto
-        </button>
-        <button class="btn btn-outline-secondary" (click)="loadProducts()">
-          <mat-icon>refresh</mat-icon>
-          Atualizar
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Tabela de Produtos -->
-  <div class="main-container">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Lista de Produtos</h5>
-        <div class="search-box">
-          <div class="input-group">
-            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por nome, descrição ou categoria..."
-              class="form-control" />
-            <button class="btn btn-outline-secondary" type="button" (click)="searchTerm = ''; loadProducts()"
-              matTooltip="Limpar filtro">
-              <mat-icon>clear</mat-icon>
+  <div class="products-container">
+    <!-- Header Card -->
+    <mat-card class="products-header-card">
+      <mat-card-content>
+        <div class="products-header">
+          <div class="header-content">
+            <h1 class="header-title">Gerenciamento de Produtos</h1>
+            <p class="header-subtitle">Gerencie todos os produtos da loja: estoque, preços e categorias</p>
+          </div>
+          <div class="header-actions">
+            <button mat-raised-button color="primary" (click)="openProductModal()" class="header-btn">
+              <mat-icon>add</mat-icon>
+              Novo Produto
+            </button>
+            <button mat-button (click)="loadProducts()" class="header-btn">
+              <mat-icon>refresh</mat-icon>
+              Atualizar
             </button>
           </div>
         </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Products Table -->
+    <div class="products-table-container">
+      <!-- Search -->
+      <div class="search-container">
+        <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por nome, descrição ou categoria..."
+          class="search-input">
+        <mat-icon class="search-icon">search</mat-icon>
       </div>
-      <div class="card-body">
-        <div *ngIf="loading" class="text-center py-4 d-flex flex-column align-items-center">
-          <mat-spinner diameter="40"></mat-spinner>
-          <p class="mt-2">Carregando produtos...</p>
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-container">
+          <mat-spinner></mat-spinner>
+          <p>Carregando produtos...</p>
         </div>
-        <div *ngIf="!loading && dataSource.data.length === 0" class="text-center py-4">
-          <mat-icon class="text-muted" style="font-size: 48px; width: 48px; height: 48px">inventory_2</mat-icon>
-          <h6 class="mt-2">Nenhum produto encontrado</h6>
-          <p class="text-muted">Comece criando o primeiro produto.</p>
-          <button class="btn btn-primary" (click)="openProductModal()">
+
+        <!-- Empty State -->
+        <div *ngIf="!loading && dataSource.data.length === 0" class="empty-state">
+          <mat-icon>inventory_2</mat-icon>
+          <h3>Nenhum produto encontrado</h3>
+          <p>Comece criando o primeiro produto da loja.</p>
+          <button mat-raised-button color="primary" (click)="openProductModal()">
+            <mat-icon>add</mat-icon>
             Criar Primeiro Produto
           </button>
         </div>
-        <div *ngIf="!loading && dataSource.data.length > 0">
-          <div class="table-responsive">
-            <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-              <!-- Image -->
-              <ng-container matColumnDef="imageUrl">
-                <th mat-header-cell *matHeaderCellDef>Imagem</th>
-                <td mat-cell *matCellDef="let element">
-                  <img *ngIf="element.imageUrl" [src]="element.imageUrl" alt="{{ element.productName }}"
-                    class="product-image" />
-                  <span *ngIf="!element.imageUrl" class="text-muted">Sem imagem</span>
-                </td>
-              </ng-container>
 
-              <!-- Product Name -->
-              <ng-container matColumnDef="productName">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Nome do Produto
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.productName }}
-                </td>
-              </ng-container>
+      <!-- Products Table -->
+      <div *ngIf="!loading && dataSource.data.length > 0" class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="products-table">
+            <!-- Image -->
+            <ng-container matColumnDef="imageUrl">
+              <th mat-header-cell *matHeaderCellDef>Imagem</th>
+              <td mat-cell *matCellDef="let element">
+                <img *ngIf="element.imageUrl" [src]="element.imageUrl" alt="{{ element.productName }}"
+                  class="product-image" />
+                <span *ngIf="!element.imageUrl" class="text-muted">Sem imagem</span>
+              </td>
+            </ng-container>
 
-              <!-- Description -->
-              <ng-container matColumnDef="description">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Descrição
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.description }}
-                </td>
-              </ng-container>
+            <!-- Product Name -->
+            <ng-container matColumnDef="productName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                Nome do Produto
+              </th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.productName }}
+              </td>
+            </ng-container>
 
-              <!-- Price -->
-              <ng-container matColumnDef="price">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Preço</th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="price-container">
-                    <div class="current-price" [ngClass]="{ 'has-discount': element.hasDiscount }">
-                      {{ element.price | currency : "BRL" }}
-                    </div>
-                    <div *ngIf="element.hasDiscount && element.originalPrice" class="original-price">
-                      {{ element.originalPrice | currency : "BRL" }}
-                    </div>
-                    <div *ngIf="element.hasDiscount && getDiscountPercentage(element) > 0" class="discount-badge">
-                      <mat-icon>local_offer</mat-icon>
-                      {{ getDiscountPercentage(element) }}% OFF
-                    </div>
+            <!-- Description -->
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                Descrição
+              </th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.description }}
+              </td>
+            </ng-container>
+
+            <!-- Price -->
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Preço</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="price-container">
+                  <div class="current-price" [ngClass]="{ 'has-discount': element.hasDiscount }">
+                    {{ element.price | currency : "BRL" }}
                   </div>
-                </td>
-              </ng-container>
-
-              <!-- Stock -->
-              <ng-container matColumnDef="stock">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Estoque
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="stock-container" [ngClass]="getStockAlertClass(element)">
-                    <mat-icon class="stock-icon" [style.color]="getStockAlertColor(element)"
-                      matTooltip="{{ getStockAlertTooltip(element) }}">
-                      {{ getStockAlertIcon(element) }}
-                    </mat-icon>
-                    <span class="stock-value" [ngClass]="getStockAlertClass(element)">
-                      {{ element.stock }}
-                    </span>
-                    <span *ngIf="isLowStock(element)" class="stock-label">
-                      {{ getStockAlertLabel(element) }}
-                    </span>
+                  <div *ngIf="element.hasDiscount && element.originalPrice" class="original-price">
+                    {{ element.originalPrice | currency : "BRL" }}
                   </div>
-                </td>
-              </ng-container>
-
-              <!-- Category -->
-              <ng-container matColumnDef="category">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Categoria
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  <span class="badge badge-secondary">{{
-                    element.category
-                    }}</span>
-                </td>
-              </ng-container>
-
-              <!-- Actions -->
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="d-flex gap-1">
-                    <button mat-icon-button color="primary" (click)="editProduct(element.id)"
-                      matTooltip="Editar Produto">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button [color]="element.hasDiscount ? 'warn' : 'accent'"
-                      (click)="manageDiscount(element)"
-                      [matTooltip]="element.hasDiscount ? 'Gerenciar Desconto' : 'Aplicar Desconto'">
-                      <mat-icon>{{ element.hasDiscount ? 'local_offer' : 'local_offer' }}</mat-icon>
-                    </button>
-                    <button mat-icon-button color="accent" (click)="deleteProduct(element.id)"
-                      matTooltip="Excluir Produto">
-                      <mat-icon>delete</mat-icon>
-                    </button>
+                  <div *ngIf="element.hasDiscount && getDiscountPercentage(element) > 0" class="discount-badge">
+                    <mat-icon>local_offer</mat-icon>
+                    {{ getDiscountPercentage(element) }}% OFF
                   </div>
-                </td>
-              </ng-container>
+                </div>
+              </td>
+            </ng-container>
 
-              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <!-- Stock -->
+            <ng-container matColumnDef="stock">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                Estoque
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="stock-container" [ngClass]="getStockAlertClass(element)">
+                  <mat-icon class="stock-icon" [style.color]="getStockAlertColor(element)"
+                    matTooltip="{{ getStockAlertTooltip(element) }}">
+                    {{ getStockAlertIcon(element) }}
+                  </mat-icon>
+                  <span class="stock-value" [ngClass]="getStockAlertClass(element)">
+                    {{ element.stock }}
+                  </span>
+                  <span *ngIf="isLowStock(element)" class="stock-label">
+                    {{ getStockAlertLabel(element) }}
+                  </span>
+                </div>
+              </td>
+            </ng-container>
 
-              <!-- No data row -->
-              <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-                  <div class="text-center py-4">
-                    <mat-icon class="text-muted"
-                      style="font-size: 48px; width: 48px; height: 48px">search_off</mat-icon>
-                    <p class="text-muted">
-                      Nenhum produto encontrado para o filtro aplicado.
-                    </p>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
+            <!-- Category -->
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                Categoria
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <span class="badge badge-secondary">{{
+                  element.category
+                  }}</span>
+              </td>
+            </ng-container>
 
-          <mat-paginator [pageSizeOptions]="[5, 10, 20, 50]" showFirstLastButtons
-            aria-label="Select page of products"></mat-paginator>
-        </div>
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Ações</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="d-flex gap-1">
+                  <button mat-icon-button color="primary" (click)="editProduct(element.id)" matTooltip="Editar Produto">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button [color]="element.hasDiscount ? 'warn' : 'accent'"
+                    (click)="manageDiscount(element)"
+                    [matTooltip]="element.hasDiscount ? 'Gerenciar Desconto' : 'Aplicar Desconto'">
+                    <mat-icon>{{ element.hasDiscount ? 'local_offer' : 'local_offer' }}</mat-icon>
+                  </button>
+                  <button mat-icon-button color="accent" (click)="deleteProduct(element.id)"
+                    matTooltip="Excluir Produto">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+            <!-- No data row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                <div class="no-data-state">
+                  <mat-icon>search_off</mat-icon>
+                  <p>Nenhum produto encontrado para o filtro aplicado.</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+        <mat-paginator [pageSizeOptions]="[5, 10, 20, 50]" showFirstLastButtons
+          aria-label="Select page of products"></mat-paginator>
       </div>
     </div>
   </div>

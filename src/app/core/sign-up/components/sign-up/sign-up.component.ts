@@ -207,12 +207,12 @@ export class SignUpComponent implements OnInit {
         email: formData.email,
         accessCode: userId.substring(0, 10),
         isActive: true,
-        role: 'home',
+        role: 'loja',
         cpf: formData.cpf,
         phone: formData.telefone,
         createdAt: new Date(),
         updatedAt: new Date(),
-        // Campos adicionais para cliente
+        // Campos adicionais para loja
         birthDate: null,
         photoURL: null,
         photoFileName: null,

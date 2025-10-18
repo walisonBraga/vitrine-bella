@@ -1,26 +1,33 @@
-        <div class="sidenav-header">
-          <!-- Avatar usando imagem ou primeira letra -->
-          <div class="avatar-container" [class.collapsed]="sideNavCollapsed()">
-            <img *ngIf="userData()?.photoURL"
-                 [src]="userData()?.photoURL"
-                 [alt]="userData()?.fullName || 'Avatar'"
-                 class="user-avatar">
-            <div *ngIf="!userData()?.photoURL"
-                 class="avatar-placeholder"
-                 [style.width.px]="profilePicSize()"
-                 [style.height.px]="profilePicSize()">
-              {{ getFirstLetter(userData()?.fullName || 'U') }}
-            </div>
-          </div>
-          <div class="header-text" [class.hide-header-text]="sideNavCollapsed()">
-            <h2 class="no-margin">
-              {{ userData()?.fullName || "" }}
-            </h2>
-            <p class="no-margin">
-              {{ userData()?.role || "Gerencie sua loja com facilidade" }}
-            </p>
-          </div>
-        </div>
+<div class="sidenav-header">
+  <!-- Avatar usando imagem ou primeira letra -->
+  <div class="avatar-container" [class.collapsed]="sideNavCollapsed()">
+    <img *ngIf="userData()?.photoURL" [src]="userData()?.photoURL" [alt]="userData()?.fullName || 'Avatar'"
+      class="user-avatar">
+    <div *ngIf="!userData()?.photoURL" class="avatar-placeholder" [style.width.px]="profilePicSize()"
+      [style.height.px]="profilePicSize()">
+      {{ getFirstLetter(userData()?.fullName || 'U') }}
+    </div>
+  </div>
+  <div class="header-text" [class.hide-header-text]="sideNavCollapsed()">
+    <h2 class="no-margin">
+      {{ userData()?.fullName || "" }}
+    </h2>
+    <p class="no-margin">
+      {{ userData()?.role || "Gerencie sua loja com facilidade" }}
+    </p>
+  </div>
+</div>
+
+<!-- Botão de navegação entre admin e loja -->
+<div *ngIf="hasMultipleRoles()" class="role-toggle-container" [class.collapsed]="sideNavCollapsed()">
+  <button mat-raised-button class="role-toggle-btn" [color]="currentRole() === 'admin' ? 'primary' : 'accent'"
+    (click)="toggleRole()">
+    <mat-icon>{{ currentRole() === 'admin' ? 'store' : 'admin_panel_settings' }}</mat-icon>
+    <span *ngIf="!sideNavCollapsed()">
+      {{ currentRole() === 'admin' ? 'Ir para Loja' : 'Ir para Admin' }}
+    </span>
+  </button>
+</div>
 
 <mat-nav-list>
   <ng-container *ngFor="let item of filteredMenuItems()">

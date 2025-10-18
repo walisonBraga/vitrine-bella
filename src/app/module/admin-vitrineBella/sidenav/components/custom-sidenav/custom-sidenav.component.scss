@@ -92,6 +92,56 @@
   height: 0 !important;
 }
 
+// Estilos para o botão de navegação entre roles
+.role-toggle-container {
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 8px;
+
+  &.collapsed {
+    padding: 8px;
+  }
+
+  .role-toggle-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  &.collapsed .role-toggle-btn {
+    padding: 12px 8px;
+    min-width: 40px;
+
+    span {
+      display: none;
+    }
+  }
+}
+
 .menu-item {
   border-left: 5px solid;
   border-left-color: rgba(0, 0, 0, 0);

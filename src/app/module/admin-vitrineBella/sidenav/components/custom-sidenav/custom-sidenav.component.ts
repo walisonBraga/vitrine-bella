@@ -15,6 +15,8 @@ export class CustomSidenavComponent {
   sideNavCollapsed = signal(false);
   userData = signal<any | null>(null);
   lowStockCount = signal(0);
+  hasMultipleRoles = signal(false);
+  currentRole = signal<'admin' | 'loja'>('admin');
   private destroy$ = new Subject<void>(); // Subject para unsubscribe manual
 
   @Input() set collapse(value: boolean) {
@@ -30,8 +32,11 @@ export class CustomSidenavComponent {
       const user = this.userData();
       if (!user) {
         this._router.navigate(['/signin']);
+      } else {
+        // Verifica se o usuário tem múltiplos roles
+        this.checkMultipleRoles(user);
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   sidenavWidth = computed(() => this.sideNavCollapsed() ? '70px' : 'auto');
@@ -82,9 +87,9 @@ export class CustomSidenavComponent {
       ]
     },
     {
-      icon: 'people',
-      label: 'Usuários',
-      route: '/admin/adminUserTableOwner',
+      icon: 'group',
+      label: 'Usuários da Loja',
+      route: '/admin/loja-users-management',
       permission: '/users'
     },
     {
@@ -200,6 +205,40 @@ export class CustomSidenavComponent {
     if (target.tagName === 'A' || target.closest('a')) {
       event.preventDefault();
       event.stopPropagation();
+    }
+  }
+
+  // Verifica se o usuário tem múltiplos roles
+  private checkMultipleRoles(user: any): void {
+    const redirectRoute = user.redirectRoute;
+    
+    if (Array.isArray(redirectRoute)) {
+      const hasAdmin = redirectRoute.includes('/admin');
+      const hasLoja = redirectRoute.includes('/loja');
+      
+      this.hasMultipleRoles.set(hasAdmin && hasLoja);
+      
+      // Define o role atual baseado na URL atual
+      const currentUrl = this._router.url;
+      if (currentUrl.startsWith('/admin')) {
+        this.currentRole.set('admin');
+      } else {
+        this.currentRole.set('loja');
+      }
+    } else {
+      this.hasMultipleRoles.set(false);
+    }
+  }
+
+  // Alterna entre admin e loja
+  toggleRole(): void {
+    const currentRole = this.currentRole();
+    if (currentRole === 'admin') {
+      this._router.navigate(['/loja']);
+      this.currentRole.set('loja');
+    } else {
+      this._router.navigate(['/admin/admin-dashboard']);
+      this.currentRole.set('admin');
     }
   }
 

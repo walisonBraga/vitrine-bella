@@ -1,0 +1,108 @@
+<div class="loja-user-table-container">
+  <!-- Header com busca e ações -->
+  <div class="table-header" *ngIf="config.searchable || config.selectable">
+    <div class="search-section" *ngIf="config.searchable">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>{{ searchPlaceholder }}</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="{{ searchPlaceholder }}" #input>
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <div class="actions-section" *ngIf="config.selectable && selectedUsers.size > 0">
+      <span class="selected-count">{{ selectedUsers.size }} selecionado(s)</span>
+      <button mat-button color="warn" (click)="selectedUsers.clear(); emitSelectedUsers()">
+        <mat-icon>clear</mat-icon>
+        Limpar Seleção
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Carregando usuários...</p>
+  </div>
+
+  <!-- Tabela -->
+  <div class="table-container" *ngIf="!loading">
+    <table mat-table [dataSource]="dataSource" class="loja-user-table" matSort>
+
+      <!-- Coluna de seleção -->
+      <ng-container matColumnDef="select" *ngIf="config.selectable">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox (change)="masterToggle()" [checked]="isAllSelected()"
+            [indeterminate]="selectedUsers.size > 0 && !isAllSelected()">
+          </mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let user">
+          <mat-checkbox (change)="toggleUserSelection(user)" [checked]="isUserSelected(user)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <!-- Colunas dinâmicas -->
+      <ng-container *ngFor="let column of config.columns" [matColumnDef]="column.key">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ column.label }}
+        </th>
+        <td mat-cell *matCellDef="let user" [class.clickable]="true" (click)="onUserClick(user)">
+
+          <!-- Tipo badge -->
+          <div *ngIf="column.type === 'badge'" class="badge-container">
+            <mat-chip-listbox>
+              <mat-chip-option *ngFor="let item of formatCellValue(user, column.key)" [color]="getBadgeColor(item)">
+                {{ item }}
+              </mat-chip-option>
+            </mat-chip-listbox>
+          </div>
+
+          <!-- Tipo boolean -->
+          <mat-chip *ngIf="column.type === 'boolean'" [color]="getBadgeColor(user[column.key])"
+            [selected]="user[column.key]">
+            {{ formatCellValue(user, column.key) }}
+          </mat-chip>
+
+          <!-- Outros tipos -->
+          <span *ngIf="column.type !== 'badge' && column.type !== 'boolean'">
+            {{ formatCellValue(user, column.key) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Coluna de ações -->
+      <ng-container matColumnDef="actions" *ngIf="config.actions.length > 0">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let user">
+          <button mat-icon-button [matMenuTriggerFor]="userMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #userMenu="matMenu">
+            <button mat-menu-item *ngFor="let action of config.actions" [disabled]="!canShowAction(action, user)"
+              (click)="onActionClick(action, user)">
+              <mat-icon [color]="action.color">{{ action.icon }}</mat-icon>
+              <span>{{ action.label }}</span>
+            </button>
+          </mat-menu>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.selected]="isUserSelected(row)"
+        [class.inactive]="!row.isActive">
+      </tr>
+    </table>
+
+    <!-- Paginação -->
+    <mat-paginator *ngIf="config.pagination" [pageSizeOptions]="[5, 10, 25, 50]" [pageSize]="10" showFirstLastButtons>
+    </mat-paginator>
+  </div>
+
+  <!-- Mensagem quando não há dados -->
+  <div class="no-data" *ngIf="!loading && dataSource.data.length === 0">
+    <mat-icon>people_outline</mat-icon>
+    <h3>Nenhum usuário encontrado</h3>
+    <p *ngIf="searchTerm">Tente ajustar os filtros de busca</p>
+    <p *ngIf="!searchTerm">Não há usuários cadastrados no sistema</p>
+  </div>
+</div>

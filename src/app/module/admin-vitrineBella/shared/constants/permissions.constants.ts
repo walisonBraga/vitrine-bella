@@ -3,33 +3,33 @@ export const PERMISSIONS = {
   DASHBOARD: '/dashboard',
   PRODUCT_MANAGEMENT: '/product-management',
   USERS: '/users',
-  SALES_MANAGEMENT: '/sales-management',
   INTERNAL_SALES: '/internal-sales',
   PERMISSIONS_MANAGEMENT: '/permissions-management',
-  ADMIN_MANAGEMENT: '/admin-management',
-  SLIDES_MANAGEMENT: '/slides-management'
+  CATEGORIES: '/categories',
+  COUPONS: '/coupons',
+  SLIDES: '/slides'
 } as const;
 
 export const PERMISSION_LABELS = {
   '/dashboard': 'Dashboard',
   '/product-management': 'Gerenciamento de Produtos',
   '/users': 'Gerenciamento de Usuários',
-  '/sales-management': 'Gerenciamento de Vendas',
   '/internal-sales': 'Vendas Internas',
   '/permissions-management': 'Gerenciamento de Permissões',
-  '/admin-management': 'Gerenciamento de Administração',
-  '/slides-management': 'Gerenciamento de Slides'
+  '/categories': 'Gerenciamento de Categorias',
+  '/coupons': 'Gerenciamento de Cupons',
+  '/slides': 'Gerenciamento de Slides'
 } as const;
 
 export const PERMISSION_DESCRIPTIONS = {
   '/dashboard': 'Acesso ao painel principal',
   '/product-management': 'Criar, editar e excluir produtos',
   '/users': 'Criar e gerenciar usuários',
-  '/sales-management': 'Visualizar relatórios de vendas',
   '/internal-sales': 'Realizar vendas diretamente na loja',
   '/permissions-management': 'Configurar permissões de usuários',
-  '/admin-management': 'Acesso completo ao sistema administrativo',
-  '/slides-management': 'Criar, editar e gerenciar slides do banner'
+  '/categories': 'Criar e gerenciar categorias de produtos',
+  '/coupons': 'Criar e gerenciar cupons de desconto',
+  '/slides': 'Criar e gerenciar slides do banner'
 } as const;
 
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS);
@@ -39,19 +39,20 @@ export const DEFAULT_PERMISSIONS = {
     '/dashboard',
     '/product-management',
     '/users',
-    '/sales-management',
     '/internal-sales',
     '/permissions-management',
-    '/admin-management',
-    '/slides-management'
+    '/categories',
+    '/coupons',
+    '/slides'
   ],
   STORE_OWNER: [
     '/dashboard',
     '/product-management',
     '/users',
-    '/sales-management',
     '/internal-sales',
-    '/slides-management'
+    '/categories',
+    '/coupons',
+    '/slides'
   ],
   STORE_EMPLOYEE: [
     '/dashboard',

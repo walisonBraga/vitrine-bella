@@ -1,0 +1,145 @@
+<div class="create-user-modal">
+  <div class="modal-header">
+    <h2 mat-dialog-title>
+      <mat-icon>{{ isEdit ? 'edit' : 'person_add' }}</mat-icon>
+      {{ isEdit ? 'Editar Usuário' : 'Criar Novo Usuário' }}
+    </h2>
+    <button mat-icon-button (click)="onCancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="modal-content">
+    <form [formGroup]="createUserForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Informações Pessoais -->
+      <div class="form-section">
+        <h3>Informações Pessoais</h3>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome Completo</mat-label>
+            <input matInput formControlName="fullName" placeholder="Digite o nome completo">
+            <mat-error>{{ fullNameError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="email@exemplo.com" 
+                   (blur)="validateEmail(createUserForm.get('email')?.value)">
+            <mat-error>{{ emailError }}</mat-error>
+          </mat-form-field>
+
+          <!-- Campo de Senha - Sempre visível no modo de edição -->
+          <mat-form-field appearance="outline" class="half-width" *ngIf="!isEdit || showPasswordFields">
+            <mat-label>{{ isEdit ? 'Nova Senha' : 'Senha' }}</mat-label>
+            <input matInput formControlName="password" type="password" placeholder="Mínimo 6 caracteres">
+            <mat-error>{{ passwordError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Opção de Alterar Senha (apenas no modo de edição) -->
+        <div class="form-row" *ngIf="isEdit">
+          <div class="password-option">
+            <mat-checkbox formControlName="changePassword" (change)="onPasswordChangeToggle($event)">
+              Alterar senha do usuário
+            </mat-checkbox>
+            <p class="password-hint">Marque esta opção se deseja definir uma nova senha para o usuário</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>CPF</mat-label>
+            <input matInput formControlName="cpf" placeholder="000.000.000-00" 
+                   (input)="formatCPF($event)" maxlength="14">
+            <mat-error>{{ cpfError }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Telefone</mat-label>
+            <input matInput formControlName="phone" placeholder="(00) 00000-0000" 
+                   (input)="formatPhone($event)" maxlength="15">
+            <mat-error>{{ phoneError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Data de Nascimento</mat-label>
+            <input matInput formControlName="birthDate" type="date">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Configurações de Acesso -->
+      <div class="form-section">
+        <h3>Configurações de Acesso</h3>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Função do Usuário</mat-label>
+            <mat-select formControlName="userRole">
+              <mat-option *ngFor="let role of userRoles" [value]="role.value">
+                {{ role.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Páginas de Acesso</mat-label>
+            <mat-select formControlName="accessRoutes" multiple>
+              <mat-option *ngFor="let route of accessRoutes" [value]="route.value">
+                {{ route.label }}
+              </mat-option>
+            </mat-select>
+            <mat-hint>Selecione as áreas que o usuário pode acessar</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Permissões de Gerenciamento</mat-label>
+            <mat-select formControlName="managementType" multiple>
+              <mat-option *ngFor="let type of managementTypes" [value]="type.value">
+                {{ type.label }}
+              </mat-option>
+            </mat-select>
+            <mat-hint>Selecione as funcionalidades que o usuário pode gerenciar</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Configurações Adicionais -->
+      <div class="form-section">
+        <h3>Configurações Adicionais</h3>
+        
+        <div class="form-row checkbox-row">
+          <mat-checkbox formControlName="isActive">
+            Usuário Ativo
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="marketing">
+            Aceita receber comunicações de marketing
+          </mat-checkbox>
+        </div>
+      </div>
+
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="modal-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isLoading">
+      Cancelar
+    </button>
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isLoading">
+      <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+      <mat-icon *ngIf="!isLoading">{{ isEdit ? 'save' : 'add' }}</mat-icon>
+      {{ isEdit ? 'Salvar Alterações' : 'Criar Usuário' }}
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -1,22 +1,26 @@
 <app-navigation-admin>
   <div class="permissions-container">
-    <!-- Header -->
-    <header class="permissions-header">
-      <div class="header-content">
-        <h1 class="header-title">Gerenciamento de Permissões</h1>
-        <p class="header-subtitle">Configure as permissões de acesso para cada usuário</p>
-      </div>
-      <div class="header-actions">
-        <button mat-raised-button color="primary" (click)="exportPermissions()" class="header-btn">
-          <mat-icon>download</mat-icon>
-          Exportar Relatório
-        </button>
-        <button mat-button (click)="loadUsers()" class="header-btn">
-          <mat-icon>refresh</mat-icon>
-          Atualizar
-        </button>
-      </div>
-    </header>
+    <!-- Header Card -->
+    <mat-card class="permissions-header-card">
+      <mat-card-content>
+        <div class="permissions-header">
+          <div class="header-content">
+            <h1 class="header-title">Gerenciamento de Permissões</h1>
+            <p class="header-subtitle">Configure as permissões de acesso para cada usuário do sistema</p>
+          </div>
+          <div class="header-actions">
+            <button mat-raised-button color="primary" (click)="exportPermissions()" class="header-btn">
+              <mat-icon>download</mat-icon>
+              Exportar Relatório
+            </button>
+            <button mat-button (click)="loadUsers()" class="header-btn">
+              <mat-icon>refresh</mat-icon>
+              Atualizar
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Loading State -->
     <div *ngIf="isLoading" class="loading-container">
@@ -31,96 +35,117 @@
       <button mat-button (click)="loadUsers()">Tentar Novamente</button>
     </div>
 
-    <!-- Permission Map Reference -->
-    <mat-card class="permission-map-card" *ngIf="!isLoading && !errorMessage">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>map</mat-icon>
-          Permission Map - Referência
-        </mat-card-title>
-        <mat-card-subtitle>Mapeamento de permissões disponíveis no sistema</mat-card-subtitle>
-      </mat-card-header>
+
+    <mat-card class="users-permissions-card" *ngIf="!isLoading && !errorMessage">
       <mat-card-content>
-        <div class="permission-map-grid">
-          <div class="permission-item" *ngFor="let permission of availablePermissions">
-            <div class="permission-header">
-              <mat-icon class="permission-icon">security</mat-icon>
-              <div class="permission-info">
-                <h4>{{ permission.label }}</h4>
-                <p>{{ permission.description }}</p>
-              </div>
+        <!-- Search Bar -->
+        <div class="search-container" *ngIf="tableConfig.searchable">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Buscar usuários...</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (input)="onSearchChange($any($event.target).value)"
+              placeholder="Digite nome, email ou função">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Table Header -->
+        <div class="table-header">
+          <div class="header-row">
+            <div class="header-cell checkbox-cell">
+              <mat-checkbox *ngIf="tableConfig.selectable" (change)="$event ? masterToggle() : null"
+                [checked]="selection.hasValue()" [indeterminate]="selection.hasValue() && !isAllSelected()">
+              </mat-checkbox>
             </div>
+            <div class="header-cell name-cell">Nome</div>
+            <div class="header-cell email-cell">Email</div>
+            <div class="header-cell role-cell">Função</div>
           </div>
         </div>
-      </mat-card-content>
-    </mat-card>
 
-    <!-- Users Permissions Table -->
-    <mat-card class="users-permissions-card" *ngIf="!isLoading && !errorMessage">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>people</mat-icon>
-          Permissões por Usuário
-        </mat-card-title>
-        <mat-card-subtitle>Gerencie as permissões individuais de cada usuário</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="users-grid">
-          <div class="user-card" *ngFor="let user of users">
-            <div class="user-header">
-              <div class="user-info">
-                <img [src]="user.photoURL ? user.photoURL : 'assets/img/icon-sem-perfil.png'" [alt]="user.fullName"
-                  class="user-avatar" />
-                <div class="user-details">
-                  <h3>{{ user.fullName}}</h3>
-                  <p class="user-email">{{ user.email }}</p>
-                  <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
-                    {{ getRoleDisplayName(user.role) }}
-                  </span>
-                </div>
-              </div>
-              <div class="user-status">
-                <mat-icon [color]="user.isActive ? 'primary' : 'warn'">
-                  {{ user.isActive ? 'check_circle' : 'block' }}
-                </mat-icon>
-                <span [class]="user.isActive ? 'status-active' : 'status-inactive'">
-                  {{ user.isActive ? 'Ativo' : 'Inativo' }}
-                </span>
-              </div>
-            </div>
+        <!-- Accordion with Expansion Panels -->
+        <mat-accordion class="users-accordion" multi="true">
+          <mat-expansion-panel *ngFor="let user of dataSource.data; trackBy: trackByUserId"
+            [expanded]="expandedPanels.has(user.uid)" (opened)="onPanelOpened(user.uid)"
+            (closed)="onPanelClosed(user.uid)" class="user-expansion-panel" hideToggle>
 
-            <div class="permissions-section">
-              <h4>Permissões Atuais</h4>
-              <div *ngIf="!canEditUser(user)" class="edit-warning">
-                <mat-icon color="warn">info</mat-icon>
-                <span *ngIf="authenticatedUser?.role !== 'admin' && user.role === 'admin'">🔒 Não é possível editar permissões de administrador</span>
-                <span *ngIf="authenticatedUser?.role !== 'admin' && user.role !== 'admin'">Você não pode editar suas próprias permissões</span>
-                <span *ngIf="authenticatedUser?.role === 'admin'">Erro: Não foi possível carregar permissões de edição</span>
-              </div>
-              <div class="permissions-grid">
-                <div class="permission-toggle" *ngFor="let permission of availablePermissions"
-                  [class.disabled]="!canEditPermission(user, permission.value)"
-                  [class.critical-blocked]="!canEditPermission(user, permission.value) && canEditUser(user)">
-                  <div class="permission-info">
-                    <mat-icon class="permission-icon">{{
-                      hasPermission(user, permission.value) ? 'check_circle' : 'radio_button_unchecked'
-                      }}</mat-icon>
-                    <div class="permission-details">
-                      <span class="permission-label">{{ permission.label }}</span>
-                      <span *ngIf="!canEditPermission(user, permission.value) && canEditUser(user) && (permission.value === '/permissions-management' || permission.value === '/admin-management')"
-                        class="blocked-reason">🔒 Protegido por segurança</span>
-                      <span *ngIf="!canEditPermission(user, permission.value) && !canEditUser(user) && user.role === 'admin'"
-                        class="blocked-reason">🔒 Conta de administrador protegida</span>
+            <mat-expansion-panel-header class="user-panel-header">
+              <mat-panel-title class="user-panel-title">
+                <div class="table-row">
+                  <div class="table-cell checkbox-cell">
+                    <mat-checkbox *ngIf="tableConfig.selectable" (click)="$event.stopPropagation()"
+                      (change)="$event ? selection.toggle(user) : null" [checked]="selection.isSelected(user)">
+                    </mat-checkbox>
+                  </div>
+                  <div class="table-cell name-cell">
+                    <div class="user-info">
+                      <img [src]="user.photoURL ? user.photoURL : 'assets/img/icon-sem-perfil.png'"
+                        [alt]="user.fullName" class="user-avatar">
+                      <span class="user-name">{{ user.fullName }}</span>
                     </div>
                   </div>
-                  <mat-slide-toggle [checked]="hasPermission(user, permission.value)" [disabled]="!canEditPermission(user, permission.value)"
-                    (change)="togglePermission(user, permission.value)" color="primary"
-                    [title]="getPermissionTooltip(user, permission.value)"></mat-slide-toggle>
+                  <div class="table-cell email-cell">
+                    <span class="user-email">{{ user.email }}</span>
+                  </div>
+                  <div class="table-cell role-cell">
+                    <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+                      {{ getRoleDisplayName(user.role) }}
+                    </span>
+                  </div>
+                </div>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <!-- Panel Content - Permissions -->
+            <div class="permissions-panel-content">
+              <div class="permissions-section">
+                <h4>
+                  Permissões de {{ user.fullName }}
+                </h4>
+
+                <div *ngIf="!canEditUser(user)" class="edit-warning">
+                  <span *ngIf="authenticatedUser?.role !== 'admin' && user.role === 'admin'">
+                    🔒 Não é possível editar permissões de administrador
+                  </span>
+                  <span *ngIf="authenticatedUser?.role !== 'admin' && user.role !== 'admin'">
+                    Você não pode editar suas próprias permissões
+                  </span>
+                  <span *ngIf="authenticatedUser?.role === 'admin'">
+                    Erro: Não foi possível carregar permissões de edição
+                  </span>
+                </div>
+
+                <div class="permissions-grid">
+                  <div class="permission-toggle" *ngFor="let permission of availablePermissions"
+                    [class.disabled]="!canEditPermission(user, permission.value)"
+                    [class.critical-blocked]="!canEditPermission(user, permission.value) && canEditUser(user)">
+                    <div class="permission-info">
+                      <div class="permission-details">
+                        <span class="permission-label">{{ permission.label }}</span>
+                        <span class="permission-description">{{ permission.description }}</span>
+                        <span
+                          *ngIf="!canEditPermission(user, permission.value) && canEditUser(user) && (permission.value === '/permissions-management' || permission.value === '/admin-management')"
+                          class="blocked-reason">🔒 Protegido por segurança</span>
+                        <span
+                          *ngIf="!canEditPermission(user, permission.value) && !canEditUser(user) && user.role === 'admin'"
+                          class="blocked-reason">🔒 Conta de administrador protegida</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle [checked]="hasPermission(user, permission.value)"
+                      [disabled]="!canEditPermission(user, permission.value)"
+                      (change)="togglePermission(user, permission.value)" color="primary"
+                      [title]="getPermissionTooltip(user, permission.value)">
+                    </mat-slide-toggle>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+
+        <!-- Paginator -->
+        <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons
+          aria-label="Selecionar página de usuários" *ngIf="tableConfig.pagination">
+        </mat-paginator>
       </mat-card-content>
     </mat-card>
 

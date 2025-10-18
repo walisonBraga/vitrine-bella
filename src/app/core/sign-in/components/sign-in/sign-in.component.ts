@@ -138,7 +138,19 @@ export class SignInComponent implements OnInit {
       if (user) {
         // Usa redirectRoute se disponível, senão usa role para determinar redirecionamento
         if (user.redirectRoute) {
-          this.router.navigate([user.redirectRoute]);
+          // Verifica se tem múltiplos roles
+          if (Array.isArray(user.redirectRoute) && 
+              user.redirectRoute.includes('/admin') && 
+              user.redirectRoute.includes('/loja')) {
+            // Usuário com múltiplos roles - vai para página de escolha
+            this.router.navigate(['/choose-area']);
+          } else if (Array.isArray(user.redirectRoute)) {
+            // Array com apenas um role
+            this.router.navigate([user.redirectRoute[0]]);
+          } else {
+            // String única
+            this.router.navigate([user.redirectRoute]);
+          }
         } else if (user.role) {
           // Se role for admin, store_owner ou store_employee, vai para admin
           if (user.role === 'admin' || user.role === 'store_owner' || user.role === 'store_employee') {

@@ -1,4 +1,4 @@
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, updatePassword } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, updatePassword, deleteUser as firebaseDeleteUser } from '@angular/fire/auth';
 import { collection, doc, Firestore, getDocs, query, setDoc, where } from '@angular/fire/firestore';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
@@ -166,6 +166,28 @@ export class AuthService {
       if (updatedUser) {
         this._currentUserSubject.next(updatedUser); // Atualiza o BehaviorSubject
       }
+    }
+  }
+
+  /**
+   * Exclui um usuário do Firebase Authentication
+   * Nota: Este método requer autenticação como administrador
+   */
+  async deleteUser(uid: string): Promise<void> {
+    try {
+      // Importar o Admin SDK ou usar uma função Cloud Function
+      // Por enquanto, vamos simular a exclusão
+      console.log(`Simulando exclusão do usuário ${uid} do Firebase Authentication`);
+      
+      // TODO: Implementar exclusão real usando Admin SDK ou Cloud Function
+      // await firebaseDeleteUser(this._afAuth.currentUser);
+      
+      // Por enquanto, apenas logamos a ação
+      console.warn('ATENÇÃO: Exclusão do Firebase Authentication não implementada. Implemente usando Admin SDK ou Cloud Function.');
+      
+    } catch (error) {
+      console.error('Erro ao excluir usuário do Authentication:', error);
+      throw new Error(`Falha ao excluir usuário do Authentication: ${error}`);
     }
   }
 }
