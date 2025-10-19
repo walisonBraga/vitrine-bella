@@ -16,6 +16,10 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
+// Log System Imports
+import { LogService } from '../../../../module/admin-vitrineBella/logs/service/log.service';
+import { UserContextService } from '../../../../module/admin-vitrineBella/logs/service/user-context.service';
+
 @Component({
   selector: 'app-sign-in',
   standalone: true,
@@ -49,6 +53,8 @@ export class SignInComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private snackBar: MatSnackBar,
+    private logService: LogService,
+    private userContextService: UserContextService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
@@ -136,6 +142,24 @@ export class SignInComponent implements OnInit {
       const user: any = await this.authService.signIn(email, password);
 
       if (user) {
+        // Registrar login no sistema de logs
+        this.logService.addLog({
+          userId: user.uid || 'unknown',
+          userName: user.displayName || user.email || 'Usuário Desconhecido',
+          action: 'login',
+          entity: 'system',
+          entityName: 'Sistema de Login',
+          details: `Login realizado com sucesso - Email: ${email}`,
+          status: 'success',
+          ...this.userContextService.getClientInfo()
+        });
+
+        // Mostrar notificação de sucesso simples
+        this.snackBar.open('Login efetuado com sucesso!', 'Fechar', { 
+          duration: 1500,
+          panelClass: ['success-snackbar']
+        });
+        
         // Usa redirectRoute se disponível, senão usa role para determinar redirecionamento
         if (user.redirectRoute) {
           // Verifica se tem múltiplos roles
@@ -162,11 +186,36 @@ export class SignInComponent implements OnInit {
           this.router.navigate(['/home']);
         }
       } else {
+        // Registrar tentativa de login falhada
+        this.logService.addLog({
+          userId: 'unknown',
+          userName: email,
+          action: 'login',
+          entity: 'system',
+          entityName: 'Sistema de Login',
+          details: `Tentativa de login falhada - Email: ${email}`,
+          status: 'error',
+          ...this.userContextService.getClientInfo()
+        });
+
         this.snackBar.open('Erro ao fazer login. Verifique suas credenciais.', 'Fechar', { duration: 5000 });
       }
 
     } catch (error) {
       console.error('Erro ao fazer login:', error);
+      
+      // Registrar erro de login
+      this.logService.addLog({
+        userId: 'unknown',
+        userName: email,
+        action: 'login',
+        entity: 'system',
+        entityName: 'Sistema de Login',
+        details: `Erro no login - Email: ${email}, Erro: ${error}`,
+        status: 'error',
+        ...this.userContextService.getClientInfo()
+      });
+
       this.snackBar.open('Erro ao fazer login. Verifique suas credenciais e tente novamente.', 'Fechar', { duration: 5000 });
     } finally {
       this.loading = false;

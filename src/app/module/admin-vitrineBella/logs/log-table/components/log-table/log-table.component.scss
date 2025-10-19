@@ -1,0 +1,316 @@
+.log-container {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.filter-card {
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+
+    .search-field {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .filter-field {
+      min-width: 150px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.log-table {
+  width: 100%;
+  table-layout: fixed;
+
+  th {
+    font-weight: 600;
+    color: #333;
+    background-color: #f5f5f5;
+    text-align: center;
+    padding: 16px 8px;
+  }
+
+  td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+
+  // Colunas com largura igual
+  th:nth-child(1),
+  td:nth-child(1) {
+    width: 16.66%;
+  }
+
+  // Data/Hora
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 16.66%;
+  }
+
+  // Usuário
+  th:nth-child(3),
+  td:nth-child(3) {
+    width: 16.66%;
+  }
+
+  // Ação
+  th:nth-child(4),
+  td:nth-child(4) {
+    width: 16.66%;
+  }
+
+  // Entidade
+  th:nth-child(5),
+  td:nth-child(5) {
+    width: 16.66%;
+  }
+
+  // Detalhes
+  th:nth-child(6),
+  td:nth-child(6) {
+    width: 16.66%;
+  }
+
+  // Status
+}
+
+.timestamp-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .time-icon {
+    font-size: 18px;
+    color: #666;
+  }
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .user-icon {
+    font-size: 18px;
+    color: #666;
+  }
+}
+
+.entity-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .entity-icon {
+    font-size: 18px;
+    color: #666;
+  }
+}
+
+.details-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+
+  p {
+    margin-top: 16px;
+    color: #666;
+  }
+}
+
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #ccc;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #999;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .log-container {
+    padding: 16px;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch !important;
+
+    .search-field,
+    .filter-field {
+      min-width: unset;
+      width: 100%;
+    }
+
+    .action-buttons {
+      margin-left: 0;
+      justify-content: center;
+    }
+  }
+
+  .log-table {
+    font-size: 14px;
+
+    th,
+    td {
+      padding: 8px 4px;
+    }
+  }
+
+  .details-cell {
+    max-width: 150px;
+  }
+}
+
+// Cores para diferentes tipos de entidade
+.entity-product {
+  color: #4caf50 !important;
+}
+
+.entity-category {
+  color: #2196f3 !important;
+}
+
+.entity-user {
+  color: #ff9800 !important;
+}
+
+.entity-coupon {
+  color: #9c27b0 !important;
+}
+
+.entity-slide {
+  color: #f44336 !important;
+}
+
+.entity-permission {
+  color: #9c27b0 !important;
+}
+
+.entity-goal {
+  color: #ff9800 !important;
+}
+
+.entity-system {
+  color: #607d8b !important;
+}
+
+// Cores para ações
+.action-create {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.action-update {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+.action-delete {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.action-login {
+  background-color: #8bc34a !important;
+  color: white !important;
+}
+
+.action-logout {
+  background-color: #ff9800 !important;
+  color: white !important;
+}
+
+.action-grant {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.action-remove {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.action-default {
+  background-color: #9e9e9e !important;
+  color: white !important;
+}
+
+// Cores para status
+.status-success {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.status-error {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.status-warning {
+  background-color: #ff9800 !important;
+  color: white !important;
+}
+
+.status-info {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+// Centralização de conteúdo
+.text-center {
+  text-align: center !important;
+}
+
+// Ajustes para células com ícones
+.timestamp-cell,
+.user-cell,
+.entity-cell {
+  justify-content: center;
+}

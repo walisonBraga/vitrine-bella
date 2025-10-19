@@ -1,0 +1,424 @@
+.goals-container {
+  padding: 24px;
+  max-width: 100%;
+}
+
+// Cards de estatísticas
+.stats-card {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-top: 16px;
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #2196f3;
+
+      .stat-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: #2196f3;
+      }
+
+      .stat-content {
+        display: flex;
+        flex-direction: column;
+
+        .stat-value {
+          font-size: 24px;
+          font-weight: 600;
+          color: #333;
+          line-height: 1;
+        }
+
+        .stat-label {
+          font-size: 14px;
+          color: #666;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+}
+
+// Card de filtros
+.filter-card {
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+
+    .period-field {
+      min-width: 120px;
+    }
+
+    .search-field {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .filter-field {
+      min-width: 150px;
+    }
+
+    .create-button {
+      margin-left: auto;
+    }
+
+    .close-button {
+      margin-left: 8px;
+    }
+  }
+}
+
+// Card de ranking
+.ranking-card {
+  .ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #e0e0e0;
+      transition: all 0.3s ease;
+
+      &.top-three {
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        border-left-color: #ff9800;
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .rank-position {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+
+        .trophy {
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
+
+          &.gold {
+            color: #ffd700;
+          }
+
+          &.silver {
+            color: #c0c0c0;
+          }
+
+          &.bronze {
+            color: #cd7f32;
+          }
+        }
+
+        .rank-number {
+          font-size: 18px;
+          font-weight: 600;
+          color: #666;
+        }
+      }
+
+      .ranking-info {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+
+          mat-icon {
+            font-size: 20px;
+            color: #666;
+          }
+
+          .user-name {
+            font-weight: 500;
+            color: #333;
+            text-align: center;
+          }
+        }
+
+        .sales-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+
+          .sales-amount {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+          }
+
+          .achievement {
+            font-size: 14px;
+            color: #4caf50;
+            font-weight: 500;
+          }
+        }
+      }
+
+      .commission-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 12px;
+        background: #e8f5e8;
+        border-radius: 16px;
+
+        mat-icon {
+          font-size: 16px;
+          color: #4caf50;
+        }
+
+        span {
+          font-size: 14px;
+          font-weight: 500;
+          color: #2e7d32;
+          text-align: center;
+        }
+      }
+    }
+  }
+}
+
+// Tabela de metas
+.table-container {
+  overflow-x: auto;
+}
+
+.goals-table {
+  width: 100%;
+  table-layout: fixed;
+
+  th {
+    font-weight: 600;
+    color: #333;
+    background-color: #f5f5f5;
+    text-align: center;
+    padding: 16px 8px;
+  }
+
+  td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+
+  // Colunas com largura igual
+  th:nth-child(1), td:nth-child(1) { width: 16.66%; } // Usuário
+  th:nth-child(2), td:nth-child(2) { width: 16.66%; } // Período
+  th:nth-child(3), td:nth-child(3) { width: 16.66%; } // Meta
+  th:nth-child(4), td:nth-child(4) { width: 16.66%; } // Atual
+  th:nth-child(5), td:nth-child(5) { width: 16.66%; } // Progresso
+  th:nth-child(6), td:nth-child(6) { width: 16.66%; } // Comissão
+  th:nth-child(7), td:nth-child(7) { width: 16.66%; } // Status
+  th:nth-child(8), td:nth-child(8) { width: 16.66%; } // Ações
+}
+
+// Células específicas
+.user-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  .user-icon {
+    font-size: 18px;
+    color: #666;
+  }
+}
+
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+
+  mat-progress-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+  }
+}
+
+.commission-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .commission-percentage {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2196f3;
+  }
+
+  .commission-amount {
+    font-size: 12px;
+    color: #4caf50;
+    font-weight: 500;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+// Estados de loading e dados vazios
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+
+  p {
+    margin-top: 16px;
+    color: #666;
+  }
+}
+
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #ccc;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #999;
+    margin-bottom: 24px;
+  }
+}
+
+// Centralização de conteúdo
+.text-center {
+  text-align: center !important;
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .goals-container {
+    padding: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch !important;
+
+    .period-field,
+    .search-field,
+    .filter-field {
+      min-width: unset;
+      width: 100%;
+    }
+
+    .create-button {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  .ranking-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+
+    .ranking-info {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+
+      .sales-info {
+        align-items: flex-start;
+      }
+    }
+  }
+
+  .goals-table {
+    font-size: 14px;
+
+    th,
+    td {
+      padding: 8px 4px;
+    }
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+// Cores para diferentes status
+.status-active {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+.status-completed {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.status-expired {
+  background-color: #ff9800 !important;
+  color: white !important;
+}

@@ -14,6 +14,10 @@ import { createUsersAdmin } from '../../../users/interface/createUsersAdmin';
 import { ALL_PERMISSIONS, PERMISSION_LABELS, PERMISSION_DESCRIPTIONS } from '../../../shared/constants/permissions.constants';
 import { PermissionTableConfig, UserPermission } from '../../interface/permission-table.interface';
 
+// Log System Imports
+import { LogService } from '../../../logs/service/log.service';
+import { UserContextService } from '../../../logs/service/user-context.service';
+
 @Component({
   selector: 'app-permissions-management',
   templateUrl: './permissions-management.component.html',
@@ -59,7 +63,9 @@ export class PermissionsManagementComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private router: Router,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private logService: LogService,
+    private userContextService: UserContextService
   ) { }
 
   ngOnInit(): void {
@@ -260,9 +266,39 @@ export class PermissionsManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           const action = hasPermission ? 'removida' : 'adicionada';
+          const actionType = hasPermission ? 'remove' : 'grant';
+
+          // Registrar alteração de permissão
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: actionType,
+            entity: 'permission',
+            entityId: user.uid,
+            entityName: `${user.fullName || user.email} - ${PERMISSION_LABELS[permission as keyof typeof PERMISSION_LABELS] || permission}`,
+            details: `Permissão ${action}: ${PERMISSION_LABELS[permission as keyof typeof PERMISSION_LABELS] || permission} para usuário ${user.fullName || user.email}`,
+            status: 'success',
+            ...this.userContextService.getClientInfo()
+          });
+
           this.snackBar.open(`Permissão ${action} com sucesso!`, 'Fechar', { duration: 3000 });
         },
         error: (error) => {
+          // Registrar erro na alteração de permissão
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: hasPermission ? 'remove' : 'grant',
+            entity: 'permission',
+            entityId: user.uid,
+            entityName: `${user.fullName || user.email} - ${PERMISSION_LABELS[permission as keyof typeof PERMISSION_LABELS] || permission}`,
+            details: `Erro ao ${hasPermission ? 'remover' : 'adicionar'} permissão: ${PERMISSION_LABELS[permission as keyof typeof PERMISSION_LABELS] || permission} para usuário ${user.fullName || user.email}`,
+            status: 'error',
+            ...this.userContextService.getClientInfo()
+          });
+
           this.snackBar.open('Erro ao atualizar permissões.', 'Fechar', { duration: 5000 });
           // Reverte a mudança
           if (hasPermission) {

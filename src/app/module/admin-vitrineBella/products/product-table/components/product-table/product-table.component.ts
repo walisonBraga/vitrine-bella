@@ -13,6 +13,11 @@ import { ProductRegistrationModalComponent } from '../../../ProductRegistrationM
 import { DiscountModalComponent } from '../../../DiscountModal/components/discount-modal/discount-modal.component';
 import { StockNotificationService } from '../../../../../../core/services/stock-notification.service';
 
+import { LogService } from '../../../../logs/service/log.service';
+import { UserContextService } from '../../../../logs/service/user-context.service';
+// Log System Imports
+
+
 @Component({
   selector: 'app-product-table',
   templateUrl: './product-table.component.html',
@@ -36,7 +41,9 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private router: Router,
-    private stockNotificationService: StockNotificationService
+    private stockNotificationService: StockNotificationService,
+    private logService: LogService,
+    private userContextService: UserContextService
   ) { }
 
   ngOnInit(): void {
@@ -101,6 +108,19 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        // Registrar criação de produto
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'create',
+          entity: 'product',
+          entityName: result.productName || 'Novo Produto',
+          details: `Produto criado: ${result.productName || 'Nome não informado'}`,
+          status: 'success',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.loadProducts();
       }
     });
@@ -120,6 +140,20 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
 
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
+          // Registrar edição de produto
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: 'update',
+            entity: 'product',
+            entityId: id,
+            entityName: product.productName || 'Produto Editado',
+            details: `Produto editado: ${product.productName || 'Nome não informado'}`,
+            status: 'success',
+            ...this.userContextService.getClientInfo()
+          });
+          
           this.loadProducts();
         }
       });
@@ -135,11 +169,44 @@ export class ProductTableComponent implements OnInit, AfterViewInit {
     if (confirm('Tem certeza que deseja excluir este produto?')) {
       this.loading = true;
       try {
+        // Buscar informações do produto antes de deletar para o log
+        const product = await this.productService.getProductById(id);
+        
         await this.productService.deleteProduct(id);
+        
+        // Registrar exclusão de produto
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'delete',
+          entity: 'product',
+          entityId: id,
+          entityName: product.productName || 'Produto Excluído',
+          details: `Produto excluído: ${product.productName || 'Nome não informado'}`,
+          status: 'success',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.snackBar.open('Produto excluído com sucesso!', 'Fechar', { duration: 3000 });
         this.loadProducts();
       } catch (error: any) {
         console.error('Erro ao excluir produto:', error);
+        
+        // Registrar erro na exclusão
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'delete',
+          entity: 'product',
+          entityId: id,
+          entityName: 'Produto',
+          details: `Erro ao excluir produto: ${error.message || error}`,
+          status: 'error',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.snackBar.open('Erro ao excluir produto.', 'Fechar', { duration: 5000 });
       } finally {
         this.loading = false;

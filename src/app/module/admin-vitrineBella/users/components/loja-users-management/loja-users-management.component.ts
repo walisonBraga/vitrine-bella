@@ -9,6 +9,10 @@ import { LojaUsersService } from '../../service/loja-users.service';
 import { CreateLojaUserModalComponent } from '../create-loja-user-modal/create-loja-user-modal.component';
 import { LojaUserTableComponent } from '../loja-user-table/loja-user-table.component';
 
+// Log System Imports
+import { LogService } from '../../../logs/service/log.service';
+import { UserContextService } from '../../../logs/service/user-context.service';
+
 @Component({
     selector: 'app-loja-users-management',
     templateUrl: './loja-users-management.component.html',
@@ -46,7 +50,9 @@ export class LojaUsersManagementComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private snackBar: MatSnackBar,
         private dialog: MatDialog,
-        private lojaUsersService: LojaUsersService
+        private lojaUsersService: LojaUsersService,
+        private logService: LogService,
+        private userContextService: UserContextService
     ) { }
 
     ngOnInit(): void {
@@ -112,6 +118,19 @@ export class LojaUsersManagementComponent implements OnInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
+                // Registrar criação de usuário
+                const userInfo = this.userContextService.getCurrentUserInfo();
+                this.logService.addLog({
+                    userId: userInfo.userId,
+                    userName: userInfo.userName,
+                    action: 'create',
+                    entity: 'user',
+                    entityName: result.fullName || 'Novo Usuário',
+                    details: `Usuário criado: ${result.fullName || 'Nome não informado'} - Email: ${result.email || 'Email não informado'}`,
+                    status: 'success',
+                    ...this.userContextService.getClientInfo()
+                });
+                
                 this.loadUsers(); // Recarrega a lista
             }
         });
@@ -127,6 +146,20 @@ export class LojaUsersManagementComponent implements OnInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
+                // Registrar edição de usuário
+                const userInfo = this.userContextService.getCurrentUserInfo();
+                this.logService.addLog({
+                    userId: userInfo.userId,
+                    userName: userInfo.userName,
+                    action: 'update',
+                    entity: 'user',
+                    entityId: user.uid,
+                    entityName: user.fullName || 'Usuário Editado',
+                    details: `Usuário editado: ${user.fullName || 'Nome não informado'} - Email: ${user.email || 'Email não informado'}`,
+                    status: 'success',
+                    ...this.userContextService.getClientInfo()
+                });
+                
                 this.loadUsers(); // Recarrega a lista
             }
         });
@@ -136,6 +169,21 @@ export class LojaUsersManagementComponent implements OnInit, OnDestroy {
         try {
             await this.lojaUsersService.toggleUserStatus(user.uid, !user.isActive);
             user.isActive = !user.isActive;
+            
+            // Registrar alteração de status
+            const userInfo = this.userContextService.getCurrentUserInfo();
+            this.logService.addLog({
+                userId: userInfo.userId,
+                userName: userInfo.userName,
+                action: 'update',
+                entity: 'user',
+                entityId: user.uid,
+                entityName: user.fullName || 'Usuário',
+                details: `Status do usuário alterado para: ${user.isActive ? 'Ativo' : 'Inativo'}`,
+                status: 'success',
+                ...this.userContextService.getClientInfo()
+            });
+            
             this.snackBar.open(
                 `Usuário ${user.isActive ? 'ativado' : 'desativado'} com sucesso!`,
                 'Fechar',
@@ -143,6 +191,21 @@ export class LojaUsersManagementComponent implements OnInit, OnDestroy {
             );
         } catch (error) {
             console.error('Erro ao alterar status:', error);
+            
+            // Registrar erro na alteração de status
+            const userInfo = this.userContextService.getCurrentUserInfo();
+            this.logService.addLog({
+                userId: userInfo.userId,
+                userName: userInfo.userName,
+                action: 'update',
+                entity: 'user',
+                entityId: user.uid,
+                entityName: user.fullName || 'Usuário',
+                details: `Erro ao alterar status do usuário: ${error}`,
+                status: 'error',
+                ...this.userContextService.getClientInfo()
+            });
+            
             this.snackBar.open('Erro ao alterar status do usuário', 'Fechar', { duration: 3000 });
         }
     }
@@ -151,10 +214,40 @@ export class LojaUsersManagementComponent implements OnInit, OnDestroy {
         if (confirm(`Tem certeza que deseja excluir o usuário ${user.fullName}?`)) {
             try {
                 await this.lojaUsersService.deleteUser(user.uid);
+                
+                // Registrar exclusão de usuário
+                const userInfo = this.userContextService.getCurrentUserInfo();
+                this.logService.addLog({
+                    userId: userInfo.userId,
+                    userName: userInfo.userName,
+                    action: 'delete',
+                    entity: 'user',
+                    entityId: user.uid,
+                    entityName: user.fullName || 'Usuário Excluído',
+                    details: `Usuário excluído: ${user.fullName || 'Nome não informado'} - Email: ${user.email || 'Email não informado'}`,
+                    status: 'success',
+                    ...this.userContextService.getClientInfo()
+                });
+                
                 this.snackBar.open('Usuário excluído com sucesso!', 'Fechar', { duration: 3000 });
                 this.loadUsers(); // Recarrega a lista
             } catch (error) {
                 console.error('Erro ao excluir usuário:', error);
+                
+                // Registrar erro na exclusão
+                const userInfo = this.userContextService.getCurrentUserInfo();
+                this.logService.addLog({
+                    userId: userInfo.userId,
+                    userName: userInfo.userName,
+                    action: 'delete',
+                    entity: 'user',
+                    entityId: user.uid,
+                    entityName: user.fullName || 'Usuário',
+                    details: `Erro ao excluir usuário: ${error}`,
+                    status: 'error',
+                    ...this.userContextService.getClientInfo()
+                });
+                
                 this.snackBar.open('Erro ao excluir usuário', 'Fechar', { duration: 3000 });
             }
         }

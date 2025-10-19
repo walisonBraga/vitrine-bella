@@ -1,0 +1,194 @@
+<app-navigation-admin>
+  <div class="log-container">
+    <!-- Header com filtros -->
+    <mat-card class="filter-card mb-4">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>history</mat-icon>
+          Log de Eventos
+        </mat-card-title>
+        <mat-card-subtitle>Registro de todas as atividades administrativas</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="filter-row">
+          <!-- Busca -->
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Buscar</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (input)="onSearchChange($any($event.target).value)"
+              placeholder="Buscar por usuário, ação ou detalhes...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <!-- Filtro por ação -->
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Ação</mat-label>
+            <mat-select [(ngModel)]="filter.action" (selectionChange)="onFilterChange()">
+              <mat-option value="">Todas as ações</mat-option>
+              <mat-option value="create">Criar</mat-option>
+              <mat-option value="update">Atualizar</mat-option>
+              <mat-option value="delete">Excluir</mat-option>
+              <mat-option value="login">Login</mat-option>
+              <mat-option value="logout">Logout</mat-option>
+              <mat-option value="grant">Conceder Permissão</mat-option>
+              <mat-option value="remove">Remover Permissão</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Filtro por entidade -->
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Entidade</mat-label>
+            <mat-select [(ngModel)]="filter.entity" (selectionChange)="onFilterChange()">
+              <mat-option value="">Todas as entidades</mat-option>
+              <mat-option value="product">Produto</mat-option>
+              <mat-option value="category">Categoria</mat-option>
+              <mat-option value="user">Usuário</mat-option>
+              <mat-option value="coupon">Cupom</mat-option>
+              <mat-option value="slide">Slide</mat-option>
+              <mat-option value="goal">Meta</mat-option>
+              <mat-option value="permission">Permissão</mat-option>
+              <mat-option value="system">Sistema</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Filtro por status -->
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="filter.status" (selectionChange)="onFilterChange()">
+              <mat-option value="">Todos os status</mat-option>
+              <mat-option value="success">Sucesso</mat-option>
+              <mat-option value="error">Erro</mat-option>
+              <mat-option value="warning">Aviso</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Botões de ação -->
+          <div class="action-buttons">
+            <button mat-raised-button color="warn" (click)="clearFilters()">
+              <mat-icon>clear</mat-icon>
+              Limpar Filtros
+            </button>
+
+            <button mat-raised-button color="primary" [matMenuTriggerFor]="exportMenu">
+              <mat-icon>download</mat-icon>
+              Exportar
+            </button>
+
+            <mat-menu #exportMenu="matMenu">
+              <button mat-menu-item (click)="exportLogs('json')">
+                <mat-icon>code</mat-icon>
+                Exportar JSON
+              </button>
+              <button mat-menu-item (click)="exportLogs('csv')">
+                <mat-icon>table_chart</mat-icon>
+                Exportar CSV
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tabela de logs -->
+    <mat-card>
+      <mat-card-content>
+        <div class="table-container" *ngIf="!loading; else loadingTemplate">
+          <table mat-table [dataSource]="filteredLogs" matSort class="log-table">
+
+            <!-- Coluna Data/Hora -->
+            <ng-container matColumnDef="timestamp">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">Data/Hora</th>
+              <td mat-cell *matCellDef="let log" class="text-center">
+                <div class="timestamp-cell">
+                  <mat-icon class="time-icon">schedule</mat-icon>
+                  <span>{{ formatTimestamp(log.timestamp) }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Usuário -->
+            <ng-container matColumnDef="userName">
+              <th mat-header-cell *matHeaderCellDef class="text-center">Usuário</th>
+              <td mat-cell *matCellDef="let log" class="text-center">
+                <div class="user-cell">
+                  <mat-icon class="user-icon">person</mat-icon>
+                  <span>{{ log.userName }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Ação -->
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef class="text-center">Ação</th>
+              <td mat-cell *matCellDef="let log" class="text-center">
+                <mat-chip selected>
+                  <mat-icon matChipAvatar>
+                    <!-- Place a default/fallback icon instead of missing method -->
+                    {{ log.action === 'create' ? 'add' : log.action === 'update' ? 'edit' : log.action === 'delete' ?
+                    'delete' : 'info' }}
+                  </mat-icon>
+                  {{ log.action | titlecase }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Entidade -->
+            <ng-container matColumnDef="entity">
+              <th mat-header-cell *matHeaderCellDef class="text-center">Entidade</th>
+              <td mat-cell *matCellDef="let log" class="text-center">
+                <div class="entity-cell">
+                  <mat-icon class="entity-icon">{{ getEntityIcon(log.entity) }}</mat-icon>
+                  <span>{{ log.entity | titlecase }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Detalhes -->
+            <ng-container matColumnDef="details">
+              <th mat-header-cell *matHeaderCellDef class="text-center">Detalhes</th>
+              <td mat-cell *matCellDef="let log" class="text-center">
+                <div class="details-cell" [matTooltip]="log.details">
+                  {{ log.details | slice:0:50 }}{{ log.details.length > 50 ? '...' : '' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Coluna Status -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef class="text-center">Status</th>
+              <td mat-cell *matCellDef="let log" class="text-center">
+                <mat-chip [class]="getStatusChipClass(log.status)" selected>
+                  <mat-icon matChipAvatar>{{ getStatusIcon(log.status) }}</mat-icon>
+                  {{ log.status | titlecase }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+
+          <!-- Paginação -->
+          <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]"
+            (page)="onPageChange($event)" showFirstLastButtons>
+          </mat-paginator>
+        </div>
+
+        <!-- Loading template -->
+        <ng-template #loadingTemplate>
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+            <p>Carregando logs...</p>
+          </div>
+        </ng-template>
+
+        <!-- Mensagem quando não há logs -->
+        <div *ngIf="!loading && filteredLogs.length === 0" class="no-data">
+          <mat-icon>inbox</mat-icon>
+          <h3>Nenhum log encontrado</h3>
+          <p>Tente ajustar os filtros ou verifique se há logs disponíveis.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</app-navigation-admin>

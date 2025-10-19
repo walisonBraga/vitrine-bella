@@ -10,6 +10,11 @@ import { Coupon } from '../../../interface/coupon';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { CouponModalComponent } from '../../../../products/CouponModal/components/coupon-modal/coupon-modal.component';
 import { CouponService } from '../../../service/coupon.service';
+import { UserContextService } from '../../../../logs/service/user-context.service';
+import { LogService } from '../../../../logs/service/log.service';
+
+// Log System Imports
+  
 
 @Component({
   selector: 'app-coupon-table',
@@ -32,7 +37,9 @@ export class CouponTableComponent implements OnInit {
     private snackBar: MatSnackBar,
     private router: Router,
     private authService: AuthService,
-    private couponService: CouponService
+    private couponService: CouponService,
+    private logService: LogService,
+    private userContextService: UserContextService
   ) { }
 
   ngOnInit(): void {
@@ -128,6 +135,19 @@ export class CouponTableComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        // Registrar criação de cupom
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'create',
+          entity: 'coupon',
+          entityName: result.name || 'Novo Cupom',
+          details: `Cupom criado: ${result.name || 'Nome não informado'} - Código: ${result.code || 'Código não informado'}`,
+          status: 'success',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.loadCoupons();
         this.snackBar.open('Cupom criado com sucesso!', 'Fechar', { duration: 3000 });
       }
@@ -145,6 +165,20 @@ export class CouponTableComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        // Registrar edição de cupom
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'update',
+          entity: 'coupon',
+          entityId: coupon.id,
+          entityName: coupon.name || 'Cupom Editado',
+          details: `Cupom editado: ${coupon.name || 'Nome não informado'} - Código: ${coupon.code || 'Código não informado'}`,
+          status: 'success',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.loadCoupons();
         this.snackBar.open('Cupom atualizado com sucesso!', 'Fechar', { duration: 3000 });
       }
@@ -158,10 +192,40 @@ export class CouponTableComponent implements OnInit {
     try {
       if (coupon.id) {
         await this.couponService.updateCouponStatus(coupon.id, newStatus);
+        
+        // Registrar alteração de status
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'update',
+          entity: 'coupon',
+          entityId: coupon.id,
+          entityName: coupon.name || 'Cupom',
+          details: `Status do cupom alterado para: ${newStatus ? 'Ativo' : 'Inativo'}`,
+          status: 'success',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.snackBar.open(`Cupom ${action}do com sucesso!`, 'Fechar', { duration: 3000 });
       }
     } catch (error: any) {
       console.error('Erro ao alterar status do cupom:', error);
+      
+      // Registrar erro na alteração de status
+      const userInfo = this.userContextService.getCurrentUserInfo();
+      this.logService.addLog({
+        userId: userInfo.userId,
+        userName: userInfo.userName,
+        action: 'update',
+        entity: 'coupon',
+        entityId: coupon.id,
+        entityName: coupon.name || 'Cupom',
+        details: `Erro ao ${action} cupom: ${error.message || error}`,
+        status: 'error',
+        ...this.userContextService.getClientInfo()
+      });
+      
       this.snackBar.open('Erro ao alterar status do cupom: ' + error.message, 'Fechar', { duration: 3000 });
     }
   }
@@ -198,9 +262,39 @@ export class CouponTableComponent implements OnInit {
       if (confirmed && coupon.id) {
         try {
           await this.couponService.deleteCoupon(coupon.id);
+          
+          // Registrar exclusão de cupom
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: 'delete',
+            entity: 'coupon',
+            entityId: coupon.id,
+            entityName: coupon.name || 'Cupom Excluído',
+            details: `Cupom excluído: ${coupon.name || 'Nome não informado'} - Código: ${coupon.code || 'Código não informado'}`,
+            status: 'success',
+            ...this.userContextService.getClientInfo()
+          });
+          
           this.snackBar.open('Cupom excluído com sucesso!', 'Fechar', { duration: 3000 });
         } catch (error: any) {
           console.error('Erro ao excluir cupom:', error);
+          
+          // Registrar erro na exclusão
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: 'delete',
+            entity: 'coupon',
+            entityId: coupon.id,
+            entityName: coupon.name || 'Cupom',
+            details: `Erro ao excluir cupom: ${error.message || error}`,
+            status: 'error',
+            ...this.userContextService.getClientInfo()
+          });
+          
           this.snackBar.open('Erro ao excluir cupom: ' + error.message, 'Fechar', { duration: 3000 });
         }
       }

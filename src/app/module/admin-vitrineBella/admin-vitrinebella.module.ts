@@ -1,13 +1,14 @@
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 
 // Angular Material Modules
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -18,6 +19,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -40,9 +42,13 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
 // Serviços
-import { ProductService } from './products/service/product.service';
+import { UserContextService } from './logs/service/user-context.service';
 import { CategoryService } from './categories/service/category.service';
+import { ProductService } from './products/service/product.service';
 import { SlideService } from './slides/service/slide.service';
+import { GoalService } from './goals/service/goal.service';
+import { LogService } from './logs/service/log.service';
+import { CreateUserService } from './users/service/create-user.service';
 
 // Componentes
 import { ProductRegistrationModalComponent } from './products/ProductRegistrationModal/components/product-registration-modal/product-registration-modal.component';
@@ -63,6 +69,16 @@ import { CustomSidenavComponent } from './sidenav/components/custom-sidenav/cust
 import { IconSelectorComponent } from './categories/components/icon-selector/icon-selector.component';
 import { LojaUserTableComponent } from './users/components/loja-user-table/loja-user-table.component';
 import { InternalSalesComponent } from './sales/components/internal-sales/internal-sales.component';
+import { LogTableComponent } from './logs/log-table/components/log-table/log-table.component';
+import { LogStatsComponent } from './logs/log-stats/components/log-stats/log-stats.component';
+
+// Goals Components
+import { GoalsManagementComponent } from './goals/components/goals-management/goals-management.component';
+import { EmployeeGoalsComponent } from './goals/components/employee-goals/employee-goals.component';
+import { MonthClosingModalComponent } from './goals/month-closing-modal/month-closing-modal.component';
+import { ReopenMonthModalComponent } from './goals/reopen-month-modal/reopen-month-modal.component';
+import { UpdateSalesModalComponent } from './goals/update-sales-modal/update-sales-modal.component';
+import { CreateGoalModalComponent } from './goals/create-goal-modal/create-goal-modal.component';
 import { DashboardComponent } from './dashboard/components/dashboard/dashboard.component';
 import { ProfileComponent } from './users/profile/components/profile/profile.component';
 import { ConfirmDialogComponent } from './event/confirm-dialog/confirm-dialog.component';
@@ -75,7 +91,13 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     PermissionsManagementComponent,
     LojaUsersManagementComponent,
     CreateLojaUserModalComponent,
+    MonthClosingModalComponent,
+    UpdateSalesModalComponent,
+    ReopenMonthModalComponent,
     NavigationAdminComponent,
+    GoalsManagementComponent,
+    EmployeeGoalsComponent,
+    CreateGoalModalComponent,
     CustomSidenavComponent,
     EditUserModalComponent,
     ConfirmDialogComponent,
@@ -91,8 +113,11 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     SlideModalComponent,
     SlideTableComponent,
     DashboardComponent,
+    LogTableComponent,
+    LogStatsComponent,
     ProfileComponent,
     AvatarComponent,
+
   ],
   imports: [
     CommonModule,
@@ -102,10 +127,14 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     MatSlideToggleModule,
     MatProgressBarModule,
     ReactiveFormsModule,
+    FormsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatFormFieldModule,
     MatPaginatorModule,
     MatExpansionModule,
     MatCheckboxModule,
+    MatSnackBarModule,
     MatTooltipModule,
     MatStepperModule,
     MatToolbarModule,
@@ -124,7 +153,6 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     MatSortModule,
     MatTabsModule,
     MatIconModule,
-    MatSnackBarModule,
     MatCardModule,
     MatChipsModule,
 
@@ -143,9 +171,13 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
   ],
   providers: [
     provideNgxMask(),
-    ProductService,
+    UserContextService,
+    CreateUserService,
     CategoryService,
+    ProductService,
     SlideService,
+    GoalService,
+    LogService,
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

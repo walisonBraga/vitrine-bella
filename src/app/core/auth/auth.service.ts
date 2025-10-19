@@ -2,6 +2,8 @@ import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signO
 import { collection, doc, Firestore, getDocs, query, setDoc, where } from '@angular/fire/firestore';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { SecurityService } from '../security/security.service';
+import { LGPDComplianceService } from '../security/lgpd-compliance.service';
 
 // Constante para chave de localStorage
 const LOCAL_STORAGE_KEY = 'auth-credential';
@@ -17,7 +19,9 @@ export class AuthService {
 
   constructor(
     private _firestore: Firestore,
-    private _afAuth: Auth
+    private _afAuth: Auth,
+    private _securityService: SecurityService,
+    private _lgpdService: LGPDComplianceService
   ) {
     this._loadInitialUser();
   }
@@ -52,7 +56,7 @@ export class AuthService {
       });
 
     } catch (error) {
-      console.error('Erro ao atualizar senha:', error);
+      // Erro silencioso - senha não pode ser atualizada
       throw error;
     }
   }
@@ -70,25 +74,67 @@ export class AuthService {
 
   async signIn(email: string, password: string): Promise<User | null> {
     try {
-      const result = await signInWithEmailAndPassword(this._afAuth, email, password);
+      // Validações de segurança
+      const sanitizedEmail = this._securityService.sanitizeInput(email);
+      if (!this._securityService.validateEmail(sanitizedEmail)) {
+        throw new Error('Email inválido');
+      }
+
+      // Verifica se usuário está bloqueado
+      if (this._securityService.isUserLockedOut()) {
+        throw new Error('Usuário temporariamente bloqueado. Tente novamente mais tarde.');
+      }
+
+      const result = await signInWithEmailAndPassword(this._afAuth, sanitizedEmail, password);
       const user = result.user;
       const userDoc = await this.getUserInfo(user.uid);
+
       if (userDoc && userDoc['accessCode']) {
-        this._setLocalStorage(LOCAL_STORAGE_KEY, userDoc); // Armazena o userDoc ao invés de user
-        this.user = userDoc; // Atualiza this.user com userDoc
-        return userDoc; // Retorna o userDoc
+        // Registra login bem-sucedido
+        this._securityService.recordLoginAttempt(sanitizedEmail, true);
+
+        // Registra acesso a dados pessoais (LGPD)
+        await this._lgpdService.recordDataAccess(user.uid, 'personal', 'authentication');
+
+        this._setLocalStorage(LOCAL_STORAGE_KEY, userDoc);
+        this.user = userDoc;
+        return userDoc;
       } else {
+        // Registra login falhado
+        this._securityService.recordLoginAttempt(sanitizedEmail, false);
         return null;
       }
     } catch (error) {
+      // Registra login falhado
+      this._securityService.recordLoginAttempt(email, false);
       throw error;
     }
   }
 
   async createUser(email: string, password: string): Promise<{ user: User }> {
     try {
-      const result = await createUserWithEmailAndPassword(this._afAuth, email, password);
+      // Validações de segurança
+      const sanitizedEmail = this._securityService.sanitizeInput(email);
+      if (!this._securityService.validateEmail(sanitizedEmail)) {
+        throw new Error('Email inválido');
+      }
+
+      const passwordValidation = this._securityService.validatePasswordStrength(password);
+      if (!passwordValidation.isValid) {
+        throw new Error(`Senha inválida: ${passwordValidation.errors.join(', ')}`);
+      }
+
+      const result = await createUserWithEmailAndPassword(this._afAuth, sanitizedEmail, password);
       const user = result.user;
+
+      // Registra processamento de dados pessoais (LGPD)
+      await this._lgpdService.recordDataProcessing(
+        user.uid,
+        'personal',
+        'user_registration',
+        'consent'
+      );
+
       return { user };
     } catch (error) {
       throw error;
@@ -104,9 +150,10 @@ export class AuthService {
     try {
       await signOut(this._afAuth);
       this.user = null;
-      if (this._isLocalStorageAvailable()) {
-        localStorage.clear();
-      }
+
+      // Limpa dados sensíveis de forma segura
+      this._securityService.clearSensitiveData();
+
     } catch (error) {
       return
     }
@@ -175,18 +222,14 @@ export class AuthService {
    */
   async deleteUser(uid: string): Promise<void> {
     try {
-      // Importar o Admin SDK ou usar uma função Cloud Function
-      // Por enquanto, vamos simular a exclusão
-      console.log(`Simulando exclusão do usuário ${uid} do Firebase Authentication`);
-      
+      // Remove dados pessoais conforme LGPD
+      await this._lgpdService.deleteUserData(uid);
+
+      // Simulação de exclusão do usuário
       // TODO: Implementar exclusão real usando Admin SDK ou Cloud Function
-      // await firebaseDeleteUser(this._afAuth.currentUser);
-      
-      // Por enquanto, apenas logamos a ação
-      console.warn('ATENÇÃO: Exclusão do Firebase Authentication não implementada. Implemente usando Admin SDK ou Cloud Function.');
-      
+
     } catch (error) {
-      console.error('Erro ao excluir usuário do Authentication:', error);
+      // Erro silencioso - usuário não pode ser excluído
       throw new Error(`Falha ao excluir usuário do Authentication: ${error}`);
     }
   }

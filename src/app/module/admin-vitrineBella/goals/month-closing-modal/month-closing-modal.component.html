@@ -1,0 +1,119 @@
+<div class="modal-header">
+  <h2 mat-dialog-title>
+    <mat-icon>event_available</mat-icon>
+    Fechamento do Mês
+  </h2>
+  <button mat-icon-button mat-dialog-close>
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content>
+  <div class="closing-info">
+    <mat-card class="info-card">
+      <mat-card-content>
+        <div class="info-content">
+          <div class="month-info">
+            <mat-icon>calendar_month</mat-icon>
+            <div class="month-details">
+              <span class="month-name">{{ getMonthName(data.month) }} {{ data.year }}</span>
+              <span class="closing-label">Fechamento Mensal</span>
+            </div>
+          </div>
+          
+          <div class="summary-stats">
+            <div class="stat-item">
+              <mat-icon>group</mat-icon>
+              <div class="stat-content">
+                <span class="stat-value">{{ closingReport.length }}</span>
+                <span class="stat-label">Funcionários</span>
+              </div>
+            </div>
+            
+            <div class="stat-item">
+              <mat-icon>attach_money</mat-icon>
+              <div class="stat-content">
+                <span class="stat-value">{{ formatCurrency(totalCommissions) }}</span>
+                <span class="stat-label">Total Comissões</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Relatório de fechamento -->
+  <div class="closing-report">
+    <h3>Relatório de Comissões</h3>
+    
+    <div class="report-list" *ngIf="closingReport.length > 0; else noData">
+      <div class="report-item" *ngFor="let item of closingReport">
+        <div class="user-info">
+          <mat-icon>person</mat-icon>
+          <div class="user-details">
+            <span class="user-name">{{ item.userName }}</span>
+            <span class="user-email">{{ item.userEmail }}</span>
+          </div>
+        </div>
+        
+        <div class="goal-info">
+          <div class="goal-details">
+            <span class="goal-target">Meta: {{ formatCurrency(item.targetAmount) }}</span>
+            <span class="goal-current">Vendas: {{ formatCurrency(item.currentAmount) }}</span>
+          </div>
+          <div class="achievement-bar">
+            <mat-progress-bar 
+              [value]="item.goalAchievement" 
+              [color]="item.goalAchievement >= 100 ? 'success' : 'primary'">
+            </mat-progress-bar>
+            <span class="achievement-text">{{ formatPercentage(item.goalAchievement) }}</span>
+          </div>
+        </div>
+        
+        <div class="commission-info">
+          <div class="commission-details">
+            <span class="commission-percentage">{{ item.commissionPercentage }}%</span>
+            <span class="commission-amount">{{ formatCurrency(item.commission) }}</span>
+          </div>
+          <mat-chip [color]="getStatusColor(item.status)" selected>
+            <mat-icon matChipAvatar>{{ item.isGoalAchieved ? 'check_circle' : 'schedule' }}</mat-icon>
+            {{ getStatusText(item.status) }}
+          </mat-chip>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noData>
+      <div class="no-data">
+        <mat-icon>info</mat-icon>
+        <p>Nenhuma meta encontrada para este período</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Aviso importante -->
+  <mat-card class="warning-card">
+    <mat-card-content>
+      <div class="warning-content">
+        <mat-icon class="warning-icon">warning</mat-icon>
+        <div class="warning-text">
+          <h4>Atenção!</h4>
+          <p>Ao confirmar o fechamento, todas as metas ativas serão marcadas como concluídas e as comissões serão calculadas definitivamente.</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">
+    Cancelar
+  </button>
+  <button mat-raised-button color="primary" (click)="confirmClosing()" 
+          [disabled]="loading || closingReport.length === 0">
+    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+    <mat-icon *ngIf="!loading">event_available</mat-icon>
+    Confirmar Fechamento
+  </button>
+</mat-dialog-actions>

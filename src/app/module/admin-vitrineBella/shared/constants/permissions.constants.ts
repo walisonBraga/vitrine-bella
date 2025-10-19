@@ -7,7 +7,10 @@ export const PERMISSIONS = {
   PERMISSIONS_MANAGEMENT: '/permissions-management',
   CATEGORIES: '/categories',
   COUPONS: '/coupons',
-  SLIDES: '/slides'
+  SLIDES: '/slides',
+  EVENT_LOGS: '/event-logs',
+  GOALS_MANAGEMENT: '/goals-management',
+  EMPLOYEE_GOALS: '/employee-goals'
 } as const;
 
 export const PERMISSION_LABELS = {
@@ -18,7 +21,10 @@ export const PERMISSION_LABELS = {
   '/permissions-management': 'Gerenciamento de Permissões',
   '/categories': 'Gerenciamento de Categorias',
   '/coupons': 'Gerenciamento de Cupons',
-  '/slides': 'Gerenciamento de Slides'
+  '/slides': 'Gerenciamento de Slides',
+  '/event-logs': 'Logs de Eventos',
+  '/goals-management': 'Gerenciamento de Metas',
+  '/employee-goals': 'Minhas Metas'
 } as const;
 
 export const PERMISSION_DESCRIPTIONS = {
@@ -29,7 +35,10 @@ export const PERMISSION_DESCRIPTIONS = {
   '/permissions-management': 'Configurar permissões de usuários',
   '/categories': 'Criar e gerenciar categorias de produtos',
   '/coupons': 'Criar e gerenciar cupons de desconto',
-  '/slides': 'Criar e gerenciar slides do banner'
+  '/slides': 'Criar e gerenciar slides do banner',
+  '/event-logs': 'Visualizar logs de atividades do sistema',
+  '/goals-management': 'Criar e gerenciar metas de vendas',
+  '/employee-goals': 'Visualizar suas próprias metas de vendas'
 } as const;
 
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS);
@@ -43,7 +52,9 @@ export const DEFAULT_PERMISSIONS = {
     '/permissions-management',
     '/categories',
     '/coupons',
-    '/slides'
+    '/slides',
+    '/event-logs',
+    '/goals-management'
   ],
   STORE_OWNER: [
     '/dashboard',
@@ -52,11 +63,14 @@ export const DEFAULT_PERMISSIONS = {
     '/internal-sales',
     '/categories',
     '/coupons',
-    '/slides'
+    '/slides',
+    '/event-logs',
+    '/goals-management'
   ],
   STORE_EMPLOYEE: [
     '/dashboard',
-    '/internal-sales'
+    '/internal-sales',
+    '/employee-goals'
   ]
 } as const;
 

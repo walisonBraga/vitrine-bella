@@ -1,0 +1,147 @@
+<div class="modal-header">
+  <h2 mat-dialog-title>
+    <mat-icon>{{ isEdit ? 'edit' : 'add' }}</mat-icon>
+    {{ isEdit ? 'Editar Meta' : 'Nova Meta' }}
+  </h2>
+  <button mat-icon-button mat-dialog-close>
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content>
+  <form [formGroup]="goalForm" class="goal-form">
+    <div class="form-row">
+      <!-- Usuário -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Usuário</mat-label>
+        <mat-select formControlName="userId" (selectionChange)="onUserChange($event.value)">
+          <mat-option *ngIf="isLoadingUsers" disabled>
+            <mat-spinner diameter="20"></mat-spinner>
+            Carregando usuários...
+          </mat-option>
+          <mat-option *ngFor="let user of users" [value]="user.uid">
+            {{ user.fullName }} - {{ user.email }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="goalForm.get('userId')?.hasError('required')">
+          Usuário é obrigatório
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <!-- Mês -->
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Mês</mat-label>
+        <mat-select formControlName="month">
+          <mat-option *ngFor="let month of getAvailableMonths()" [value]="month.value">
+            {{ month.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="goalForm.get('month')?.hasError('required')">
+          Mês é obrigatório
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Ano -->
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Ano</mat-label>
+        <mat-select formControlName="year">
+          <mat-option *ngFor="let year of getAvailableYears()" [value]="year">
+            {{ year }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="goalForm.get('year')?.hasError('required')">
+          Ano é obrigatório
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <!-- Meta -->
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Meta de Vendas</mat-label>
+        <input matInput type="number" formControlName="targetAmount" placeholder="Ex: 10000" min="1">
+        <span matPrefix>R$&nbsp;</span>
+        <mat-error *ngIf="goalForm.get('targetAmount')?.hasError('required')">
+          Meta é obrigatória
+        </mat-error>
+        <mat-error *ngIf="goalForm.get('targetAmount')?.hasError('min')">
+          Meta deve ser maior que zero
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Vendas Atuais -->
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Vendas Atuais</mat-label>
+        <input matInput type="number" formControlName="currentAmount" placeholder="Ex: 5000" min="0">
+        <span matPrefix>R$&nbsp;</span>
+        <mat-error *ngIf="goalForm.get('currentAmount')?.hasError('min')">
+          Valor não pode ser negativo
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <!-- Porcentagem de Comissão -->
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Comissão (%)</mat-label>
+        <input matInput type="number" formControlName="commissionPercentage" placeholder="Ex: 5" min="0" max="100"
+          step="0.1">
+        <span matSuffix>%</span>
+        <mat-error *ngIf="goalForm.get('commissionPercentage')?.hasError('required')">
+          Porcentagem é obrigatória
+        </mat-error>
+        <mat-error *ngIf="goalForm.get('commissionPercentage')?.hasError('min')">
+          Porcentagem não pode ser negativa
+        </mat-error>
+        <mat-error *ngIf="goalForm.get('commissionPercentage')?.hasError('max')">
+          Porcentagem não pode ser maior que 100%
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Status -->
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option value="active">Ativa</mat-option>
+          <mat-option value="completed">Concluída</mat-option>
+          <mat-option value="expired">Expirada</mat-option>
+        </mat-select>
+        <mat-error *ngIf="goalForm.get('status')?.hasError('required')">
+          Status é obrigatório
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Preview da comissão -->
+    <div class="commission-preview"
+      *ngIf="goalForm.get('currentAmount')?.value && goalForm.get('commissionPercentage')?.value">
+      <mat-card class="preview-card">
+        <mat-card-content>
+          <div class="preview-content">
+            <mat-icon>attach_money</mat-icon>
+            <div class="preview-text">
+              <span class="preview-label">Comissão Estimada:</span>
+              <span class="preview-value">
+                {{ formatCurrency((goalForm.get('currentAmount')?.value || 0) *
+                ((goalForm.get('commissionPercentage')?.value || 0) / 100)) }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">
+    Cancelar
+  </button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="goalForm.invalid || loading">
+    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+    <mat-icon *ngIf="!loading">{{ isEdit ? 'save' : 'add' }}</mat-icon>
+    {{ isEdit ? 'Salvar' : 'Criar' }}
+  </button>
+</mat-dialog-actions>

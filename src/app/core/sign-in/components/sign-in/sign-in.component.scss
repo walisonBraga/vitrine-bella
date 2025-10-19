@@ -5,14 +5,14 @@ $warn-color: #f44336;
 $success-color: #4caf50;
 
 // Custom Colors
-$hero-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$hero-gradient: #1976d2;
 $card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 $border-radius: 16px;
 
 // Container
 .signin-container {
   height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #1976d2;
   padding: 0;
   margin: 0;
   overflow: hidden;
@@ -407,6 +407,7 @@ $border-radius: 16px;
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

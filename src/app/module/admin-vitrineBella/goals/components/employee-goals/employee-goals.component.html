@@ -1,0 +1,257 @@
+<app-navigation-admin>
+  <div class="employee-goals-container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Minhas Metas de Vendas</h1>
+      <p class="subtitle">Acompanhe seu desempenho e comissões</p>
+    </div>
+
+    <!-- Formulário de acesso (se não tiver código) -->
+    <div *ngIf="!employeeName && !isLoading" class="access-form">
+      <mat-card class="access-card">
+        <mat-card-header>
+          <mat-card-title>Acesso às Metas</mat-card-title>
+          <mat-card-subtitle>Digite seu código de acesso para visualizar suas metas</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form (ngSubmit)="onAccessCodeSubmit()" class="access-form-content">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Código de Acesso</mat-label>
+              <input matInput [(ngModel)]="accessCode" name="accessCode" placeholder="Digite seu código de acesso"
+                minlength="10" required>
+              <mat-hint>Digite os primeiros 10 caracteres do seu ID</mat-hint>
+              <mat-error *ngIf="accessCode && accessCode.length < 10">
+                Código deve ter pelo menos 10 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" type="submit" [disabled]="!accessCode || accessCode.length < 10"
+              class="submit-button">
+              Acessar Metas
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Conteúdo principal (quando funcionário estiver logado) -->
+    <div *ngIf="employeeName" class="main-content">
+      <!-- Header com título e botão -->
+      <div class="page-header">
+        <div class="header-content">
+          <h1>Minhas Metas de Vendas</h1>
+          <p class="subtitle">Acompanhe seu desempenho e comissões mensais</p>
+        </div>
+        <div class="header-actions">
+          <button mat-raised-button color="primary" class="refresh-button">
+            <mat-icon>refresh</mat-icon>
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Cards de estatísticas -->
+      <div class="stats-cards">
+        <div class="stat-card">
+          <div class="stat-icon rank-icon">
+            <mat-icon>emoji_events</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number">{{ getEmployeeRank() }}</div>
+            <div class="stat-label">Posição no Ranking</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon sales-icon">
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number">{{ formatCurrency(getEmployeeTotalSales()) }}</div>
+            <div class="stat-label">Total de Vendas</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon commission-icon">
+            <mat-icon>account_balance_wallet</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number">{{ formatCurrency(getEmployeeCommission()) }}</div>
+            <div class="stat-label">Comissão do Mês</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon achievement-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number">{{ formatPercentage(getEmployeeGoalAchievement()) }}</div>
+            <div class="stat-label">Atingimento da Meta</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de filtros -->
+      <div class="filters-section">
+        <div class="search-bar">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Buscar por período...</mat-label>
+            <input matInput placeholder="Selecione mês e ano">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+        
+        <div class="period-filters">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Mês</mat-label>
+            <mat-select [(ngModel)]="selectedMonth" (selectionChange)="onPeriodChange()">
+              <mat-option *ngFor="let month of months" [value]="month.value">
+                {{ month.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Ano</mat-label>
+            <mat-select [(ngModel)]="selectedYear" (selectionChange)="onPeriodChange()">
+              <mat-option *ngFor="let year of years" [value]="year">
+                {{ year }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Tabela de metas -->
+      <mat-card class="goals-card">
+        <mat-card-header>
+          <mat-card-title>Suas Metas - {{ getMonthName(selectedMonth) }} {{ selectedYear }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="isLoading" class="loading-container">
+            <mat-spinner></mat-spinner>
+            <p>Carregando suas metas...</p>
+          </div>
+
+          <div *ngIf="!isLoading && goals.length === 0" class="no-goals">
+            <mat-icon>trending_up</mat-icon>
+            <h3>Nenhuma meta encontrada</h3>
+            <p>Não há metas cadastradas para o período selecionado.</p>
+          </div>
+
+          <!-- Tabela de metas -->
+          <div *ngIf="!isLoading && goals.length > 0" class="goals-table-container">
+            <table mat-table [dataSource]="goals" class="goals-table">
+              
+              <!-- Coluna Nome -->
+              <ng-container matColumnDef="userName">
+                <th mat-header-cell *matHeaderCellDef class="text-center">Nome</th>
+                <td mat-cell *matCellDef="let goal" class="text-center">
+                  <div class="user-cell">
+                    <mat-icon class="user-icon">person</mat-icon>
+                    <span class="user-name">{{ goal.userName }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Coluna Meta -->
+              <ng-container matColumnDef="targetAmount">
+                <th mat-header-cell *matHeaderCellDef class="text-center">Meta</th>
+                <td mat-cell *matCellDef="let goal" class="text-center">
+                  <span class="target-amount">{{ formatCurrency(goal.targetAmount) }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Coluna Vendas -->
+              <ng-container matColumnDef="currentAmount">
+                <th mat-header-cell *matHeaderCellDef class="text-center">Vendas</th>
+                <td mat-cell *matCellDef="let goal" class="text-center">
+                  <span class="current-amount">{{ formatCurrency(goal.currentAmount) }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Coluna Progresso -->
+              <ng-container matColumnDef="progress">
+                <th mat-header-cell *matHeaderCellDef class="text-center">Progresso</th>
+                <td mat-cell *matCellDef="let goal" class="text-center">
+                  <div class="progress-cell">
+                    <div class="progress-info">
+                      <span class="progress-percentage">{{ formatPercentage(getGoalProgress(goal)) }}</span>
+                    </div>
+                    <mat-progress-bar 
+                      [value]="getGoalProgress(goal)" 
+                      [color]="getProgressColor(getGoalProgress(goal))"
+                      class="progress-bar">
+                    </mat-progress-bar>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Coluna Comissão -->
+              <ng-container matColumnDef="commission">
+                <th mat-header-cell *matHeaderCellDef class="text-center">Comissão</th>
+                <td mat-cell *matCellDef="let goal" class="text-center">
+                  <div class="commission-cell">
+                    <span class="commission-percentage">{{ goal.commissionPercentage }}%</span>
+                    <span class="commission-amount">{{ formatCurrency(goal.currentAmount * (goal.commissionPercentage / 100)) }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Coluna Status -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef class="text-center">Status</th>
+                <td mat-cell *matCellDef="let goal" class="text-center">
+                  <mat-chip [class]="'status-chip status-' + goal.status">
+                    <mat-icon class="status-icon">
+                      {{ goal.status === 'active' ? 'play_circle' : 
+                         goal.status === 'completed' ? 'check_circle' : 'cancel' }}
+                    </mat-icon>
+                    {{ goal.status === 'active' ? 'Ativa' : 
+                       goal.status === 'completed' ? 'Concluída' : 'Expirada' }}
+                  </mat-chip>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="goal-row"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Ranking do funcionário -->
+      <mat-card *ngIf="rankings.length > 0" class="ranking-card">
+        <mat-card-header>
+          <mat-card-title>Seu Ranking - {{ getMonthName(selectedMonth) }} {{ selectedYear }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="ranking-list">
+            <div *ngFor="let ranking of rankings" class="ranking-item">
+              <div class="ranking-position">
+                <span class="position-number">{{ ranking.rank }}</span>
+                <mat-icon>emoji_events</mat-icon>
+              </div>
+              <div class="ranking-info">
+                <h4>{{ ranking.userName }}</h4>
+                <p>{{ formatCurrency(ranking.totalSales) }} em vendas</p>
+              </div>
+              <div class="ranking-stats">
+                <div class="stat">
+                  <span class="stat-label">Atingimento:</span>
+                  <span class="stat-value">{{ formatPercentage(ranking.goalAchievement) }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Comissão:</span>
+                  <span class="stat-value">{{ formatCurrency(ranking.commission) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</app-navigation-admin>

@@ -99,6 +99,24 @@ export class CustomSidenavComponent {
       permission: '/permissions-management'
     },
     {
+      icon: 'history',
+      label: 'Logs de Eventos',
+      route: '/admin/event-logs',
+      permission: '/event-logs'
+    },
+    {
+      icon: 'trending_up',
+      label: 'Metas e Vendas',
+      route: '/admin/goals-management',
+      permission: '/goals-management'
+    },
+    {
+      icon: 'person_pin',
+      label: 'Minhas Metas',
+      route: '/admin/employee-goals',
+      permission: '/employee-goals'
+    },
+    {
       icon: 'person',
       label: 'Perfil',
       route: '/admin/profile'
@@ -211,13 +229,13 @@ export class CustomSidenavComponent {
   // Verifica se o usuário tem múltiplos roles
   private checkMultipleRoles(user: any): void {
     const redirectRoute = user.redirectRoute;
-    
+
     if (Array.isArray(redirectRoute)) {
       const hasAdmin = redirectRoute.includes('/admin');
       const hasLoja = redirectRoute.includes('/loja');
-      
+
       this.hasMultipleRoles.set(hasAdmin && hasLoja);
-      
+
       // Define o role atual baseado na URL atual
       const currentUrl = this._router.url;
       if (currentUrl.startsWith('/admin')) {

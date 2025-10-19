@@ -9,6 +9,10 @@ import { CategoryService } from '../../../service/category.service';
 import { Category } from '../../../interface/category';
 import { CategoryModalComponent } from '../../../CategoryModal/components/category-modal/category-modal.component';
 
+// Log System Imports
+import { UserContextService } from '../../../../logs/service/user-context.service';
+import { LogService } from '../../../../logs/service/log.service';
+
 
 @Component({
   selector: 'app-category-table',
@@ -30,7 +34,9 @@ export class CategoryTableComponent implements OnInit, AfterViewInit, OnDestroy 
   constructor(
     private categoryService: CategoryService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private logService: LogService,
+    private userContextService: UserContextService
   ) { }
 
   ngOnInit(): void {
@@ -88,6 +94,19 @@ export class CategoryTableComponent implements OnInit, AfterViewInit, OnDestroy 
       .pipe(takeUntil(this.destroy$))
       .subscribe(result => {
         if (result) {
+          // Registrar criação de categoria
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: 'create',
+            entity: 'category',
+            entityName: result.name || 'Nova Categoria',
+            details: `Categoria criada: ${result.name || 'Nome não informado'}`,
+            status: 'success',
+            ...this.userContextService.getClientInfo()
+          });
+          
           this.loadCategories();
           this.showSnackBar('Categoria criada com sucesso!', 'success');
         }
@@ -105,6 +124,20 @@ export class CategoryTableComponent implements OnInit, AfterViewInit, OnDestroy 
       .pipe(takeUntil(this.destroy$))
       .subscribe(result => {
         if (result) {
+          // Registrar edição de categoria
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: 'update',
+            entity: 'category',
+            entityId: category.id,
+            entityName: category.name || 'Categoria Editada',
+            details: `Categoria editada: ${category.name || 'Nome não informado'}`,
+            status: 'success',
+            ...this.userContextService.getClientInfo()
+          });
+          
           this.loadCategories();
           this.showSnackBar('Categoria atualizada com sucesso!', 'success');
         }
@@ -117,11 +150,40 @@ export class CategoryTableComponent implements OnInit, AfterViewInit, OnDestroy 
 
     this.categoryService.updateCategoryStatus(category.id!, newStatus)
       .then(() => {
+        // Registrar alteração de status
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'update',
+          entity: 'category',
+          entityId: category.id,
+          entityName: category.name || 'Categoria',
+          details: `Status da categoria alterado para: ${newStatus ? 'Ativo' : 'Inativo'}`,
+          status: 'success',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.loadCategories();
         this.showSnackBar(`Categoria ${action}da com sucesso!`, 'success');
       })
       .catch(error => {
         console.error('Erro ao alterar status da categoria:', error);
+        
+        // Registrar erro na alteração de status
+        const userInfo = this.userContextService.getCurrentUserInfo();
+        this.logService.addLog({
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          action: 'update',
+          entity: 'category',
+          entityId: category.id,
+          entityName: category.name || 'Categoria',
+          details: `Erro ao ${action} categoria: ${error.message || error}`,
+          status: 'error',
+          ...this.userContextService.getClientInfo()
+        });
+        
         this.showSnackBar(`Erro ao ${action} categoria`, 'error');
       });
   }
@@ -135,11 +197,40 @@ export class CategoryTableComponent implements OnInit, AfterViewInit, OnDestroy 
     if (confirm(`Tem certeza que deseja excluir a categoria "${category.name}"?`)) {
       this.categoryService.deleteCategory(category.id!)
         .then(() => {
+          // Registrar exclusão de categoria
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: 'delete',
+            entity: 'category',
+            entityId: category.id,
+            entityName: category.name || 'Categoria Excluída',
+            details: `Categoria excluída: ${category.name || 'Nome não informado'}`,
+            status: 'success',
+            ...this.userContextService.getClientInfo()
+          });
+          
           this.loadCategories();
           this.showSnackBar('Categoria excluída com sucesso!', 'success');
         })
         .catch(error => {
           console.error('Erro ao excluir categoria:', error);
+          
+          // Registrar erro na exclusão
+          const userInfo = this.userContextService.getCurrentUserInfo();
+          this.logService.addLog({
+            userId: userInfo.userId,
+            userName: userInfo.userName,
+            action: 'delete',
+            entity: 'category',
+            entityId: category.id,
+            entityName: category.name || 'Categoria',
+            details: `Erro ao excluir categoria: ${error.message || error}`,
+            status: 'error',
+            ...this.userContextService.getClientInfo()
+          });
+          
           this.showSnackBar('Erro ao excluir categoria', 'error');
         });
     }
