@@ -180,3 +180,56 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Verificação de CPF -->
+<div class="modal-overlay" *ngIf="showCpfModal" (click)="closeCpfModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <mat-icon class="modal-icon">verified_user</mat-icon>
+      <h3>Verificação de CPF</h3>
+      <p>Digite seu CPF para verificar se você já possui um pré-cadastro na nossa loja física</p>
+    </div>
+
+    <div class="modal-content">
+      <form [formGroup]="cpfVerificationForm" (ngSubmit)="verifyCpf()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>CPF</mat-label>
+          <input matInput formControlName="cpf" placeholder="000.000.000-00" (input)="onCpfInput($event)">
+          <mat-icon matSuffix>badge</mat-icon>
+          <mat-error *ngIf="cpfVerificationForm.get('cpf')?.hasError('required')">
+            CPF é obrigatório
+          </mat-error>
+          <mat-error *ngIf="cpfVerificationForm.get('cpf')?.hasError('pattern')">
+            CPF inválido
+          </mat-error>
+        </mat-form-field>
+
+        <div class="modal-actions">
+          <button mat-button type="button" (click)="goToHome()" class="home-btn">
+            <mat-icon>home</mat-icon>
+            Home
+          </button>
+          <button mat-raised-button color="primary" type="submit"
+            [disabled]="cpfVerificationForm.invalid || isVerifyingCpf" class="verify-btn">
+            <mat-spinner *ngIf="isVerifyingCpf" diameter="20" class="btn-spinner"></mat-spinner>
+            <mat-icon *ngIf="!isVerifyingCpf">search</mat-icon>
+            <span class="btn-text">{{ isVerifyingCpf ? 'Verificando...' : 'Verificar Pré-cadastro' }}</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Resultado da Verificação -->
+      <div *ngIf="foundPreRegistration" class="verification-result">
+        <div class="success-message">
+          <mat-icon>check_circle</mat-icon>
+          <div class="message-content">
+            <h4>Pré-cadastro encontrado!</h4>
+            <p>Nome: {{ foundPreRegistration.name }}</p>
+            <p>Email: {{ foundPreRegistration.email }}</p>
+            <p>Dados preenchidos automaticamente.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

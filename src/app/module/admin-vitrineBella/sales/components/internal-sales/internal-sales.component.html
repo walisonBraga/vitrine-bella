@@ -10,7 +10,8 @@
         <p class="header-subtitle">Realize vendas diretamente na loja</p>
         <div *ngIf="authenticatedUser" class="salesperson-info">
           <mat-icon>person</mat-icon>
-          <span>Vendedor: {{ authenticatedUser.fullName || authenticatedUser.displayName || authenticatedUser.email }}</span>
+          <span>Vendedor: {{ authenticatedUser.fullName || authenticatedUser.displayName || authenticatedUser.email
+            }}</span>
         </div>
       </div>
     </header>
@@ -37,8 +38,9 @@
             <div [formGroup]="customerForm">
               <mat-form-field appearance="outline" class="search-field">
                 <mat-label>Buscar produtos</mat-label>
-                <input matInput formControlName="searchTerm" placeholder="Digite nome, código, categoria ou descrição..."
-                  class="search-input" (input)="onSearchInput($event)">
+                <input matInput formControlName="searchTerm"
+                  placeholder="Digite nome, código, categoria ou descrição..." class="search-input"
+                  (input)="onSearchInput($event)">
                 <mat-icon matSuffix>search</mat-icon>
               </mat-form-field>
             </div>
@@ -196,79 +198,20 @@
                 <span><strong>Total:</strong></span>
                 <span class="total-amount">{{ total | currency:'BRL' }}</span>
               </div>
+
+              <!-- Botão Finalizar Compra -->
+              <div class="checkout-button">
+                <button mat-raised-button color="primary" (click)="goToCheckout()" 
+                        class="finalize-purchase-btn">
+                  <mat-icon>shopping_cart_checkout</mat-icon>
+                  Finalizar Compra
+                </button>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
       </div>
 
-      <!-- Customer and Payment Section -->
-      <mat-card class="customer-card" *ngIf="cartItems.length > 0">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>person</mat-icon>
-            Dados do Cliente e Pagamento
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="saleForm" class="customer-form">
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nome do Cliente *</mat-label>
-                <input matInput formControlName="customerName" placeholder="Digite o nome completo">
-                <mat-icon matSuffix>person</mat-icon>
-                <mat-error *ngIf="saleForm.get('customerName')?.hasError('required')">
-                  Nome é obrigatório
-                </mat-error>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Email</mat-label>
-                <input matInput formControlName="customerEmail" placeholder="email@exemplo.com">
-                <mat-icon matSuffix>email</mat-icon>
-                <mat-error *ngIf="saleForm.get('customerEmail')?.hasError('email')">
-                  Email inválido
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Telefone</mat-label>
-                <input matInput formControlName="customerPhone" placeholder="(11) 99999-9999">
-                <mat-icon matSuffix>phone</mat-icon>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Forma de Pagamento *</mat-label>
-                <mat-select formControlName="paymentMethod">
-                  <mat-option value="cash">Dinheiro</mat-option>
-                  <mat-option value="credit_card">Cartão de Crédito</mat-option>
-                  <mat-option value="debit_card">Cartão de Débito</mat-option>
-                  <mat-option value="pix">PIX</mat-option>
-                </mat-select>
-                <mat-icon matSuffix>payment</mat-icon>
-              </mat-form-field>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-              <button mat-button (click)="clearCart()" [disabled]="isProcessingSale" class="clear-btn">
-                <mat-icon>clear</mat-icon>
-                Limpar Carrinho
-              </button>
-
-              <button mat-raised-button color="primary" (click)="processSale()"
-                [disabled]="saleForm.invalid || cartItems.length === 0 || isProcessingSale" class="process-btn">
-                <mat-spinner *ngIf="isProcessingSale" diameter="20" class="btn-spinner"></mat-spinner>
-                <mat-icon *ngIf="!isProcessingSale">receipt</mat-icon>
-                {{ isProcessingSale ? 'Processando...' : 'Finalizar Venda' }}
-              </button>
-            </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
     </div>
   </div>
 </app-navigation-admin>

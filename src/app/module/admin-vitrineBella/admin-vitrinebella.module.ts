@@ -34,6 +34,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatRadioModule } from '@angular/material/radio';
 
 // Importações Ngx-Mask
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
@@ -85,6 +86,9 @@ import { ProfileComponent } from './users/profile/components/profile/profile.com
 import { ConfirmDialogComponent } from './event/confirm-dialog/confirm-dialog.component';
 import { Admin_vitrinebellaRouting } from './admin-vitrinebella.routing';
 import { AvatarComponent } from '../../shared/avatar/avatar.component';
+import { PreRegistrationModalComponent } from './sales/components/pre-registration-modal/pre-registration-modal.component';
+import { CheckoutComponent } from './sales/components/checkout/checkout.component';
+import { PreRegistrationService } from './shared/services/pre-registration.service';
 
 @NgModule({
   declarations: [
@@ -119,6 +123,8 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     LogStatsComponent,
     ProfileComponent,
     AvatarComponent,
+    PreRegistrationModalComponent,
+    CheckoutComponent,
 
   ],
   imports: [
@@ -157,6 +163,7 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     MatIconModule,
     MatCardModule,
     MatChipsModule,
+    MatRadioModule,
 
     //Material Mask
     NgxMaskDirective,
@@ -180,6 +187,7 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     SlideService,
     GoalService,
     LogService,
+    PreRegistrationService,
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

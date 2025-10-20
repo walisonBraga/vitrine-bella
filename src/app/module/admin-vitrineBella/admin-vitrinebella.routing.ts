@@ -14,6 +14,7 @@ import { GoalsManagementComponent } from './goals/components/goals-management/go
 import { AdminGuard } from '../../core/guards/admin.guard';
 import { Routes, RouterModule } from '@angular/router';
 import { EmployeeGoalsComponent } from './goals/components/employee-goals/employee-goals.component';
+import { CheckoutComponent } from './sales/components/checkout/checkout.component';
 
 export const Admin_vitrinebellaRouting: Routes = [
   { path: '', redirectTo: 'admin-dashboard', pathMatch: 'full' },
@@ -27,6 +28,7 @@ export const Admin_vitrinebellaRouting: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [AdminGuard] },
   { path: 'permissions-management', component: PermissionsManagementComponent, canActivate: [AdminGuard] },
   { path: 'internal-sales', component: InternalSalesComponent, canActivate: [AdminGuard] },
+  { path: 'checkout', component: CheckoutComponent, canActivate: [AdminGuard] },
   { path: 'event-logs', component: LogTableComponent, canActivate: [AdminGuard] },
   { path: 'log-stats', component: LogStatsComponent, canActivate: [AdminGuard] },
   { path: 'goals-management', component: GoalsManagementComponent, canActivate: [AdminGuard] },

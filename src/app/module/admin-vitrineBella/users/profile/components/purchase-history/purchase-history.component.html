@@ -1,0 +1,107 @@
+<div class="purchase-history-container">
+  <div class="history-header">
+    <h2 class="history-title">
+      <mat-icon>receipt_long</mat-icon>
+      Histórico de Compras
+    </h2>
+    <p class="history-subtitle">Veja todas as suas compras realizadas</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando histórico de compras...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadPurchaseHistory()">
+      <mat-icon>refresh</mat-icon>
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !errorMessage && purchaseHistory.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">shopping_bag</mat-icon>
+    <h3>Nenhuma compra encontrada</h3>
+    <p>Você ainda não realizou nenhuma compra. Que tal começar a explorar nossos produtos?</p>
+    <button mat-raised-button color="primary" routerLink="/">
+      <mat-icon>store</mat-icon>
+      Ir para Loja
+    </button>
+  </div>
+
+  <!-- Purchase History List -->
+  <div *ngIf="!isLoading && !errorMessage && purchaseHistory.length > 0" class="purchase-list">
+    <div class="purchase-summary">
+      <div class="summary-card">
+        <mat-icon>receipt</mat-icon>
+        <div class="summary-info">
+          <span class="summary-label">Total de Compras</span>
+          <span class="summary-value">{{ purchaseHistory.length }}</span>
+        </div>
+      </div>
+      
+      <div class="summary-card">
+        <mat-icon>attach_money</mat-icon>
+        <div class="summary-info">
+          <span class="summary-label">Valor Total</span>
+          <span class="summary-value">{{ getTotalSpent() | currency:'BRL' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="purchase-items">
+      <div *ngFor="let purchase of purchaseHistory; trackBy: trackByPurchaseId" 
+           class="purchase-item">
+        <div class="purchase-header">
+          <div class="purchase-info">
+            <h3 class="purchase-id">Compra #{{ purchase.saleId || 'N/A' }}</h3>
+            <p class="purchase-date">
+              <mat-icon>calendar_today</mat-icon>
+              {{ formatDate(purchase.date) }}
+            </p>
+          </div>
+          <div class="purchase-total">
+            <span class="total-label">Total</span>
+            <span class="total-value">{{ formatCurrency(purchase.amount) }}</span>
+          </div>
+        </div>
+
+        <div class="purchase-details">
+          <div class="items-summary">
+            <mat-icon>shopping_cart</mat-icon>
+            <span>{{ getTotalItems(purchase) }} item(ns)</span>
+          </div>
+
+          <div class="items-list" *ngIf="purchase.items && purchase.items.length > 0">
+            <div *ngFor="let item of purchase.items" class="item-detail">
+              <div class="item-info">
+                <span class="item-name">{{ item.productName || item.name || 'Produto' }}</span>
+                <span class="item-quantity">{{ item.quantity }}x</span>
+              </div>
+              <div class="item-price">
+                {{ formatCurrency(item.price || item.productPrice || 0) }}
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!purchase.items || purchase.items.length === 0" class="no-items">
+            <mat-icon>info</mat-icon>
+            <span>Detalhes dos itens não disponíveis</span>
+          </div>
+        </div>
+
+        <div class="purchase-actions">
+          <button mat-button color="primary" class="view-details-btn">
+            <mat-icon>visibility</mat-icon>
+            Ver Detalhes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,7 @@ export interface SaleItem {
   productPrice: number;
   quantity: number;
   subtotal: number;
+  imageUrl?: string;
 }
 
 export interface SaleForm {

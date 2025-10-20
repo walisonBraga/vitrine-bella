@@ -15,6 +15,7 @@ export interface LojaUser {
   photoURL?: string;
   managementType?: string[];
   userPermission?: string[];
+  salesHistory?: any[];
 }
 
 export interface LojaUserTableColumn {

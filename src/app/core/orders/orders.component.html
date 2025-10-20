@@ -1,0 +1,152 @@
+<app-navbar-home></app-navbar-home>
+
+<div class="navbar-spacer"></div>
+
+<div class="orders-container">
+  <!-- Header -->
+  <div class="orders-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title">
+          <mat-icon>receipt_long</mat-icon>
+          Meus Pedidos
+        </h1>
+        <p class="header-subtitle">Histórico de todas as suas compras na loja física</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Carregando seus pedidos...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <h3>Erro ao carregar pedidos</h3>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadPurchaseHistory()">
+      <mat-icon>refresh</mat-icon>
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !errorMessage && purchaseHistory.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">shopping_bag</mat-icon>
+    <h3>Nenhum pedido encontrado</h3>
+    <p>Você ainda não realizou nenhuma compra na nossa loja física. Que tal visitar nossa loja?</p>
+    <button mat-raised-button color="primary" routerLink="/">
+      <mat-icon>store</mat-icon>
+      Ver Produtos
+    </button>
+  </div>
+
+  <!-- Orders Content -->
+  <div *ngIf="!isLoading && !errorMessage && purchaseHistory.length > 0" class="orders-content">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="card-icon">
+          <mat-icon>receipt</mat-icon>
+        </div>
+        <div class="card-content">
+          <span class="card-label">Total de Pedidos</span>
+          <span class="card-value">{{ purchaseHistory.length }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-icon">
+          <mat-icon>attach_money</mat-icon>
+        </div>
+        <div class="card-content">
+          <span class="card-label">Valor Total Gasto</span>
+          <span class="card-value">{{ getTotalSpent() | currency:'BRL' }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-icon">
+          <mat-icon>shopping_cart</mat-icon>
+        </div>
+        <div class="card-content">
+          <span class="card-label">Itens Comprados</span>
+          <span class="card-value">{{ getTotalItemsCount() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list">
+      <h2 class="orders-title">Histórico de Compras</h2>
+
+      <div class="orders-grid">
+        <div *ngFor="let order of purchaseHistory; trackBy: trackByPurchaseId" class="order-card">
+
+          <!-- Order Header -->
+          <div class="order-header">
+            <div class="order-info">
+              <h3 class="order-id">Pedido #{{ order.saleId || order.id || 'N/A' }}</h3>
+              <p class="order-date">
+                <mat-icon>calendar_today</mat-icon>
+                {{ formatDate(order.date) }}
+              </p>
+              <div class="order-status">
+                <mat-chip [color]="getStatusColor(getPurchaseStatus(order))" selected>
+                  <mat-icon matChipAvatar>check_circle</mat-icon>
+                  {{ getPurchaseStatus(order) }}
+                </mat-chip>
+              </div>
+            </div>
+            <div class="order-total">
+              <span class="total-label">Total</span>
+              <span class="total-value">{{ formatCurrency(order.amount) }}</span>
+            </div>
+          </div>
+
+          <!-- Order Details -->
+          <div class="order-details">
+            <div class="items-section">
+              <h4 class="section-title">
+                <mat-icon>shopping_cart</mat-icon>
+                Itens Comprados ({{ getTotalItems(order) }})
+              </h4>
+
+              <div class="items-list" *ngIf="order.items && order.items.length > 0">
+                <div *ngFor="let item of order.items" class="item-row">
+                  <div class="item-info">
+                    <span class="item-name">{{ item.productName || item.name || 'Produto' }}</span>
+                    <span class="item-quantity">{{ item.quantity }}x</span>
+                  </div>
+                  <div class="item-price">
+                    {{ formatCurrency(item.price || item.productPrice || 0) }}
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="!order.items || order.items.length === 0" class="no-items">
+                <mat-icon>info</mat-icon>
+                <span>Detalhes dos itens não disponíveis</span>
+              </div>
+            </div>
+
+            <!-- Order Actions -->
+            <div class="order-actions">
+              <button mat-stroked-button color="primary" class="view-details-btn">
+                <mat-icon>visibility</mat-icon>
+                Ver Detalhes
+              </button>
+              <button mat-stroked-button color="accent" class="repeat-order-btn">
+                <mat-icon>repeat</mat-icon>
+                Repetir Pedido
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

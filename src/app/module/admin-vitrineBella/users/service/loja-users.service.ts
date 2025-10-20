@@ -42,9 +42,43 @@ export class LojaUsersService {
               redirectRoute: userData.redirectRoute || ['/loja'],
               photoURL: userData.photoURL || '',
               createdAt: userData.createdAt?.toDate() || new Date(),
-              updatedAt: userData.updatedAt?.toDate() || new Date()
+              updatedAt: userData.updatedAt?.toDate() || new Date(),
+              salesHistory: userData.salesHistory || []
             });
           }
+        });
+        return users;
+      })
+    );
+  }
+
+  /**
+   * Busca todos os usuários (incluindo clientes)
+   */
+  getAllUsers(): Observable<LojaUser[]> {
+    const usersCollection = collection(this.firestore, 'users');
+
+    return from(getDocs(usersCollection)).pipe(
+      map(querySnapshot => {
+        const users: LojaUser[] = [];
+        querySnapshot.forEach((doc) => {
+          const userData = doc.data() as any;
+          users.push({
+            uid: doc.id,
+            fullName: userData.fullName || '',
+            email: userData.email || '',
+            cpf: userData.cpf || '',
+            phone: userData.phone || '',
+            role: userData.role || 'cliente',
+            userRole: userData.userRole || 'cliente',
+            accessCode: userData.accessCode || '',
+            isActive: userData.isActive !== false,
+            redirectRoute: userData.redirectRoute || [],
+            photoURL: userData.photoURL || '',
+            createdAt: userData.createdAt?.toDate() || new Date(),
+            updatedAt: userData.updatedAt?.toDate() || new Date(),
+            salesHistory: userData.salesHistory || []
+          });
         });
         return users;
       })

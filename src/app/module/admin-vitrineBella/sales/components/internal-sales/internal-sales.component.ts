@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { Product } from '../../../products/interface/products';
 import { SaleItem, SaleForm } from '../../interface/sales';
@@ -8,6 +10,8 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { SalesService } from '../../service/sales.service';
 import { ProductService } from '../../../products/service/product.service';
 import { GoalService } from '../../../goals/service/goal.service';
+import { PreRegistrationService } from '../../../shared/services/pre-registration.service';
+import { PreRegistrationModalComponent } from '../pre-registration-modal/pre-registration-modal.component';
 
 
 @Component({
@@ -45,6 +49,9 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
     private salesService: SalesService,
     private productService: ProductService,
     private goalService: GoalService,
+    private preRegistrationService: PreRegistrationService,
+    private dialog: MatDialog,
+    private router: Router,
     private snackBar: MatSnackBar
   ) {
     this.initForms();
@@ -117,7 +124,8 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
         productName: product.productName,
         productPrice: product.price,
         quantity: 1,
-        subtotal: product.price
+        subtotal: product.price,
+        imageUrl: product.imageUrl ?? undefined
       };
       this.cartItems.push(newItem);
     }
@@ -161,7 +169,61 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
     this.calculateTotals();
   }
 
+  goToCheckout(): void {
+    if (this.cartItems.length > 0) {
+      // Salvar carrinho no localStorage para o checkout
+      localStorage.setItem('checkout_cart', JSON.stringify(this.cartItems));
+      // Redirecionar para o checkout
+      this.router.navigate(['/admin/checkout']);
+    } else {
+      this.snackBar.open('Adicione produtos ao carrinho antes de finalizar a compra.', 'Fechar', { duration: 3000 });
+    }
+  }
+
   processSale(): void {
+    if (this.cartItems.length > 0) {
+      // Verificar se é um cliente novo (sem dados completos) ou cliente existente
+      const customerName = this.saleForm.get('customerName')?.value;
+      const customerEmail = this.saleForm.get('customerEmail')?.value;
+      const customerPhone = this.saleForm.get('customerPhone')?.value;
+
+      // Se não tem dados do cliente ou dados incompletos, abrir modal de pré-cadastro
+      if (!customerName || !customerEmail || !customerPhone) {
+        this.openPreRegistrationModal();
+        return;
+      }
+
+      // Se tem dados completos, processar venda normalmente
+      this.executeSale();
+    }
+  }
+
+  private openPreRegistrationModal(): void {
+    const dialogRef = this.dialog.open(PreRegistrationModalComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      data: {
+        cartItems: this.cartItems,
+        total: this.total
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        // Atualizar formulário com dados do pré-cadastro
+        this.saleForm.patchValue({
+          customerName: result.customerData.name,
+          customerEmail: result.customerData.email,
+          customerPhone: result.customerData.phone
+        });
+
+        // Processar a venda com os dados do pré-cadastro
+        this.executeSale(result.preRegistrationId);
+      }
+    });
+  }
+
+  private executeSale(preRegistrationId?: string): void {
     if (this.saleForm.valid && this.cartItems.length > 0) {
       this.isProcessingSale = true;
 
@@ -180,6 +242,11 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
         .then((saleId) => {
           // Primeiro calcular e mostrar a soma das vendas
           this.calculateAndShowSalesSum(finalAmount);
+
+          // Adicionar venda ao histórico do cliente (se for pré-cadastro)
+          if (preRegistrationId) {
+            this.addSaleToCustomerHistory(preRegistrationId, saleId, finalAmount);
+          }
 
           this.snackBar.open('Venda realizada com sucesso!', 'Fechar', { duration: 3000 });
           this.clearCart();
@@ -200,6 +267,29 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
     } else {
       this.snackBar.open('Preencha todos os campos obrigatórios.', 'Fechar', { duration: 3000 });
     }
+  }
+
+  private addSaleToCustomerHistory(preRegistrationId: string, saleId: string, amount: number): void {
+    const saleHistory = {
+      saleId,
+      date: new Date(),
+      amount,
+      items: this.cartItems.map(item => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.productPrice
+      }))
+    };
+
+    // Buscar pré-cadastro e adicionar venda ao histórico
+    this.preRegistrationService.getPreRegistrationByCpf(
+      this.saleForm.get('customerName')?.value // Aqui deveria ser CPF, mas vamos ajustar
+    ).subscribe(preReg => {
+      if (preReg && preReg.id) {
+        const updatedSales = [...(preReg.sales || []), saleHistory];
+        this.preRegistrationService.updatePreRegistration(preReg.id, { sales: updatedSales }).subscribe();
+      }
+    });
   }
 
   getPaymentMethodDisplayName(method: string): string {

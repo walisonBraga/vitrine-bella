@@ -170,6 +170,15 @@ export class SecurityService {
       return '';
     }
 
+    // Para emails, apenas remover espaços extras e caracteres perigosos
+    if (input.includes('@')) {
+      return input
+        .replace(/[<>]/g, '') // Remove < e >
+        .replace(/javascript:/gi, '') // Remove javascript:
+        .replace(/on\w+=/gi, '') // Remove event handlers
+        .trim();
+    }
+
     return input
       .replace(/[<>]/g, '') // Remove < e >
       .replace(/javascript:/gi, '') // Remove javascript:
@@ -181,8 +190,12 @@ export class SecurityService {
    * Valida email
    */
   validateEmail(email: string): boolean {
+    if (!email || typeof email !== 'string') {
+      return false;
+    }
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email) && email.length <= 254;
+    return emailRegex.test(email) && email.length <= 254 && email.length >= 5;
   }
 
   /**

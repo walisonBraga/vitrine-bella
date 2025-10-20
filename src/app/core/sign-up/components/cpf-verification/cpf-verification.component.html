@@ -1,0 +1,60 @@
+<div class="cpf-verification-container">
+  <div class="verification-card">
+    <div class="card-header">
+      <mat-icon class="header-icon">verified_user</mat-icon>
+      <h2>Verificação de CPF</h2>
+      <p>Digite seu CPF para verificar se você já possui um pré-cadastro na nossa loja física</p>
+    </div>
+
+    <div class="card-content">
+      <form [formGroup]="cpfForm" (ngSubmit)="verifyCpf()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>CPF</mat-label>
+          <input matInput formControlName="cpf" placeholder="000.000.000-00" (input)="onCpfInput($event)">
+          <mat-icon matSuffix>badge</mat-icon>
+          <mat-error *ngIf="cpfForm.get('cpf')?.hasError('required')">
+            CPF é obrigatório
+          </mat-error>
+          <mat-error *ngIf="cpfForm.get('cpf')?.hasError('pattern')">
+            CPF inválido
+          </mat-error>
+        </mat-form-field>
+
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" type="submit" 
+                  [disabled]="cpfForm.invalid || isVerifying" class="verify-btn">
+            <mat-spinner *ngIf="isVerifying" diameter="20" class="btn-spinner"></mat-spinner>
+            <mat-icon *ngIf="!isVerifying">search</mat-icon>
+            {{ isVerifying ? 'Verificando...' : 'Verificar Pré-cadastro' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Resultado da Verificação -->
+      <div *ngIf="foundPreRegistration" class="verification-result">
+        <div class="success-message">
+          <mat-icon>check_circle</mat-icon>
+          <div class="message-content">
+            <h3>Pré-cadastro encontrado!</h3>
+            <p>Nome: {{ foundPreRegistration.name }}</p>
+            <p>Email: {{ foundPreRegistration.email }}</p>
+            <p>Redirecionando para completar seu cadastro...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <div class="footer-links">
+        <button mat-button (click)="goToSignIn()">
+          <mat-icon>login</mat-icon>
+          Já tenho conta
+        </button>
+        <button mat-button (click)="goToSignUp()">
+          <mat-icon>person_add</mat-icon>
+          Criar nova conta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

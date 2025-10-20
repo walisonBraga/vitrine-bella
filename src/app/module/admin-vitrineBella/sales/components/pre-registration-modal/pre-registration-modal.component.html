@@ -1,0 +1,149 @@
+<div class="pre-registration-modal">
+  <div class="modal-header">
+    <h2 mat-dialog-title>
+      <mat-icon>person_add</mat-icon>
+      Pré-cadastro do Cliente
+    </h2>
+    <p class="modal-subtitle">
+      Complete os dados básicos do cliente para finalizar a venda.
+      <br>
+      <strong>O cliente poderá completar o cadastro posteriormente no site.</strong>
+    </p>
+  </div>
+
+  <div mat-dialog-content class="modal-content">
+    <form [formGroup]="preRegistrationForm" class="pre-registration-form">
+      <!-- Dados Básicos -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>person</mat-icon>
+          Dados Básicos
+        </h3>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome Completo *</mat-label>
+            <input matInput formControlName="name" placeholder="Digite o nome completo">
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error>{{ nameError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>CPF *</mat-label>
+            <input matInput formControlName="cpf" placeholder="000.000.000-00" 
+                   (input)="onCpfChange($event)" maxlength="14">
+            <mat-icon matSuffix>badge</mat-icon>
+            <mat-error>{{ cpfError }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Data de Nascimento</mat-label>
+            <input matInput type="date" formControlName="birthDate">
+            <mat-icon matSuffix>calendar_today</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Email *</mat-label>
+            <input matInput formControlName="email" placeholder="email@exemplo.com">
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error>{{ emailError }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Telefone *</mat-label>
+            <input matInput formControlName="phone" placeholder="(00) 00000-0000" 
+                   (input)="onPhoneChange($event)" maxlength="15">
+            <mat-icon matSuffix>phone</mat-icon>
+            <mat-error>{{ phoneError }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Gênero</mat-label>
+            <mat-select formControlName="gender">
+              <mat-option value="masculino">Masculino</mat-option>
+              <mat-option value="feminino">Feminino</mat-option>
+              <mat-option value="outro">Outro</mat-option>
+              <mat-option value="nao_informar">Não informar</mat-option>
+            </mat-select>
+            <mat-icon matSuffix>wc</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Endereço (Opcional) -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>location_on</mat-icon>
+          Endereço (Opcional)
+        </h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Endereço</mat-label>
+            <input matInput formControlName="address" placeholder="Rua, número, complemento">
+            <mat-icon matSuffix>home</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Cidade</mat-label>
+            <input matInput formControlName="city" placeholder="Nome da cidade">
+            <mat-icon matSuffix>location_city</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="quarter-width">
+            <mat-label>Estado</mat-label>
+            <input matInput formControlName="state" placeholder="UF" maxlength="2">
+            <mat-icon matSuffix>map</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="quarter-width">
+            <mat-label>CEP</mat-label>
+            <input matInput formControlName="zipCode" placeholder="00000-000" 
+                   (input)="onZipCodeChange($event)" maxlength="9">
+            <mat-icon matSuffix>markunread_mailbox</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Informações da Venda -->
+      <div class="sale-info">
+        <h3 class="section-title">
+          <mat-icon>shopping_cart</mat-icon>
+          Resumo da Venda
+        </h3>
+        <div class="sale-summary">
+          <div class="summary-item">
+            <span>Itens no carrinho:</span>
+            <span><strong>{{ data.cartItems.length }}</strong></span>
+          </div>
+          <div class="summary-item">
+            <span>Valor total:</span>
+            <span><strong>{{ data.total | currency:'BRL' }}</strong></span>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div mat-dialog-actions class="modal-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isProcessing" class="cancel-btn">
+      <mat-icon>close</mat-icon>
+      Cancelar
+    </button>
+
+    <button mat-raised-button color="primary" (click)="onSubmit()" 
+            [disabled]="preRegistrationForm.invalid || isProcessing" class="submit-btn">
+      <mat-spinner *ngIf="isProcessing" diameter="20" class="btn-spinner"></mat-spinner>
+      <mat-icon *ngIf="!isProcessing">person_add</mat-icon>
+      {{ isProcessing ? 'Criando Pré-cadastro...' : 'Criar Pré-cadastro e Finalizar Venda' }}
+    </button>
+  </div>
+</div>
