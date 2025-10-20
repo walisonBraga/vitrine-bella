@@ -1,16 +1,10 @@
 <app-navigation-admin>
-  <div class="loja-users-management">
+  <div class="clients-management">
     <!-- Header -->
     <div class="page-header">
       <div class="header-content">
-        <h1>Usuários da Loja</h1>
-        <p>Gerencie administradores, proprietários, gerentes e funcionários da loja</p>
-      </div>
-      <div class="header-actions">
-        <button mat-raised-button color="primary" (click)="createNewUser()">
-          <mat-icon>person_add</mat-icon>
-          Novo Usuário
-        </button>
+        <h1>Gerenciamento de Clientes</h1>
+        <p>Visualize todos os clientes cadastrados no sistema</p>
       </div>
     </div>
 
@@ -18,7 +12,7 @@
     <div class="bulk-actions" *ngIf="selectedUsers.length > 0">
       <div class="bulk-info">
         <mat-icon>group</mat-icon>
-        <span>{{ selectedUsers.length }} usuário(s) selecionado(s)</span>
+        <span>{{ selectedUsers.length }} cliente(s) selecionado(s)</span>
       </div>
       <div class="bulk-buttons">
         <button mat-button color="primary" (click)="bulkAction('activate')">
@@ -39,51 +33,40 @@
     <!-- Estatísticas -->
     <div class="stats-container">
       <div class="stat-card">
-        <div class="stat-icon admin">
-          <mat-icon>admin_panel_settings</mat-icon>
+        <div class="stat-icon total">
+          <mat-icon>people</mat-icon>
         </div>
         <div class="stat-content">
-          <h3>{{ getAdminCount() }}</h3>
-          <p>Administradores</p>
+          <h3>{{ getClientCount() }}</h3>
+          <p>Total de Clientes</p>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon employee">
-          <mat-icon>badge</mat-icon>
+        <div class="stat-icon active">
+          <mat-icon>check_circle</mat-icon>
         </div>
         <div class="stat-content">
-          <h3>{{ getStoreEmployeeCount() }}</h3>
-          <p>Funcionários</p>
+          <h3>{{ getActiveClientCount() }}</h3>
+          <p>Clientes Ativos</p>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon manager">
-          <mat-icon>supervisor_account</mat-icon>
+        <div class="stat-icon inactive">
+          <mat-icon>cancel</mat-icon>
         </div>
         <div class="stat-content">
-          <h3>{{ getStoreManagerCount() }}</h3>
-          <p>Gerentes</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon owner">
-          <mat-icon>store</mat-icon>
-        </div>
-        <div class="stat-content">
-          <h3>{{ getStoreOwnerCount() }}</h3>
-          <p>Proprietários</p>
+          <h3>{{ getInactiveClientCount() }}</h3>
+          <p>Clientes Inativos</p>
         </div>
       </div>
     </div>
 
-    <!-- Tabela de usuários -->
+    <!-- Tabela de clientes -->
     <app-loja-user-table [users]="users" [config]="tableConfig" [loading]="loading"
       searchPlaceholder="Buscar por nome, email ou CPF..." (userSelected)="onUserSelected($event)"
       (actionClicked)="onActionClicked($event)" (usersSelected)="onUsersSelected($event)">
     </app-loja-user-table>
   </div>
 </app-navigation-admin>
-

@@ -1,7 +1,290 @@
-// Remove o ícone padrão do expansion panel
-.mat-expansion-panel-header {
-  .mat-expansion-indicator {
-    display: none !important;
+// Table Styles
+.permissions-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: white;
+}
+
+.permissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+
+  .table-header-row {
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+
+    th {
+      padding: 16px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.875rem;
+      border-right: 1px solid #e0e0e0;
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+
+  .table-row {
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+
+    &.expanded {
+      background-color: #f0f8ff;
+    }
+
+    td {
+      padding: 16px 20px;
+      vertical-align: middle;
+      border-right: 1px solid #e0e0e0;
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+
+  .expanded-row {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+
+    .expanded-content {
+      padding: 0;
+      border-right: none;
+    }
+  }
+}
+
+// Column widths
+.checkbox-column {
+  width: 50px;
+  text-align: center;
+}
+
+.name-column {
+  width: 30%;
+  min-width: 200px;
+}
+
+.email-column {
+  width: 25%;
+  min-width: 180px;
+}
+
+.cpf-column {
+  width: 20%;
+  min-width: 120px;
+}
+
+.role-column {
+  width: 15%;
+  min-width: 100px;
+}
+
+.status-column {
+  width: 10%;
+  min-width: 80px;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .permissions-table {
+    .table-header-row th,
+    .table-row td {
+      padding: 12px 8px;
+      font-size: 0.8rem;
+    }
+
+    .user-info {
+      gap: 8px;
+
+      .user-avatar {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .badge {
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      min-width: 60px;
+    }
+  }
+
+  .expanded-content .permissions-section {
+    padding: 16px;
+
+    .permissions-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+
+      .permission-toggle {
+        padding: 12px;
+      }
+    }
+  }
+}
+
+// User info styles
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+  }
+
+  .user-name {
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+// Badge styles
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 80px;
+  color: #1565c0 !important; // Força a cor azul escura
+
+  &.role-admin {
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
+  }
+
+  &.role-store-owner {
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
+  }
+
+  &.role-store-manager {
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
+  }
+
+  &.role-store-employee {
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
+  }
+
+  &.role-cliente {
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
+  }
+
+  &.status-badge {
+    &.active {
+      background-color: #e8f5e8;
+      color: #2e7d32 !important;
+    }
+
+    &.inactive {
+      background-color: #ffebee;
+      color: #c62828 !important;
+    }
+  }
+}
+
+// Expanded content styles
+.expanded-content {
+  .permissions-section {
+    padding: 24px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+
+    h4 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .edit-warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      color: #856404;
+      font-size: 0.875rem;
+    }
+
+    .permissions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+
+      .permission-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #fafafa;
+        transition: all 0.2s ease;
+
+        &:hover:not(.disabled) {
+          background: #f0f0f0;
+          border-color: #d0d0d0;
+        }
+
+        &.disabled {
+          opacity: 0.6;
+          background: #f5f5f5;
+        }
+
+        &.critical-blocked {
+          background: #ffebee;
+          border-color: #ffcdd2;
+        }
+
+        .permission-info {
+          flex: 1;
+
+          .permission-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .permission-label {
+              font-weight: 500;
+              color: #333;
+              font-size: 0.875rem;
+            }
+
+            .permission-description {
+              color: #666;
+              font-size: 0.75rem;
+            }
+
+            .blocked-reason {
+              color: #d32f2f;
+              font-size: 0.75rem;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -79,366 +362,29 @@
   }
 }
 
-// Table Header
-.table-header {
-  background: #f5f5f5;
-  border-radius: 8px 8px 0 0;
-  border: 1px solid #e0e0e0;
-  border-bottom: none;
-  margin-bottom: 0;
-
-  .header-row {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: 50px 0.2fr 0.3fr 120px 100px;
-    padding: 16px 20px 16px 20px;
-    align-items: center;
-
-    // Bootstrap responsive breakpoints
-    @media (max-width: 992px) {
-      grid-template-columns: 40px 0.2fr 0.3fr 100px 80px;
-      gap: 12px;
-      padding: 12px 16px;
-    }
-
-    @media (max-width: 768px) {
-      grid-template-columns: 35px 0.2fr 0.3fr 90px 70px;
-      gap: 10px;
-      padding: 10px 12px;
-      font-size: 0.85rem;
-    }
-
-    @media (max-width: 576px) {
-      grid-template-columns: 30px 0.2fr 0.3fr 80px 60px;
-      gap: 8px;
-      padding: 8px 10px;
-      font-size: 0.8rem;
-    }
-
-    .header-cell {
-      font-weight: 600;
-      color: #333;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 60px;
-      padding-left: 0;
-
-      @media (max-width: 576px) {
-        font-size: 0.75rem;
-        min-height: 50px;
-      }
-    }
-  }
-}
-
-// Accordion
-.users-accordion {
-  margin-bottom: 24px;
-  margin-top: -1px;
-
-  .user-expansion-panel {
-    margin-bottom: 0;
-    border-radius: 0;
-    box-shadow: none;
-    border: 1px solid #e0e0e0;
-    border-top: none;
-
-    &:first-child {
-      border-radius: 0;
-      border-top: 1px solid #e0e0e0;
-    }
-
-    &:last-child {
-      border-radius: 0 0 8px 8px;
-    }
-  }
-
-  .user-panel-header {
-    padding: 0;
-
-    .user-panel-title {
-      width: 100%;
-
-      .table-row {
-        display: grid;
-        grid-template-columns: 50px 0.2fr 0.3fr 120px 100px;
-        gap: 12px;
-        padding: 0 20px 0 20px;
-        align-items: center;
-        height: 100%;
-        width: 100%;
-        min-height: 60px;
-
-        // Bootstrap responsive breakpoints
-        @media (max-width: 992px) {
-          grid-template-columns: 40px 0.2fr 0.3fr 100px 80px;
-          gap: 10px;
-          padding: 0 16px;
-        }
-
-        @media (max-width: 768px) {
-          grid-template-columns: 35px 0.2fr 0.3fr 90px 70px;
-          gap: 8px;
-          padding: 0 12px;
-          min-height: 55px;
-        }
-
-        @media (max-width: 576px) {
-          grid-template-columns: 30px 0.2fr 0.3fr 80px 60px;
-          gap: 6px;
-          padding: 0 10px;
-          min-height: 50px;
-        }
-
-        .table-cell {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          min-height: 60px;
-          padding-left: 0;
-
-          @media (max-width: 576px) {
-            min-height: 50px;
-          }
-
-          .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-
-            .user-avatar {
-              width: 28px;
-              height: 28px;
-              border-radius: 50%;
-              object-fit: cover;
-              flex-shrink: 0;
-
-              @media (max-width: 576px) {
-                width: 24px;
-                height: 24px;
-              }
-            }
-
-            .user-name {
-              font-weight: 500;
-              color: #333;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-
-              @media (max-width: 576px) {
-                font-size: 0.85rem;
-              }
-            }
-          }
-
-          .user-email {
-            color: #666;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-
-            @media (max-width: 576px) {
-              font-size: 0.8rem;
-            }
-          }
-
-          .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            white-space: nowrap;
-            color: #333;
-
-            @media (max-width: 576px) {
-              padding: 3px 6px;
-              font-size: 0.7rem;
-            }
-
-            &.badge-admin {
-              background: #ff9800;
-              color: white;
-            }
-
-            &.badge-employee {
-              background: #2196f3;
-              color: white;
-            }
-
-            &.badge-client {
-              background: #4caf50;
-              color: white;
-            }
-          }
-
-          .status-active {
-            color: #4caf50;
-            font-weight: 500;
-            white-space: nowrap;
-          }
-
-          .status-inactive {
-            color: #f44336;
-            font-weight: 500;
-            white-space: nowrap;
-          }
-        }
-      }
-    }
-
-    .user-panel-description {
-      .panel-status {
-        font-size: 0.75rem;
-        color: #666;
-      }
-    }
-  }
-}
-
-// Permissions Panel Content
-.permissions-panel-content {
-  padding: 24px;
-  background: #fafafa;
-
-  .permissions-section {
-    h4 {
-      margin: 0 0 16px 0;
-      color: #333;
-    }
-
-    .edit-warning {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      border-radius: 4px;
-      margin-bottom: 16px;
-      color: #856404;
-    }
-
-    .permissions-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-
-      .permission-toggle {
-        flex: 1;
-        min-width: 280px;
-        max-width: 350px;
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 16px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: all 0.2s ease;
-
-        &:hover {
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        &.disabled {
-          opacity: 0.6;
-          background: #f5f5f5;
-        }
-
-        &.critical-blocked {
-          background: #ffebee;
-          border-color: #f44336;
-        }
-
-        .permission-info {
-          flex: 1;
-
-          .permission-details {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-
-            .permission-label {
-              font-weight: 500;
-              color: #333;
-            }
-
-            .permission-description {
-              font-size: 0.85rem;
-              color: #666;
-            }
-
-            .blocked-reason {
-              font-size: 0.75rem;
-              color: #f44336;
-              font-weight: 500;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 // Empty state
 .empty-state {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 40px;
-  color: #666;
+  text-align: center;
 
   .empty-icon {
-    font-size: 48px;
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #ccc;
     margin-bottom: 16px;
-    opacity: 0.5;
-  }
-}
-
-// Responsive
-@media (max-width: 768px) {
-  .permissions-container {
-    padding: 16px;
   }
 
-  .permissions-header-card {
-    margin-bottom: 16px;
-
-    mat-card-content {
-      padding: 16px;
-    }
+  h3 {
+    margin: 0 0 8px 0;
+    color: #666;
   }
 
-  .permissions-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-
-    .header-content {
-      h1 {
-        font-size: 1.3rem;
-      }
-
-      p {
-        font-size: 0.85rem;
-      }
-    }
-
-    .header-actions {
-      width: 100%;
-      justify-content: flex-end;
-    }
-  }
-
-
-  .permissions-grid {
-    .permission-toggle {
-      min-width: 100%;
-      max-width: 100%;
-    }
+  p {
+    margin: 0;
+    color: #999;
   }
 }

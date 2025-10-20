@@ -4,6 +4,7 @@ import { MenuItem } from '../../interface/MenuItem';
 import { Router } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { StockNotificationService } from '../../../../../core/services/stock-notification.service';
+import { RoleTranslationService } from '../../../shared/services/role-translation.service';
 
 @Component({
   selector: 'app-custom-sidenav',
@@ -17,7 +18,7 @@ export class CustomSidenavComponent {
   lowStockCount = signal(0);
   hasMultipleRoles = signal(false);
   currentRole = signal<'admin' | 'loja'>('admin');
-  private destroy$ = new Subject<void>(); // Subject para unsubscribe manual
+  private destroy$ = new Subject<void>();
 
   @Input() set collapse(value: boolean) {
     this.sideNavCollapsed.set(value);
@@ -26,7 +27,8 @@ export class CustomSidenavComponent {
   constructor(
     private _authService: AuthService,
     private _router: Router,
-    private stockNotificationService: StockNotificationService
+    private stockNotificationService: StockNotificationService,
+    private roleTranslationService: RoleTranslationService
   ) {
     effect(() => {
       const user = this.userData();
@@ -88,8 +90,21 @@ export class CustomSidenavComponent {
     },
     {
       icon: 'group',
-      label: 'Usuários da Loja',
-      route: '/admin/loja-users-management',
+      label: 'Gerenciamento de Usuários',
+      children: [
+        {
+          icon: 'business',
+          label: 'Usuários da Loja',
+          route: '/admin/loja-users-management',
+          permission: '/users'
+        },
+        {
+          icon: 'person',
+          label: 'Clientes',
+          route: '/admin/clients-management',
+          permission: '/users'
+        }
+      ],
       permission: '/users'
     },
     {
@@ -147,6 +162,16 @@ export class CustomSidenavComponent {
       if (!item.permission) {
         return true;
       }
+
+      // Se for cliente, mostrar apenas itens específicos
+      if (user.role === 'cliente') {
+        const clientAllowedRoutes = [
+          '/admin/profile',
+          '/admin/employee-goals'
+        ];
+        return item.route && clientAllowedRoutes.includes(item.route);
+      }
+
       const hasPermission = userPermissions.includes(item.permission);
       return hasPermission;
     });
@@ -275,6 +300,17 @@ export class CustomSidenavComponent {
       return 'U';
     }
     return name.trim().charAt(0).toUpperCase();
+  }
+
+  /**
+   * Traduz a role do usuário para português
+   */
+  getTranslatedRole(): string {
+    const user = this.userData();
+    if (!user || !user.role) {
+      return "Gerencie sua loja com facilidade";
+    }
+    return this.roleTranslationService.translateRole(user.role);
   }
 
   ngOnDestroy(): void {

@@ -115,6 +115,8 @@ export class EditUserModalComponent implements OnInit, OnDestroy {
     switch (role) {
       case 'store_employee':
         return 'Funcionário da Loja';
+      case 'store_manager':
+        return 'Gerente da Loja';
       case 'store_owner':
         return 'Proprietário da Loja';
       case 'admin':

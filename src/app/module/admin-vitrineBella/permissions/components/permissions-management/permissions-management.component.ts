@@ -108,6 +108,7 @@ export class PermissionsManagementComponent implements OnInit, OnDestroy {
             uid: user.uid,
             fullName: user.fullName,
             email: user.email,
+            cpf: user.cpf,
             role: user.role,
             isActive: user.isActive,
             photoURL: user.photoURL,
@@ -443,6 +444,10 @@ export class PermissionsManagementComponent implements OnInit, OnDestroy {
 
     // Force table to re-render
     this.dataSource.data = [...this.dataSource.data];
+  }
+
+  toggleRowExpansion(uid: string): void {
+    this.toggleExpanded(uid);
   }
 
   // Save user permissions

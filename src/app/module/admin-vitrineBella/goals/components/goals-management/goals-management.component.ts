@@ -15,6 +15,8 @@ import { UpdateSalesModalComponent } from '../../update-sales-modal/update-sales
 import { MonthClosingModalComponent } from '../../month-closing-modal/month-closing-modal.component';
 import { LogService } from '../../../logs/service/log.service';
 import { UserContextService } from '../../../logs/service/user-context.service';
+import { LojaUsersService } from '../../../users/service/loja-users.service';
+import { LojaUser } from '../../../users/interface/loja-user.interface';
 
 @Component({
   selector: 'app-goals-management',
@@ -39,6 +41,9 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   userRole: string = '';
 
+  // Mapa de fotos dos usuários para renderizar avatar na tabela
+  private userIdToPhotoUrl: Record<string, string> = {};
+
   // Filtros
   filter: GoalFilter = {};
   searchTerm = '';
@@ -55,18 +60,38 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
     private logService: LogService,
     private userContextService: UserContextService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private lojaUsersService: LojaUsersService
   ) { }
 
   ngOnInit(): void {
     this.loadCurrentUser();
     this.loadGoals();
+    this.loadUsersPhotos();
     // Rankings e stats serão carregados após as metas serem carregadas
   }
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  private loadUsersPhotos(): void {
+    this.lojaUsersService.getLojaUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((users: LojaUser[]) => {
+        const map: Record<string, string> = {};
+        for (const user of users) {
+          if (user.uid && user.photoURL) {
+            map[user.uid] = user.photoURL;
+          }
+        }
+        this.userIdToPhotoUrl = map;
+      });
+  }
+
+  getPhotoUrl(userId: string): string | null {
+    return this.userIdToPhotoUrl[userId] || null;
   }
 
   ngOnDestroy(): void {

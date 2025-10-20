@@ -32,8 +32,8 @@ export class CreateUserService {
     );
   }
 
-  // Busca usuários por função (role), default para store_employee, store_owner e admin
-  getUsersByRole(roles: string[] = ['store_employee', 'store_owner', 'admin']): Observable<createUsersAdmin[]> {
+  // Busca usuários por função (role), default para store_employee, store_manager, store_owner e admin
+  getUsersByRole(roles: string[] = ['store_employee', 'store_manager', 'store_owner', 'admin']): Observable<createUsersAdmin[]> {
     const q = query(this.usersCollection, where('role', 'in', roles));
     return from(getDocs(q)).pipe(
       map(snapshot => snapshot.docs.map(doc => doc.data() as createUsersAdmin))

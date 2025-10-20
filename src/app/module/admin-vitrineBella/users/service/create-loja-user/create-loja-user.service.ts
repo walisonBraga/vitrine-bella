@@ -33,7 +33,7 @@ export class CreateLojaUserService {
 
             // 2. Gerar accessCode usando os primeiros 10 caracteres do UID
             const accessCode = userCredential.user.uid.substring(0, 10);
-            
+
             // 3. Validar campos únicos (incluindo o accessCode gerado)
             const validations = await this.userValidationService.validateAllUniqueFields(
                 userData.cpf,
@@ -76,7 +76,6 @@ export class CreateLojaUserService {
 
             return userCredential.user.uid;
         } catch (error) {
-            console.error('Erro ao criar usuário da loja:', error);
             throw error;
         }
     }
@@ -121,7 +120,6 @@ export class CreateLojaUserService {
 
             await updateDoc(userRef, updateData);
         } catch (error) {
-            console.error('Erro ao atualizar usuário da loja:', error);
             throw error;
         }
     }
@@ -183,6 +181,8 @@ export class CreateLojaUserService {
                 return 'admin';
             case 'store_owner':
                 return 'store_owner';
+            case 'store_manager':
+                return 'store_manager';
             case 'store_employee':
                 return 'store_employee';
             case 'cliente':
@@ -267,14 +267,9 @@ export class CreateLojaUserService {
     getUserRoles(): UserRoleOption[] {
         return [
             {
-                value: 'cliente',
-                label: 'Cliente',
-                description: 'Acesso apenas à loja virtual para compras'
-            },
-            {
-                value: 'store_employee',
-                label: 'Funcionário da Loja',
-                description: 'Acesso à loja + permissões específicas de gerenciamento'
+                value: 'admin',
+                label: 'Administrador',
+                description: 'Acesso total ao sistema (admin + loja)'
             },
             {
                 value: 'store_owner',
@@ -282,16 +277,50 @@ export class CreateLojaUserService {
                 description: 'Acesso completo à loja e área administrativa'
             },
             {
-                value: 'admin',
-                label: 'Administrador',
-                description: 'Acesso total ao sistema (admin + loja)'
+                value: 'store_manager',
+                label: 'Gerente da Loja',
+                description: 'Acesso à loja + gerenciamento de equipe e operações'
+            },
+            {
+                value: 'store_employee',
+                label: 'Funcionário da Loja',
+                description: 'Acesso à loja + permissões específicas de gerenciamento'
             }
         ];
     }
 
     /**
-     * Obtém opções de páginas de acesso
+     * Obtém permissões automáticas baseadas no role do usuário
      */
+    getAutoPermissions(userRole: string): { accessRoutes: string[], managementTypes: string[] } {
+        switch (userRole) {
+            case 'admin':
+                return {
+                    accessRoutes: ['/loja', '/admin'],
+                    managementTypes: ['/dashboard', '/products', '/users', '/sales', '/categories', '/coupons', '/slides', '/permissions']
+                };
+            case 'store_owner':
+                return {
+                    accessRoutes: ['/loja', '/admin'],
+                    managementTypes: ['/dashboard', '/products', '/users', '/sales', '/categories', '/coupons', '/slides']
+                };
+            case 'store_manager':
+                return {
+                    accessRoutes: ['/loja', '/admin'],
+                    managementTypes: ['/dashboard', '/products', '/sales', '/categories', '/coupons', '/slides']
+                };
+            case 'store_employee':
+                return {
+                    accessRoutes: ['/loja', '/admin'],
+                    managementTypes: ['/dashboard', '/products', '/sales']
+                };
+            default:
+                return {
+                    accessRoutes: ['/loja'],
+                    managementTypes: ['/dashboard']
+                };
+        }
+    }
     getAccessRoutes(): AccessRouteOption[] {
         return [
             {

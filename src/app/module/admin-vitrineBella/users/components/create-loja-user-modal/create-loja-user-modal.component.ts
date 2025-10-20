@@ -48,20 +48,43 @@ export class CreateLojaUserModalComponent implements OnInit {
     }
 
     private createForm(): FormGroup {
-        return this.formBuilder.group({
+        const form = this.formBuilder.group({
             fullName: ['', [Validators.required, Validators.minLength(2)]],
             email: ['', [Validators.required, Validators.email]],
             password: ['', this.isEdit ? [] : [Validators.required, Validators.minLength(6)]],
             cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
             phone: ['', [Validators.required]],
             birthDate: [''],
-            userRole: ['cliente', Validators.required],
-            accessRoutes: [['/loja'], Validators.required],
-            managementType: [['/dashboard'], Validators.required],
+            userRole: ['admin', Validators.required],
+            accessRoutes: [[], Validators.required],
+            managementType: [[], Validators.required],
             isActive: [true],
             marketing: [false],
             changePassword: [false]
         });
+
+        // Configurar permissões automáticas quando o role mudar
+        form.get('userRole')?.valueChanges.subscribe(role => {
+            if (role) {
+                const autoPermissions = this.createLojaUserService.getAutoPermissions(role);
+                form.patchValue({
+                    accessRoutes: autoPermissions.accessRoutes as any,
+                    managementType: autoPermissions.managementTypes as any
+                });
+            }
+        });
+
+        // Configurar permissões iniciais
+        const initialRole = form.get('userRole')?.value;
+        if (initialRole) {
+            const autoPermissions = this.createLojaUserService.getAutoPermissions(initialRole);
+            form.patchValue({
+                accessRoutes: autoPermissions.accessRoutes as any,
+                managementType: autoPermissions.managementTypes as any
+            });
+        }
+
+        return form;
     }
 
     private populateForm(user: any): void {
@@ -71,7 +94,7 @@ export class CreateLojaUserModalComponent implements OnInit {
             cpf: user.cpf || '',
             phone: user.phone || '',
             birthDate: user.birthDate || '',
-            userRole: user.userRole || 'cliente',
+            userRole: user.userRole || 'admin',
             accessRoutes: user.redirectRoute || ['/loja'],
             managementType: user.managementType || ['/dashboard'],
             isActive: user.isActive !== false,
@@ -286,7 +309,7 @@ export class CreateLojaUserModalComponent implements OnInit {
     onPasswordChangeToggle(event: any): void {
         const shouldChangePassword = event.checked;
         this.showPasswordFields = shouldChangePassword;
-        
+
         const passwordControl = this.createUserForm.get('password');
         if (shouldChangePassword) {
             passwordControl?.setValidators([Validators.required, Validators.minLength(6)]);

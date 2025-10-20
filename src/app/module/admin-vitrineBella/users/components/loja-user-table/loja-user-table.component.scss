@@ -123,6 +123,14 @@
     display: inline-flex;
     align-items: center;
   }
+
+  .mat-mdc-chip-option {
+    font-size: 12px;
+    height: 24px;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 .no-data {
@@ -183,57 +191,64 @@
 // Estilos para diferentes tipos de usuário
 .user-role-admin {
   .mat-mdc-chip {
-    background-color: #ffebee;
-    color: #c62828;
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
   }
 }
 
 .user-role-store-owner {
   .mat-mdc-chip {
-    background-color: #e8f5e8;
-    color: #2e7d32;
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
+  }
+}
+
+.user-role-store-manager {
+  .mat-mdc-chip {
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
   }
 }
 
 .user-role-store-employee {
   .mat-mdc-chip {
-    background-color: #e3f2fd;
-    color: #1565c0;
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
   }
 }
 
 .user-role-cliente {
   .mat-mdc-chip {
-    background-color: #f3e5f5;
-    color: #7b1fa2;
+    background-color: #f0f8ff;
+    color: #1565c0 !important;
   }
 }
 
 // Estilos específicos para chips de status (ativo/inativo)
 .mat-mdc-chip[color="primary"] {
-  background-color: #4caf50 !important; // Verde claro para ativo
-  color: white !important;
+  background-color: #e8f5e8 !important; // Verde claro para ativo
+  color: #2e7d32 !important;
 }
 
 .mat-mdc-chip[color="warn"] {
-  background-color: #f44336 !important; // Vermelho para inativo
-  color: white !important;
+  background-color: #ffebee !important; // Vermelho claro para inativo
+  color: #c62828 !important;
 }
 
 // Chips de função com cores específicas
 .mat-mdc-chip-option[color="primary"] {
-  background-color: #2196f3 !important; // Azul para funcionário/cliente
-  color: white !important;
+  background-color: #f0f8ff !important; // Azul claro para todas as funções
+  color: #1565c0 !important;
 }
 
 .mat-mdc-chip-option[color="accent"] {
-  background-color: #ff9800 !important; // Laranja para proprietário
-  color: white !important;
+  background-color: #f0f8ff !important; // Azul claro para proprietário
+  color: #1565c0 !important;
 }
 
 .mat-mdc-chip-option[color="warn"] {
-  background-color: #f44336 !important; // Vermelho para admin
-  color: white !important;
+  background-color: #f0f8ff !important; // Azul claro para admin
+  color: #1565c0 !important;
 }
 
 // Animações
@@ -273,4 +288,61 @@
 // Tooltip personalizado
 .mat-mdc-tooltip {
   font-size: 12px;
+}
+
+// User info styles
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+  }
+
+  .user-name {
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+// Forçar cores dos chips
+.mat-mdc-chip.mat-mdc-chip-primary {
+  background-color: #e8f5e8 !important;
+  color: #2e7d32 !important;
+}
+
+.mat-mdc-chip.mat-mdc-chip-warn {
+  background-color: #ffebee !important;
+  color: #c62828 !important;
+}
+
+.mat-mdc-chip-option.mat-mdc-chip-primary {
+  background-color: #f0f8ff !important;
+  color: #1565c0 !important;
+}
+
+.mat-mdc-chip-option.mat-mdc-chip-accent {
+  background-color: #f0f8ff !important;
+  color: #1565c0 !important;
+}
+
+.mat-mdc-chip-option.mat-mdc-chip-warn {
+  background-color: #f0f8ff !important;
+  color: #1565c0 !important;
+}
+
+// Estilos específicos para chips de status
+.status-chip.primary {
+  background-color: #e8f5e8 !important;
+  color: #2e7d32 !important;
+}
+
+.status-chip.warn {
+  background-color: #ffebee !important;
+  color: #c62828 !important;
 }

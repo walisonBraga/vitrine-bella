@@ -36,6 +36,7 @@
     </div>
 
 
+    <!-- Users Permissions Table -->
     <mat-card class="users-permissions-card" *ngIf="!isLoading && !errorMessage">
       <mat-card-content>
         <!-- Search Bar -->
@@ -48,99 +49,105 @@
           </mat-form-field>
         </div>
 
-        <!-- Table Header -->
-        <div class="table-header">
-          <div class="header-row">
-            <div class="header-cell checkbox-cell">
-              <mat-checkbox *ngIf="tableConfig.selectable" (change)="$event ? masterToggle() : null"
-                [checked]="selection.hasValue()" [indeterminate]="selection.hasValue() && !isAllSelected()">
-              </mat-checkbox>
-            </div>
-            <div class="header-cell name-cell">Nome</div>
-            <div class="header-cell email-cell">Email</div>
-            <div class="header-cell role-cell">Função</div>
-          </div>
-        </div>
+        <!-- Table -->
+        <div class="permissions-table-container">
+          <table class="permissions-table">
+            <!-- Table Header -->
+            <thead>
+              <tr class="table-header-row">
+                <th class="checkbox-column">
+                  <mat-checkbox *ngIf="tableConfig.selectable" (change)="$event ? masterToggle() : null"
+                    [checked]="selection.hasValue()" [indeterminate]="selection.hasValue() && !isAllSelected()">
+                  </mat-checkbox>
+                </th>
+                <th class="name-column">Nome</th>
+                <th class="email-column">Email</th>
+                <th class="cpf-column">CPF</th>
+                <th class="role-column">Função</th>
+                <th class="status-column">Status</th>
+              </tr>
+            </thead>
 
-        <!-- Accordion with Expansion Panels -->
-        <mat-accordion class="users-accordion" multi="true">
-          <mat-expansion-panel *ngFor="let user of dataSource.data; trackBy: trackByUserId"
-            [expanded]="expandedPanels.has(user.uid)" (opened)="onPanelOpened(user.uid)"
-            (closed)="onPanelClosed(user.uid)" class="user-expansion-panel" hideToggle>
-
-            <mat-expansion-panel-header class="user-panel-header">
-              <mat-panel-title class="user-panel-title">
-                <div class="table-row">
-                  <div class="table-cell checkbox-cell">
+            <!-- Table Body -->
+            <tbody>
+              <ng-container *ngFor="let user of dataSource.data; trackBy: trackByUserId; let i = index">
+                <!-- Main Row -->
+                <tr class="table-row" [class.expanded]="expandedRows.has(user.uid)"
+                  (click)="toggleRowExpansion(user.uid)">
+                  <td class="checkbox-column">
                     <mat-checkbox *ngIf="tableConfig.selectable" (click)="$event.stopPropagation()"
                       (change)="$event ? selection.toggle(user) : null" [checked]="selection.isSelected(user)">
                     </mat-checkbox>
-                  </div>
-                  <div class="table-cell name-cell">
+                  </td>
+                  <td class="name-column">
                     <div class="user-info">
                       <img [src]="user.photoURL ? user.photoURL : 'assets/img/icon-sem-perfil.png'"
                         [alt]="user.fullName" class="user-avatar">
                       <span class="user-name">{{ user.fullName }}</span>
                     </div>
-                  </div>
-                  <div class="table-cell email-cell">
-                    <span class="user-email">{{ user.email }}</span>
-                  </div>
-                  <div class="table-cell role-cell">
+                  </td>
+                  <td class="email-column">{{ user.email }}</td>
+                  <td class="cpf-column">{{ user.cpf || '-' }}</td>
+                  <td class="role-column">
                     <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
                       {{ getRoleDisplayName(user.role) }}
                     </span>
-                  </div>
-                </div>
-              </mat-panel-title>
-            </mat-expansion-panel-header>
+                  </td>
+                  <td class="status-column">
+                    <span class="badge status-badge" [ngClass]="user.isActive ? 'active' : 'inactive'">
+                      {{ user.isActive ? 'Ativo' : 'Inativo' }}
+                    </span>
+                  </td>
+                </tr>
 
-            <!-- Panel Content - Permissions -->
-            <div class="permissions-panel-content">
-              <div class="permissions-section">
-                <h4>
-                  Permissões de {{ user.fullName }}
-                </h4>
+                <!-- Expanded Row -->
+                <tr class="expanded-row" *ngIf="expandedRows.has(user.uid)">
+                  <td colspan="6" class="expanded-content">
+                    <div class="permissions-section">
+                      <h4>Permissões de {{ user.fullName }}</h4>
 
-                <div *ngIf="!canEditUser(user)" class="edit-warning">
-                  <span *ngIf="authenticatedUser?.role !== 'admin' && user.role === 'admin'">
-                    🔒 Não é possível editar permissões de administrador
-                  </span>
-                  <span *ngIf="authenticatedUser?.role !== 'admin' && user.role !== 'admin'">
-                    Você não pode editar suas próprias permissões
-                  </span>
-                  <span *ngIf="authenticatedUser?.role === 'admin'">
-                    Erro: Não foi possível carregar permissões de edição
-                  </span>
-                </div>
+                      <div *ngIf="!canEditUser(user)" class="edit-warning">
+                        <span *ngIf="authenticatedUser?.role !== 'admin' && user.role === 'admin'">
+                          🔒 Não é possível editar permissões de administrador
+                        </span>
+                        <span *ngIf="authenticatedUser?.role !== 'admin' && user.role !== 'admin'">
+                          Você não pode editar suas próprias permissões
+                        </span>
+                        <span *ngIf="authenticatedUser?.role === 'admin'">
+                          Erro: Não foi possível carregar permissões de edição
+                        </span>
+                      </div>
 
-                <div class="permissions-grid">
-                  <div class="permission-toggle" *ngFor="let permission of availablePermissions"
-                    [class.disabled]="!canEditPermission(user, permission.value)"
-                    [class.critical-blocked]="!canEditPermission(user, permission.value) && canEditUser(user)">
-                    <div class="permission-info">
-                      <div class="permission-details">
-                        <span class="permission-label">{{ permission.label }}</span>
-                        <span class="permission-description">{{ permission.description }}</span>
-                        <span
-                          *ngIf="!canEditPermission(user, permission.value) && canEditUser(user) && (permission.value === '/permissions-management' || permission.value === '/admin-management')"
-                          class="blocked-reason">🔒 Protegido por segurança</span>
-                        <span
-                          *ngIf="!canEditPermission(user, permission.value) && !canEditUser(user) && user.role === 'admin'"
-                          class="blocked-reason">🔒 Conta de administrador protegida</span>
+                      <div class="permissions-grid">
+                        <div class="permission-toggle" *ngFor="let permission of availablePermissions"
+                          [class.disabled]="!canEditPermission(user, permission.value)"
+                          [class.critical-blocked]="!canEditPermission(user, permission.value) && canEditUser(user)">
+                          <div class="permission-info">
+                            <div class="permission-details">
+                              <span class="permission-label">{{ permission.label }}</span>
+                              <span class="permission-description">{{ permission.description }}</span>
+                              <span
+                                *ngIf="!canEditPermission(user, permission.value) && canEditUser(user) && (permission.value === '/permissions' || permission.value === '/users')"
+                                class="blocked-reason">🔒 Protegido por segurança</span>
+                              <span
+                                *ngIf="!canEditPermission(user, permission.value) && !canEditUser(user) && user.role === 'admin'"
+                                class="blocked-reason">🔒 Conta de administrador protegida</span>
+                            </div>
+                          </div>
+                          <mat-slide-toggle [checked]="hasPermission(user, permission.value)"
+                            [disabled]="!canEditPermission(user, permission.value)"
+                            (change)="togglePermission(user, permission.value)" color="primary"
+                            [title]="getPermissionTooltip(user, permission.value)">
+                          </mat-slide-toggle>
+                        </div>
                       </div>
                     </div>
-                    <mat-slide-toggle [checked]="hasPermission(user, permission.value)"
-                      [disabled]="!canEditPermission(user, permission.value)"
-                      (change)="togglePermission(user, permission.value)" color="primary"
-                      [title]="getPermissionTooltip(user, permission.value)">
-                    </mat-slide-toggle>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </mat-expansion-panel>
-        </mat-accordion>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
 
         <!-- Paginator -->
         <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons

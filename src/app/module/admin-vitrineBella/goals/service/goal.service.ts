@@ -2,9 +2,9 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { collection, doc, Firestore, getDocs, setDoc, updateDoc, deleteDoc, query, where, orderBy } from '@angular/fire/firestore';
-import { v4 as uuidv4 } from 'uuid';
+import { collection, doc, Firestore, getDocs, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { Goal, SalesRanking, GoalStats, GoalFilter } from '../interface/goal.interface';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -100,12 +100,12 @@ export class GoalService {
   // Atualizar meta
   updateGoal(id: string, updates: Partial<Goal>): Observable<void> {
     const goalDoc = doc(this.goalsCollection, id);
-    
+
     // Filtrar campos undefined para evitar erro do Firebase
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
-    
+
     const updateData = {
       ...filteredUpdates,
       updatedAt: new Date().toISOString()

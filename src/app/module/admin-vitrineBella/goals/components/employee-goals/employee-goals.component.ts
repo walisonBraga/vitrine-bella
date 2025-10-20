@@ -20,6 +20,7 @@ export class EmployeeGoalsComponent implements OnInit, OnDestroy {
   accessCode = '';
   employeeName = '';
   employeeEmail = '';
+  hasAccess = false;
 
   currentMonth = new Date().getMonth() + 1;
   currentYear = new Date().getFullYear();
@@ -67,9 +68,10 @@ export class EmployeeGoalsComponent implements OnInit, OnDestroy {
   private getAccessCodeFromUrl(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-    
+
     if (code) {
       this.accessCode = code;
+      this.hasAccess = true;
       this.loadEmployeeGoals();
     } else {
       // Se não houver código na URL, verificar se usuário está logado
@@ -77,6 +79,7 @@ export class EmployeeGoalsComponent implements OnInit, OnDestroy {
       if (currentUser && currentUser.uid) {
         // Usar os primeiros 10 caracteres do UID do usuário logado
         this.accessCode = currentUser.uid.substring(0, 10);
+        this.hasAccess = true;
         this.loadEmployeeGoals();
       } else {
         // Se não estiver logado, mostrar formulário de entrada
@@ -90,31 +93,31 @@ export class EmployeeGoalsComponent implements OnInit, OnDestroy {
       this.snackBar.open('Código de acesso deve ter pelo menos 10 caracteres', 'Fechar', { duration: 3000 });
       return;
     }
-
+    this.hasAccess = true;
     this.loadEmployeeGoals();
   }
 
   private loadEmployeeGoals(): void {
     this.isLoading = true;
-    
+
     this.goalService.getGoals()
       .pipe(takeUntil(this.destroy$))
       .subscribe((allGoals: Goal[]) => {
         // Filtrar metas do funcionário usando accessCode
         this.goals = this.goalService.getUserGoalsByAccessCode(this.accessCode);
-        
+
         if (this.goals.length > 0) {
           // Obter informações do funcionário da primeira meta
           const firstGoal = this.goals[0];
           this.employeeName = firstGoal.userName;
           this.employeeEmail = firstGoal.userEmail;
-          
+
           this.loadRankings();
           this.snackBar.open(`Bem-vindo, ${this.employeeName}!`, 'Fechar', { duration: 3000 });
         } else {
           this.snackBar.open('Nenhuma meta encontrada para este código de acesso', 'Fechar', { duration: 3000 });
         }
-        
+
         this.isLoading = false;
       });
   }
@@ -122,8 +125,8 @@ export class EmployeeGoalsComponent implements OnInit, OnDestroy {
   private loadRankings(): void {
     // Carregar ranking apenas do funcionário atual
     const allRankings = this.goalService.getSalesRanking(this.selectedMonth, this.selectedYear);
-    this.rankings = allRankings.filter(ranking => 
-      ranking.userId.startsWith(this.accessCode) || 
+    this.rankings = allRankings.filter(ranking =>
+      ranking.userId.startsWith(this.accessCode) ||
       this.goals.some(goal => goal.userId === ranking.userId)
     );
   }
@@ -186,7 +189,7 @@ export class EmployeeGoalsComponent implements OnInit, OnDestroy {
     const now = new Date();
     const selectedDate = new Date(this.selectedYear, this.selectedMonth - 1, 1);
     const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+
     return selectedDate < currentMonth;
   }
 
@@ -203,11 +206,11 @@ export class EmployeeGoalsComponent implements OnInit, OnDestroy {
 
   // Obter posição no ranking
   getEmployeeRank(): number {
-    const employeeRanking = this.rankings.find(ranking => 
-      ranking.userId.startsWith(this.accessCode) || 
+    const employeeRanking = this.rankings.find(ranking =>
+      ranking.userId.startsWith(this.accessCode) ||
       this.goals.some(goal => goal.userId === ranking.userId)
     );
-    
+
     return employeeRanking ? employeeRanking.rank || 0 : 0;
   }
 

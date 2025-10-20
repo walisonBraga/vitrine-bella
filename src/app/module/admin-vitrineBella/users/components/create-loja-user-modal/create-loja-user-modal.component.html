@@ -11,11 +11,11 @@
 
   <mat-dialog-content class="modal-content">
     <form [formGroup]="createUserForm" (ngSubmit)="onSubmit()">
-      
+
       <!-- Informações Pessoais -->
       <div class="form-section">
         <h3>Informações Pessoais</h3>
-        
+
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Nome Completo</mat-label>
@@ -27,7 +27,7 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="half-width">
             <mat-label>Email</mat-label>
-            <input matInput formControlName="email" type="email" placeholder="email@exemplo.com" 
+            <input matInput formControlName="email" type="email" placeholder="email@exemplo.com"
                    (blur)="validateEmail(createUserForm.get('email')?.value)">
             <mat-error>{{ emailError }}</mat-error>
           </mat-form-field>
@@ -53,14 +53,14 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="half-width">
             <mat-label>CPF</mat-label>
-            <input matInput formControlName="cpf" placeholder="000.000.000-00" 
+            <input matInput formControlName="cpf" placeholder="000.000.000-00"
                    (input)="formatCPF($event)" maxlength="14">
             <mat-error>{{ cpfError }}</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="half-width">
             <mat-label>Telefone</mat-label>
-            <input matInput formControlName="phone" placeholder="(00) 00000-0000" 
+            <input matInput formControlName="phone" placeholder="(00) 00000-0000"
                    (input)="formatPhone($event)" maxlength="15">
             <mat-error>{{ phoneError }}</mat-error>
           </mat-form-field>
@@ -77,7 +77,7 @@
       <!-- Configurações de Acesso -->
       <div class="form-section">
         <h3>Configurações de Acesso</h3>
-        
+
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Função do Usuário</mat-label>
@@ -92,24 +92,24 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Páginas de Acesso</mat-label>
-            <mat-select formControlName="accessRoutes" multiple>
+            <mat-select formControlName="accessRoutes" multiple [disabled]="true">
               <mat-option *ngFor="let route of accessRoutes" [value]="route.value">
                 {{ route.label }}
               </mat-option>
             </mat-select>
-            <mat-hint>Selecione as áreas que o usuário pode acessar</mat-hint>
+            <mat-hint>Configurado automaticamente baseado na função</mat-hint>
           </mat-form-field>
         </div>
 
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Permissões de Gerenciamento</mat-label>
-            <mat-select formControlName="managementType" multiple>
+            <mat-select formControlName="managementType" multiple [disabled]="true">
               <mat-option *ngFor="let type of managementTypes" [value]="type.value">
                 {{ type.label }}
               </mat-option>
             </mat-select>
-            <mat-hint>Selecione as funcionalidades que o usuário pode gerenciar</mat-hint>
+            <mat-hint>Configurado automaticamente baseado na função</mat-hint>
           </mat-form-field>
         </div>
       </div>
@@ -117,12 +117,12 @@
       <!-- Configurações Adicionais -->
       <div class="form-section">
         <h3>Configurações Adicionais</h3>
-        
+
         <div class="form-row checkbox-row">
           <mat-checkbox formControlName="isActive">
             Usuário Ativo
           </mat-checkbox>
-          
+
           <mat-checkbox formControlName="marketing">
             Aceita receber comunicações de marketing
           </mat-checkbox>

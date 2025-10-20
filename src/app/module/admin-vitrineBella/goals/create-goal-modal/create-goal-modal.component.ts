@@ -17,7 +17,7 @@ import { createUsersAdmin } from '../../users/interface/createUsersAdmin';
 })
 export class CreateGoalModalComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
-    
+
     goalForm!: FormGroup;
     isEdit = false;
     loading = false;
@@ -68,14 +68,15 @@ export class CreateGoalModalComponent implements OnInit, OnDestroy {
     }
 
   private loadUsers(): void {
-    this.createUserService.getUsers()
+    // Buscar somente usuários com roles válidas para metas (admin, store_owner, store_manager, store_employee)
+    this.createUserService.getUsersByRole(['admin', 'store_owner', 'store_manager', 'store_employee'])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (users) => {
           // Filtrar apenas usuários ativos
           this.users = users.filter(user => user.isActive);
           this.isLoadingUsers = false;
-          
+
           // Habilitar o campo de usuário se não estiver editando
           if (!this.isEdit) {
             this.goalForm.get('userId')?.enable();
@@ -120,30 +121,30 @@ export class CreateGoalModalComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.goalForm.valid) {
       const formValue = this.goalForm.value;
-      
+
       // Verificar se não está criando meta para mês passado
       if (!this.isEdit) {
         const selectedDate = new Date(formValue.year, formValue.month - 1, 1);
         const currentDate = new Date();
         const currentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        
+
         if (selectedDate < currentMonth) {
           this.snackBar.open('Não é possível criar metas para meses passados!', 'Fechar', { duration: 5000 });
           return;
         }
       }
-      
+
       this.loading = true;
       const currentUser = this.authService.getCurrentUser();
-      
+
       // Usar o usuário selecionado, não o usuário logado
       const selectedUser = this.users.find(u => u.uid === formValue.userId);
-      
+
       // Para edição, usar os dados existentes da meta
       const userId = this.isEdit ? this.data.goal.userId : formValue.userId;
       const userName = this.isEdit ? this.data.goal.userName : formValue.userName;
       const userEmail = this.isEdit ? this.data.goal.userEmail : formValue.userEmail;
-      
+
       const goalData = {
         userId: userId, // Usar o usuário selecionado ou existente
         userName: userName, // Nome do usuário selecionado ou existente
@@ -202,7 +203,7 @@ export class CreateGoalModalComponent implements OnInit, OnDestroy {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear();
-    
+
     return this.months.filter(month => {
       const monthDate = new Date(currentYear, month.value - 1, 1);
       const currentMonthDate = new Date(currentYear, currentMonth - 1, 1);

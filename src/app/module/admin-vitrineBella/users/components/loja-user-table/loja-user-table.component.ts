@@ -4,6 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Subject, takeUntil } from 'rxjs';
 import { LojaUser, LojaUserTableConfig, LojaUserAction } from '../../interface/loja-user.interface';
+import { RoleTranslationService } from '../../../shared/services/role-translation.service';
 
 @Component({
   selector: 'app-loja-user-table',
@@ -30,7 +31,7 @@ export class LojaUserTableComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor() {}
+  constructor(private roleTranslationService: RoleTranslationService) { }
 
   ngOnInit(): void {
     this.setupTable();
@@ -129,8 +130,17 @@ export class LojaUserTableComponent implements OnInit, OnDestroy {
       case 'array':
         return Array.isArray(value) ? value.join(', ') : value;
       case 'badge':
+        // Traduzir roles quando for a coluna userRole
+        if (columnKey === 'userRole') {
+          const roles = Array.isArray(value) ? value : [value];
+          return roles.map(role => this.roleTranslationService.translateRole(role as string));
+        }
         return Array.isArray(value) ? value : [value];
       default:
+        // Traduzir role quando for exibida como texto simples
+        if (columnKey === 'userRole') {
+          return this.roleTranslationService.translateRole(value as string);
+        }
         return value || '-';
     }
   }
@@ -140,12 +150,28 @@ export class LojaUserTableComponent implements OnInit, OnDestroy {
       return value ? 'primary' : 'warn'; // Verde para ativo, vermelho para inativo
     }
     if (typeof value === 'string') {
+      // Verificar status primeiro
       switch (value.toLowerCase()) {
-        case 'admin': return 'warn';
-        case 'store_owner': return 'accent';
-        case 'store_employee': return 'primary';
-        case 'cliente': return 'primary';
-        default: return 'primary';
+        case 'ativo':
+          return 'primary';
+        case 'inativo':
+          return 'warn';
+        case 'admin':
+        case 'administrador':
+          return 'primary';
+        case 'store_owner':
+        case 'proprietário da loja':
+          return 'primary';
+        case 'store_manager':
+        case 'gerente da loja':
+          return 'primary';
+        case 'store_employee':
+        case 'funcionário da loja':
+          return 'primary';
+        case 'cliente':
+          return 'primary';
+        default:
+          return 'primary';
       }
     }
     return 'primary';
@@ -163,7 +189,7 @@ export class LojaUserTableComponent implements OnInit, OnDestroy {
       ],
       actions: [
         { key: 'edit', label: 'Editar', icon: 'edit', color: 'primary' },
-        { key: 'delete', label: 'Excluir', icon: 'delete', color: 'warn', condition: (user) => user.isActive }
+        { key: 'delete', label: 'Excluir', icon: 'delete', color: 'warn', condition: (user) => user.isActive && user.userRole !== 'admin' && user.role !== 'admin' }
       ],
       pagination: true,
       searchable: true,

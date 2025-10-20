@@ -13,7 +13,7 @@
       {{ userData()?.fullName || "" }}
     </h2>
     <p class="no-margin">
-      {{ userData()?.role || "Gerencie sua loja com facilidade" }}
+      {{ getTranslatedRole() }}
     </p>
   </div>
 </div>
@@ -80,8 +80,8 @@
   </ng-container>
 </mat-nav-list>
 
-<!-- Botão de Logout -->
-<div class="logout-section">
+<!-- Ações inferiores: Perfil e Sair lado a lado -->
+<div class="bottom-actions" [class.sidenav-collapsed]="sideNavCollapsed()">
   <button mat-button class="logout-button" (click)="logout()">
     <mat-icon>logout</mat-icon>
     <span *ngIf="!sideNavCollapsed()">Sair</span>

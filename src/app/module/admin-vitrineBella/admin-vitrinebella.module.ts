@@ -61,6 +61,7 @@ import { CategoryModalComponent } from './categories/CategoryModal/components/ca
 import { DiscountModalComponent } from './products/DiscountModal/components/discount-modal/discount-modal.component';
 import { EditUserModalComponent } from './users/EditUserModal/components/edit-user-modal/edit-user-modal.component';
 import { ProductTableComponent } from './products/product-table/components/product-table/product-table.component';
+import { ClientsManagementComponent } from './users/components/clients-management/clients-management.component';
 import { CouponModalComponent } from './products/CouponModal/components/coupon-modal/coupon-modal.component';
 import { CouponTableComponent } from './coupons/coupon-table/components/coupon-table/coupon-table.component';
 import { SlideModalComponent } from './slides/SlideModal/components/slide-modal/slide-modal.component';
@@ -92,12 +93,13 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
     LojaUsersManagementComponent,
     CreateLojaUserModalComponent,
     MonthClosingModalComponent,
+    ClientsManagementComponent,
     UpdateSalesModalComponent,
     ReopenMonthModalComponent,
     NavigationAdminComponent,
     GoalsManagementComponent,
-    EmployeeGoalsComponent,
     CreateGoalModalComponent,
+    EmployeeGoalsComponent,
     CustomSidenavComponent,
     EditUserModalComponent,
     ConfirmDialogComponent,

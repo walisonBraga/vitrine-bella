@@ -236,14 +236,38 @@
   }
 
   // Colunas com largura igual
-  th:nth-child(1), td:nth-child(1) { width: 16.66%; } // Usuário
-  th:nth-child(2), td:nth-child(2) { width: 16.66%; } // Período
-  th:nth-child(3), td:nth-child(3) { width: 16.66%; } // Meta
-  th:nth-child(4), td:nth-child(4) { width: 16.66%; } // Atual
-  th:nth-child(5), td:nth-child(5) { width: 16.66%; } // Progresso
-  th:nth-child(6), td:nth-child(6) { width: 16.66%; } // Comissão
-  th:nth-child(7), td:nth-child(7) { width: 16.66%; } // Status
-  th:nth-child(8), td:nth-child(8) { width: 16.66%; } // Ações
+  th:nth-child(1),
+  td:nth-child(1) {
+    width: 16.66%;
+  } // Usuário
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 16.66%;
+  } // Período
+  th:nth-child(3),
+  td:nth-child(3) {
+    width: 16.66%;
+  } // Meta
+  th:nth-child(4),
+  td:nth-child(4) {
+    width: 16.66%;
+  } // Atual
+  th:nth-child(5),
+  td:nth-child(5) {
+    width: 16.66%;
+  } // Progresso
+  th:nth-child(6),
+  td:nth-child(6) {
+    width: 16.66%;
+  } // Comissão
+  th:nth-child(7),
+  td:nth-child(7) {
+    width: 16.66%;
+  } // Status
+  th:nth-child(8),
+  td:nth-child(8) {
+    width: 16.66%;
+  } // Ações
 }
 
 // Células específicas
@@ -252,11 +276,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
 
   .user-icon {
     font-size: 18px;
     color: #666;
+  }
+
+  app-avatar {
+    display: block;
   }
 }
 
@@ -325,7 +353,7 @@
   padding: 48px;
   text-align: center;
 
-  mat-icon {
+  > mat-icon {
     font-size: 64px;
     width: 64px;
     height: 64px;
@@ -341,6 +369,21 @@
   p {
     color: #999;
     margin-bottom: 24px;
+  }
+
+  // Ajuste de alinhamento do botão "Criar Primeira Meta"
+  button[mat-raised-button] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+
+    mat-icon {
+      margin: 0;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
   }
 }
 

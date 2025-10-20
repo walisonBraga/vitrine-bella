@@ -1,6 +1,7 @@
 import { PermissionsManagementComponent } from './permissions/components/permissions-management/permissions-management.component';
 import { CategoryTableComponent } from './categories/category-table/components/category-table/category-table.component';
 import { LojaUsersManagementComponent } from './users/components/loja-users-management/loja-users-management.component';
+import { ClientsManagementComponent } from './users/components/clients-management/clients-management.component';
 import { ProductTableComponent } from './products/product-table/components/product-table/product-table.component';
 import { CouponTableComponent } from './coupons/coupon-table/components/coupon-table/coupon-table.component';
 import { SlideTableComponent } from './slides/SlideTable/components/slide-table/slide-table.component';
@@ -22,6 +23,7 @@ export const Admin_vitrinebellaRouting: Routes = [
   { path: 'categories', component: CategoryTableComponent, canActivate: [AdminGuard] },
   { path: 'slides', component: SlideTableComponent, canActivate: [AdminGuard] },
   { path: 'loja-users-management', component: LojaUsersManagementComponent, canActivate: [AdminGuard] },
+  { path: 'clients-management', component: ClientsManagementComponent, canActivate: [AdminGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AdminGuard] },
   { path: 'permissions-management', component: PermissionsManagementComponent, canActivate: [AdminGuard] },
   { path: 'internal-sales', component: InternalSalesComponent, canActivate: [AdminGuard] },

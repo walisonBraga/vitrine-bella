@@ -59,12 +59,19 @@
 
           <!-- Tipo boolean -->
           <mat-chip *ngIf="column.type === 'boolean'" [color]="getBadgeColor(user[column.key])"
-            [selected]="user[column.key]">
+            [selected]="user[column.key]" [class]="'status-chip ' + getBadgeColor(user[column.key])">
             {{ formatCellValue(user, column.key) }}
           </mat-chip>
 
+          <!-- Tipo nome com avatar -->
+          <div *ngIf="column.key === 'fullName'" class="user-info">
+            <img [src]="user.photoURL ? user.photoURL : 'assets/img/icon-sem-perfil.png'" [alt]="user.fullName"
+              class="user-avatar">
+            <span class="user-name">{{ formatCellValue(user, column.key) }}</span>
+          </div>
+
           <!-- Outros tipos -->
-          <span *ngIf="column.type !== 'badge' && column.type !== 'boolean'">
+          <span *ngIf="column.type !== 'badge' && column.type !== 'boolean' && column.key !== 'fullName'">
             {{ formatCellValue(user, column.key) }}
           </span>
         </td>
