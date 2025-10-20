@@ -79,6 +79,32 @@
     .full-width {
         width: 100%;
     }
+
+    // Centralizar conteúdo dos campos de valor monetário
+    mat-form-field {
+        // Centralizar texto nos inputs com prefixo
+        input[matPrefix] {
+            text-align: center;
+            padding-left: 40px !important;
+        }
+
+        // Posicionar o prefixo R$ corretamente
+        .mat-mdc-form-field-prefix {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 500;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        // Garantir que o input tenha espaço para o prefixo
+        .mat-mdc-form-field-infix {
+            padding-left: 0 !important;
+        }
+    }
 }
 
 .preview-section {

@@ -1,99 +1,100 @@
 <div class="modal-header">
-    <h2 mat-dialog-title>
-        <mat-icon>add_shopping_cart</mat-icon>
-        Atualizar Vendas
-    </h2>
-    <button mat-icon-button mat-dialog-close>
-        <mat-icon>close</mat-icon>
-    </button>
+  <h2 mat-dialog-title>
+    <mat-icon>add_shopping_cart</mat-icon>
+    Atualizar Vendas
+  </h2>
+  <button mat-icon-button mat-dialog-close>
+    <mat-icon>close</mat-icon>
+  </button>
 </div>
 
 <mat-dialog-content>
-    <div class="goal-info">
-        <mat-card class="info-card">
-            <mat-card-content>
-                <div class="info-content">
-                    <div class="user-info">
-                        <mat-icon>person</mat-icon>
-                        <span>{{ data.goal.userName }}</span>
-                    </div>
-                    <div class="goal-details">
-                        <div class="detail-item">
-                            <span class="label">Meta:</span>
-                            <span class="value">{{ formatCurrency(data.goal.targetAmount) }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="label">Atual:</span>
-                            <span class="value">{{ formatCurrency(data.goal.currentAmount) }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="label">Comissão:</span>
-                            <span class="value">{{ data.goal.commissionPercentage }}%</span>
-                        </div>
-                    </div>
-                </div>
-            </mat-card-content>
-        </mat-card>
-    </div>
+  <div class="goal-info">
+    <mat-card class="info-card">
+      <mat-card-content>
+        <div class="info-content">
+          <div class="user-info">
+            <mat-icon>person</mat-icon>
+            <span>{{ data.goal.userName }}</span>
+          </div>
+          <div class="goal-details">
+            <div class="detail-item">
+              <span class="label">Meta:</span>
+              <span class="value">{{ formatCurrency(data.goal.targetAmount) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Atual:</span>
+              <span class="value">{{ formatCurrency(data.goal.currentAmount) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Comissão:</span>
+              <span class="value">{{ data.goal.commissionPercentage }}%</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 
-    <form [formGroup]="salesForm" class="sales-form">
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Valor das Vendas</mat-label>
-            <input matInput type="number" formControlName="salesAmount" placeholder="Ex: 1000" min="0.01" step="0.01">
-            <span matPrefix>R$&nbsp;</span>
-            <mat-error *ngIf="salesForm.get('salesAmount')?.hasError('required')">
-                Valor é obrigatório
-            </mat-error>
-            <mat-error *ngIf="salesForm.get('salesAmount')?.hasError('min')">
-                Valor deve ser maior que zero
-            </mat-error>
-        </mat-form-field>
-    </form>
+  <form [formGroup]="salesForm" class="sales-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Valor das Vendas</mat-label>
+      <input matInput type="text" formControlName="salesAmount" placeholder="Ex: 1.000,00" mask="separator.2"
+        thousandSeparator="." decimalMarker=",">
+      <span matPrefix>R$&nbsp;</span>
+      <mat-error *ngIf="salesForm.get('salesAmount')?.hasError('required')">
+        Valor é obrigatório
+      </mat-error>
+      <mat-error *ngIf="salesForm.get('salesAmount')?.hasError('min')">
+        Valor deve ser maior que zero
+      </mat-error>
+    </mat-form-field>
+  </form>
 
-    <!-- Preview dos novos valores -->
-    <div class="preview-section" *ngIf="salesForm.get('salesAmount')?.value">
-        <mat-card class="preview-card">
-            <mat-card-content>
-                <h4>Novos Valores:</h4>
-                <div class="preview-grid">
-                    <div class="preview-item">
-                        <mat-icon>trending_up</mat-icon>
-                        <div class="preview-content">
-                            <span class="preview-label">Total de Vendas:</span>
-                            <span class="preview-value">{{ formatCurrency(getNewTotal()) }}</span>
-                        </div>
-                    </div>
+  <!-- Preview dos novos valores -->
+  <div class="preview-section" *ngIf="salesForm.get('salesAmount')?.value">
+    <mat-card class="preview-card">
+      <mat-card-content>
+        <h4>Novos Valores:</h4>
+        <div class="preview-grid">
+          <div class="preview-item">
+            <mat-icon>trending_up</mat-icon>
+            <div class="preview-content">
+              <span class="preview-label">Total de Vendas:</span>
+              <span class="preview-value">{{ formatCurrency(getNewTotal()) }}</span>
+            </div>
+          </div>
 
-                    <div class="preview-item">
-                        <mat-icon>attach_money</mat-icon>
-                        <div class="preview-content">
-                            <span class="preview-label">Nova Comissão:</span>
-                            <span class="preview-value">{{ formatCurrency(getNewCommission()) }}</span>
-                        </div>
-                    </div>
+          <div class="preview-item">
+            <mat-icon>attach_money</mat-icon>
+            <div class="preview-content">
+              <span class="preview-label">Nova Comissão:</span>
+              <span class="preview-value">{{ formatCurrency(getNewCommission()) }}</span>
+            </div>
+          </div>
 
-                    <div class="preview-item">
-                        <mat-icon>percent</mat-icon>
-                        <div class="preview-content">
-                            <span class="preview-label">Progresso da Meta:</span>
-                            <span class="preview-value">
-                                {{ ((getNewTotal() / data.goal.targetAmount) * 100).toFixed(1) }}%
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </mat-card-content>
-        </mat-card>
-    </div>
+          <div class="preview-item">
+            <mat-icon>percent</mat-icon>
+            <div class="preview-content">
+              <span class="preview-label">Progresso da Meta:</span>
+              <span class="preview-value">
+                {{ ((getNewTotal() / data.goal.targetAmount) * 100).toFixed(1) }}%
+              </span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-    <button mat-button (click)="onCancel()" [disabled]="loading">
-        Cancelar
-    </button>
-    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="salesForm.invalid || loading">
-        <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-        <mat-icon *ngIf="!loading">save</mat-icon>
-        Atualizar
-    </button>
+  <button mat-button (click)="onCancel()" [disabled]="loading">
+    Cancelar
+  </button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="salesForm.invalid || loading">
+    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+    <mat-icon *ngIf="!loading">save</mat-icon>
+    Atualizar
+  </button>
 </mat-dialog-actions>

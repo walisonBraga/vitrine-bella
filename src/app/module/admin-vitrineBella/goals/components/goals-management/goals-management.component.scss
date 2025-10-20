@@ -76,6 +76,10 @@
     .close-button {
       margin-left: 8px;
     }
+
+    .reopen-button {
+      margin-left: 8px;
+    }
   }
 }
 
@@ -273,10 +277,10 @@
 // Células específicas
 .user-cell {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
 
   .user-icon {
     font-size: 18px;
@@ -285,6 +289,11 @@
 
   app-avatar {
     display: block;
+  }
+
+  .user-name {
+    font-weight: 500;
+    color: #333;
   }
 }
 

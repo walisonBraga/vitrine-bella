@@ -1,6 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { BehaviorSubject, Observable, from } from 'rxjs';
+import { BehaviorSubject, Observable, from, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { collection, doc, Firestore, getDocs, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { Goal, SalesRanking, GoalStats, GoalFilter } from '../interface/goal.interface';
@@ -15,6 +15,7 @@ export class GoalService {
 
   private goals: Goal[] = [];
   private goalsCollection = collection(this.firestore, 'goals');
+  private updatingGoals = new Set<string>(); // Proteção contra múltiplas atualizações
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -249,16 +250,27 @@ export class GoalService {
 
   // Atualizar vendas de uma meta
   updateSales(goalId: string, salesAmount: number): Observable<void> {
+    // Verificar se já está atualizando esta meta
+    if (this.updatingGoals.has(goalId)) {
+      return from(Promise.resolve());
+    }
+
     const goal = this.goals.find(g => g.id === goalId);
     if (goal) {
-      goal.currentAmount += salesAmount;
+      this.updatingGoals.add(goalId); // Marcar como sendo atualizada
 
-      // Verificar se meta foi atingida
-      if (goal.currentAmount >= goal.targetAmount && goal.status === 'active') {
-        goal.status = 'completed';
-      }
+      const newCurrentAmount = goal.currentAmount + salesAmount;
+      const newStatus = newCurrentAmount >= goal.targetAmount && goal.status === 'active' ? 'completed' : goal.status;
 
-      return this.updateGoal(goalId, goal);
+      return this.updateGoal(goalId, {
+        currentAmount: newCurrentAmount,
+        status: newStatus
+      }).pipe(
+        switchMap(() => {
+          this.updatingGoals.delete(goalId); // Remover da lista de atualizações
+          return from(Promise.resolve());
+        })
+      );
     }
     return from(Promise.resolve());
   }
@@ -427,6 +439,36 @@ export class GoalService {
     }
 
     return userGoals;
+  }
+
+  // Verificar e ativar metas pendentes automaticamente
+  checkAndActivatePendingGoals(): Observable<void> {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+
+    return this.getGoals().pipe(
+      switchMap(goals => {
+        const pendingGoals = goals.filter(goal => 
+          (goal.status as string) === 'pending' && 
+          goal.month === currentMonth && 
+          goal.year === currentYear
+        );
+
+        if (pendingGoals.length === 0) {
+          return of(void 0);
+        }
+
+        // Ativar todas as metas pendentes do mês atual
+        const updatePromises = pendingGoals.map(goal => 
+          this.updateGoal(goal.id!, { ...goal, status: 'active' })
+        );
+
+        return from(Promise.all(updatePromises)).pipe(
+          map(() => void 0)
+        );
+      })
+    );
   }
 
   private generateId(): string {

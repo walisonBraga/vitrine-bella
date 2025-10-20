@@ -7,6 +7,7 @@ import { SaleItem, SaleForm } from '../../interface/sales';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SalesService } from '../../service/sales.service';
 import { ProductService } from '../../../products/service/product.service';
+import { GoalService } from '../../../goals/service/goal.service';
 
 
 @Component({
@@ -31,6 +32,7 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
   isProcessingSale = false;
   showSimplifiedView = false;
   hasSearchTerm = false;
+  isUpdatingGoal = false; // Proteção contra múltiplas atualizações
 
   // Totais
   subtotal = 0;
@@ -42,6 +44,7 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private salesService: SalesService,
     private productService: ProductService,
+    private goalService: GoalService,
     private snackBar: MatSnackBar
   ) {
     this.initForms();
@@ -170,17 +173,22 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
         discount: this.customerForm.get('discount')?.value || 0,
         paymentMethod: this.saleForm.get('paymentMethod')?.value
       };
+
+      const finalAmount = this.total; // Valor final da venda
+
       this.salesService.createSale(saleData, this.authenticatedUser?.uid || '')
         .then((saleId) => {
+          // Primeiro calcular e mostrar a soma das vendas
+          this.calculateAndShowSalesSum(finalAmount);
+
           this.snackBar.open('Venda realizada com sucesso!', 'Fechar', { duration: 3000 });
           this.clearCart();
-          this.clearSavedCart(); // Limpar carrinho salvo após venda
+          this.clearSavedCart();
           this.saleForm.reset();
           this.saleForm.patchValue({
             paymentMethod: 'cash',
             discount: 0
           });
-          // Recarregar produtos para refletir o novo estoque
           this.loadProducts();
         })
         .catch((error) => {
@@ -221,12 +229,12 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
 
       // Busca mais precisa: começa com o termo ou contém palavras completas
       return productName.startsWith(searchTerm) ||
-             productName.includes(' ' + searchTerm + ' ') ||
-             productName.endsWith(' ' + searchTerm) ||
-             productName === searchTerm ||
-             category.includes(searchTerm) ||
-             id.includes(searchTerm) ||
-             description.includes(searchTerm);
+        productName.includes(' ' + searchTerm + ' ') ||
+        productName.endsWith(' ' + searchTerm) ||
+        productName === searchTerm ||
+        category.includes(searchTerm) ||
+        id.includes(searchTerm) ||
+        description.includes(searchTerm);
     });
   }
 
@@ -265,5 +273,56 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
       const cartKey = `cart_${this.authenticatedUser.uid}`;
       localStorage.removeItem(cartKey);
     }
+  }
+
+  // Calcular soma das vendas e atualizar meta
+  private calculateAndShowSalesSum(salesAmount: number): void {
+    if (!this.authenticatedUser?.uid || this.isUpdatingGoal) {
+      return;
+    }
+
+    this.isUpdatingGoal = true; // Bloquear múltiplas chamadas
+
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+
+    // Buscar metas do usuário para o mês atual
+    this.goalService.getGoals()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(goals => {
+        const userGoals = goals.filter(goal =>
+          goal.userId === this.authenticatedUser?.uid &&
+          goal.month === currentMonth &&
+          goal.year === currentYear &&
+          goal.status === 'active'
+        );
+
+        if (userGoals.length > 0) {
+          const goal = userGoals[0];
+          const previousAmount = goal.currentAmount;
+          const newTotalAmount = previousAmount + salesAmount;
+
+          // Agora atualizar a meta com o valor correto
+          this.updateSalesGoal(goal.id!, salesAmount, previousAmount, newTotalAmount);
+        } else {
+          this.isUpdatingGoal = false; // Liberar bloqueio
+        }
+      });
+  }
+
+  // Atualizar meta de vendas automaticamente
+  private updateSalesGoal(goalId: string, salesAmount: number, previousAmount: number, newTotalAmount: number): void {
+    this.goalService.updateSales(goalId, salesAmount)
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Meta atualizada! Total de vendas: R$ ${newTotalAmount.toFixed(2)}`, 'Fechar', { duration: 4000 });
+          this.isUpdatingGoal = false; // Liberar bloqueio após sucesso
+        },
+        error: (error) => {
+          this.snackBar.open('Erro ao atualizar meta de vendas', 'Fechar', { duration: 3000 });
+          this.isUpdatingGoal = false; // Liberar bloqueio mesmo em caso de erro
+        }
+      });
   }
 }

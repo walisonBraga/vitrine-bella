@@ -13,6 +13,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { CreateGoalModalComponent } from '../../create-goal-modal/create-goal-modal.component';
 import { UpdateSalesModalComponent } from '../../update-sales-modal/update-sales-modal.component';
 import { MonthClosingModalComponent } from '../../month-closing-modal/month-closing-modal.component';
+import { ReopenMonthModalComponent } from '../../reopen-month-modal/reopen-month-modal.component';
 import { LogService } from '../../../logs/service/log.service';
 import { UserContextService } from '../../../logs/service/user-context.service';
 import { LojaUsersService } from '../../../users/service/loja-users.service';
@@ -109,6 +110,9 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
     this.goalService.getGoals()
       .pipe(takeUntil(this.destroy$))
       .subscribe((goals: Goal[]) => {
+        console.log('Metas carregadas:', goals.length, 'metas');
+        console.log('Detalhes das metas:', goals.map(g => ({ id: g.id, user: g.userName, month: g.month, year: g.year })));
+
         this.goals = goals;
         this.applyFilters();
         this.loadRankings();
@@ -251,43 +255,11 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateSales(goal: Goal): void {
-    const dialogRef = this.dialog.open(UpdateSalesModalComponent, {
-      width: '400px',
-      data: { goal }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.goalService.updateSales(goal.id!, result.salesAmount).subscribe({
-          next: () => {
-            this.loadGoals(); // Isso vai recarregar rankings e stats automaticamente
-
-            // Log da atualização de vendas
-            const userInfo = this.userContextService.getCurrentUserInfo();
-            this.logService.addLog({
-              userId: userInfo.userId,
-              userName: userInfo.userName,
-              action: 'update',
-              entity: 'goal',
-              entityId: goal.id!,
-              entityName: `${goal.userName} - ${this.getMonthName(goal.month)} ${goal.year}`,
-              details: `Vendas atualizadas: +${this.formatCurrency(result.salesAmount)} (Total: ${this.formatCurrency(goal.currentAmount + result.salesAmount)})`,
-              status: 'success'
-            });
-
-            this.snackBar.open('Vendas atualizadas com sucesso!', 'Fechar', { duration: 3000 });
-          },
-          error: (error) => {
-            this.snackBar.open('Erro ao atualizar vendas', 'Fechar', { duration: 3000 });
-          }
-        });
-      }
-    });
-  }
 
   deleteGoal(goal: Goal): void {
     if (confirm(`Tem certeza que deseja excluir a meta de ${goal.userName}?`)) {
+      console.log('Excluindo meta:', goal.id, goal.userName, goal.month, goal.year);
+
       this.goalService.deleteGoal(goal.id!).subscribe({
         next: () => {
           // Log da exclusão da meta
@@ -303,10 +275,12 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
             status: 'success'
           });
 
+          console.log('Meta excluída com sucesso, recarregando lista...');
           this.loadGoals(); // Isso vai recarregar rankings e stats automaticamente
           this.snackBar.open('Meta excluída com sucesso!', 'Fechar', { duration: 3000 });
         },
         error: (error) => {
+          console.error('Erro ao excluir meta:', error);
           this.snackBar.open('Erro ao excluir meta', 'Fechar', { duration: 3000 });
         }
       });
@@ -332,6 +306,7 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
   getStatusColor(status: string): string {
     switch (status) {
       case 'active': return 'primary';
+      case 'pending': return 'accent';
       case 'completed': return 'success';
       case 'expired': return 'warn';
       default: return 'basic';
@@ -341,6 +316,7 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
   getStatusText(status: string): string {
     switch (status) {
       case 'active': return 'Ativa';
+      case 'pending': return 'Pendente';
       case 'completed': return 'Concluída';
       case 'expired': return 'Expirada';
       default: return 'Desconhecido';
@@ -417,7 +393,33 @@ export class GoalsManagementComponent implements OnInit, OnDestroy {
 
   // Verificar se pode fechar o mês
   canCloseMonth(): boolean {
-    return this.goalService.canCloseMonth(this.selectedMonth, this.selectedYear);
+    return this.goalService.canCloseMonth(this.selectedMonth, this.selectedYear) &&
+      !this.goalService.isMonthClosed(this.selectedMonth, this.selectedYear);
+  }
+
+  // Verificar se o mês está fechado
+  isMonthClosed(): boolean {
+    return this.goalService.isMonthClosed(this.selectedMonth, this.selectedYear);
+  }
+
+  // Reabrir mês fechado
+  openMonthReopening(): void {
+    const dialogRef = this.dialog.open(ReopenMonthModalComponent, {
+      width: '600px',
+      data: {
+        month: this.selectedMonth,
+        year: this.selectedYear
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.reopened) {
+        this.loadGoals();
+        this.loadRankings();
+        this.loadStats();
+        this.snackBar.open('Mês reaberto com sucesso!', 'Fechar', { duration: 3000 });
+      }
+    });
   }
 
   // Obter dias até fechamento automático

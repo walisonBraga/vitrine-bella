@@ -8,6 +8,10 @@
           Vendas Internas
         </h1>
         <p class="header-subtitle">Realize vendas diretamente na loja</p>
+        <div *ngIf="authenticatedUser" class="salesperson-info">
+          <mat-icon>person</mat-icon>
+          <span>Vendedor: {{ authenticatedUser.fullName || authenticatedUser.displayName || authenticatedUser.email }}</span>
+        </div>
       </div>
     </header>
 

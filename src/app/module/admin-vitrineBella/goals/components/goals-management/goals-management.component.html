@@ -104,11 +104,17 @@
             Nova Meta
           </button>
 
-          <!-- Botão fechamento do mês -->
+          <!-- Botão fechamento/reabertura do mês -->
           <button mat-raised-button color="accent" (click)="openMonthClosing()"
             *ngIf="canCreateGoal() && canCloseMonth()" class="close-button">
             <mat-icon>event_available</mat-icon>
             Fechar Mês
+          </button>
+
+          <button mat-raised-button color="warn" (click)="openMonthReopening()"
+            *ngIf="canCreateGoal() && isMonthClosed()" class="reopen-button">
+            <mat-icon>event_available</mat-icon>
+            Reabrir Mês
           </button>
         </div>
       </mat-card-content>
@@ -174,7 +180,7 @@
                 <div class="user-cell">
                   <app-avatar [name]="goal.userName" [photoUrl]="getPhotoUrl(goal.userId)" [size]="28"
                     [showBorder]="true"></app-avatar>
-                  <span>{{ goal.userName }}</span>
+                  <span class="user-name">{{ goal.userName }}</span>
                 </div>
               </td>
             </ng-container>
@@ -235,7 +241,8 @@
               <td mat-cell *matCellDef="let goal" class="text-center">
                 <mat-chip [color]="getStatusColor(goal.status)" selected>
                   <mat-icon matChipAvatar>{{ goal.status === 'completed' ? 'check_circle' :
-                    goal.status === 'active' ? 'schedule' : 'warning' }}</mat-icon>
+                    goal.status === 'active' ? 'schedule' :
+                    goal.status === 'pending' ? 'hourglass_empty' : 'warning' }}</mat-icon>
                   {{ getStatusText(goal.status) }}
                 </mat-chip>
               </td>
@@ -246,10 +253,6 @@
               <th mat-header-cell *matHeaderCellDef class="text-center">Ações</th>
               <td mat-cell *matCellDef="let goal" class="text-center">
                 <div class="action-buttons">
-                  <button mat-icon-button color="primary" (click)="updateSales(goal)" matTooltip="Atualizar Vendas">
-                    <mat-icon>add_shopping_cart</mat-icon>
-                  </button>
-
                   <button mat-icon-button color="accent" (click)="editGoal(goal)" *ngIf="canEditGoal(goal)"
                     matTooltip="Editar Meta">
                     <mat-icon>edit</mat-icon>

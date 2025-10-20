@@ -8,7 +8,7 @@ export interface Goal {
   targetAmount: number; // Meta em valor
   currentAmount: number; // Valor atual vendido
   commissionPercentage: number; // Porcentagem de comissão
-  status: 'active' | 'completed' | 'expired';
+  status: 'active' | 'pending' | 'completed' | 'expired';
   createdAt: Date;
   updatedAt: Date;
   createdBy: string; // Quem criou a meta

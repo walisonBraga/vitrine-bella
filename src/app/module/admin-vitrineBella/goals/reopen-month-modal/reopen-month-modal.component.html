@@ -1,6 +1,5 @@
 <div class="modal-header">
   <h2 mat-dialog-title>
-    <mat-icon>lock_open</mat-icon>
     Reabrir Mês
   </h2>
   <button mat-icon-button mat-dialog-close>
@@ -20,12 +19,13 @@
               <span class="reopen-label">Reabertura do Mês</span>
             </div>
           </div>
-          
+
           <div class="warning-info">
             <mat-icon class="warning-icon">warning</mat-icon>
             <div class="warning-text">
               <h4>Atenção!</h4>
-              <p>Ao reabrir o mês, todas as metas concluídas voltarão ao status "Ativa" e poderão ser editadas novamente.</p>
+              <p>Ao reabrir o mês, todas as metas concluídas voltarão ao status "Ativa" e poderão ser editadas
+                novamente.</p>
             </div>
           </div>
         </div>
@@ -36,23 +36,14 @@
   <form [formGroup]="reopenForm" class="reopen-form">
     <div class="form-row">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Senha de Administrador</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" 
-               formControlName="password" placeholder="Digite sua senha">
-        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" 
-                [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+        <mat-label>Sua Senha</mat-label>
+        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+          placeholder="Digite sua senha atual">
+        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'"
+          [attr.aria-pressed]="hidePassword">
           <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
         <mat-error *ngIf="getPasswordError()">{{ getPasswordError() }}</mat-error>
-      </mat-form-field>
-    </div>
-
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Confirmar Senha</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" 
-               formControlName="confirmPassword" placeholder="Confirme sua senha">
-        <mat-error *ngIf="getConfirmPasswordError()">{{ getConfirmPasswordError() }}</mat-error>
       </mat-form-field>
     </div>
   </form>
@@ -64,7 +55,8 @@
         <mat-icon class="security-icon">security</mat-icon>
         <div class="security-text">
           <h4>Segurança</h4>
-          <p>Esta ação requer confirmação de senha para garantir que apenas administradores autorizados possam reabrir meses fechados.</p>
+          <p>Esta ação requer confirmação de sua senha atual para garantir que apenas você possa reabrir meses fechados.
+          </p>
         </div>
       </div>
     </mat-card-content>
@@ -75,8 +67,7 @@
   <button mat-button (click)="onCancel()" [disabled]="loading">
     Cancelar
   </button>
-  <button mat-raised-button color="warn" (click)="confirmReopen()" 
-          [disabled]="reopenForm.invalid || loading">
+  <button mat-raised-button color="warn" (click)="confirmReopen()" [disabled]="reopenForm.invalid || loading" class="action-button">
     <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
     <mat-icon *ngIf="!loading">lock_open</mat-icon>
     Reabrir Mês

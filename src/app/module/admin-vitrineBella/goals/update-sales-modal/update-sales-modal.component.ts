@@ -32,7 +32,7 @@ export class UpdateSalesModalComponent {
     if (this.salesForm.valid) {
       this.loading = true;
       
-      const salesAmount = this.salesForm.get('salesAmount')?.value;
+      const salesAmount = this.parseCurrencyValue(this.salesForm.get('salesAmount')?.value);
       
       // Simular delay de processamento
       setTimeout(() => {
@@ -57,7 +57,7 @@ export class UpdateSalesModalComponent {
 
   getNewTotal(): number {
     const currentAmount = this.data.goal.currentAmount;
-    const salesAmount = this.salesForm.get('salesAmount')?.value || 0;
+    const salesAmount = this.parseCurrencyValue(this.salesForm.get('salesAmount')?.value || 0);
     return currentAmount + salesAmount;
   }
 
@@ -65,5 +65,18 @@ export class UpdateSalesModalComponent {
     const newTotal = this.getNewTotal();
     const commissionPercentage = this.data.goal.commissionPercentage;
     return newTotal * (commissionPercentage / 100);
+  }
+
+  // Converter valor formatado (ex: "10.000,00") para número
+  private parseCurrencyValue(value: string | number): number {
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+    
+    // Remove pontos (separadores de milhares) e substitui vírgula por ponto
+    const cleanValue = value.toString()
+      .replace(/\./g, '')  // Remove pontos
+      .replace(',', '.');  // Substitui vírgula por ponto
+    
+    return parseFloat(cleanValue) || 0;
   }
 }

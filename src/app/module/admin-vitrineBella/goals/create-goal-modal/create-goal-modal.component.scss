@@ -3,6 +3,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
 
   h2 {
     display: flex;
@@ -10,11 +12,17 @@
     gap: 12px;
     margin: 0;
     color: #333;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 500;
 
     mat-icon {
       color: #2196f3;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }
@@ -35,6 +43,73 @@
 
     .half-width {
       flex: 1;
+    }
+  }
+
+  // Centralizar conteúdo dos campos de valor monetário
+  mat-form-field {
+    // Centralizar texto nos inputs com prefixo
+    input[matPrefix] {
+      text-align: center;
+      padding-left: 40px !important;
+    }
+
+    // Estilo para campos readonly
+    input[readonly] {
+      background-color: #f8f9fa;
+      color: #495057;
+      cursor: not-allowed;
+      font-weight: 500;
+    }
+
+    // Posicionar o prefixo R$ corretamente
+    .mat-mdc-form-field-prefix {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-weight: 500;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    // Garantir que o input tenha espaço para o prefixo
+    .mat-mdc-form-field-infix {
+      padding-left: 0 !important;
+    }
+  }
+
+  // Estilo para botão de ativar meta
+  .activate-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  // Estilo para opção de loading
+  .loading-option {
+    .loading-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+
+      mat-spinner {
+        width: 20px !important;
+        height: 20px !important;
+      }
+
+      span {
+        font-size: 14px;
+      }
     }
   }
 
@@ -72,6 +147,28 @@
         }
       }
     }
+  }
+}
+
+// Botão de ação
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  mat-spinner {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
