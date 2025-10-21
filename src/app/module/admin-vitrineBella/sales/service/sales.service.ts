@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, collectionData, doc, updateDoc, deleteDoc, query, where, getDocs, documentId } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, collectionData, doc, setDoc, updateDoc, deleteDoc, query, where, getDocs, documentId } from '@angular/fire/firestore';
 import { Observable, from } from 'rxjs';
 import { Sale, SaleForm, SaleItem } from '../interface/sales';
 import { Product } from '../../products/interface/products';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -14,11 +15,15 @@ export class SalesService {
 
   // Criar nova venda
   createSale(saleForm: SaleForm, userId: string): Promise<string> {
+    const generatedUuid = uuidv4(); // Gerar UID4 para usar como document ID
     const saleData: Sale = {
-      id: '', // Será gerado pelo Firestore
+      id: generatedUuid, // UUID4 gerado
+      firebaseDocumentId: generatedUuid, // Mesmo UUID4 como document ID
       customerName: saleForm.customerName,
       customerEmail: saleForm.customerEmail,
       customerPhone: saleForm.customerPhone,
+      customerCpf: saleForm.customerCpf,
+      accessCPF: saleForm.customerCpf, // Usar CPF como accessCode para localizar a compra
       items: saleForm.items,
       totalAmount: this.calculateTotal(saleForm.items),
       discount: saleForm.discount || 0,
@@ -29,10 +34,13 @@ export class SalesService {
       userId: userId
     };
 
-    return addDoc(this.salesCollection, saleData).then(docRef => {
+    // Usar setDoc com o UUID4 como document ID ao invés de addDoc
+    const docRef = doc(this.salesCollection, generatedUuid);
+    return setDoc(docRef, saleData).then(async () => {
       // Atualizar estoque dos produtos vendidos
       this.updateProductStock(saleForm.items);
-      return docRef.id;
+
+      return generatedUuid; // Retornar o UID4 gerado
     });
   }
 
@@ -56,26 +64,61 @@ export class SalesService {
     return collectionData(q, { idField: 'id' }) as Observable<Sale[]>;
   }
 
-  // Buscar venda por ID
-  getSaleById(saleId: string): Observable<Sale | undefined> {
-    const q = query(this.salesCollection, where('id', '==', saleId));
-    const promise = getDocs(q).then(snapshot => {
+  // Buscar vendas por CPF do cliente
+  getSalesByCustomerCpf(cpf: string): Observable<Sale[]> {
+    const q = query(this.salesCollection, where('customerCpf', '==', cpf));
+    return collectionData(q, { idField: 'id' }) as Observable<Sale[]>;
+  }
+
+  // Buscar vendas por accessCPF (CPF como accessCode)
+  getSalesByAccessCPF(accessCPF: string): Observable<Sale[]> {
+    const q = query(this.salesCollection, where('accessCPF', '==', accessCPF));
+    return collectionData(q, { idField: 'id' }) as Observable<Sale[]>;
+  }
+
+  // Buscar vendas por email do cliente
+  getSalesByCustomerEmail(customerEmail: string): Observable<Sale[]> {
+    const q = query(this.salesCollection, where('customerEmail', '==', customerEmail));
+    return collectionData(q, { idField: 'id' }) as Observable<Sale[]>;
+  }
+
+  // Buscar venda por UUID (que agora é o document ID)
+  getSaleByUuid(uuid: string): Observable<Sale | undefined> {
+    const docRef = doc(this.salesCollection, uuid);
+    const promise = getDocs(query(this.salesCollection, where(documentId(), '==', uuid))).then(snapshot => {
       if (!snapshot.empty) {
         const data = snapshot.docs[0].data() as Sale;
-        return { ...data, id: snapshot.docs[0].id };
+        return { ...data, firebaseDocumentId: snapshot.docs[0].id };
       }
       return undefined;
     });
     return from(promise);
   }
 
-  // Cancelar venda
-  cancelSale(saleId: string): Promise<void> {
-    const docRef = doc(this.firestore, `sales/${saleId}`);
+  // Buscar venda por Firebase Document ID (que agora é o UUID)
+  getSaleByFirebaseDocumentId(documentId: string): Observable<Sale | undefined> {
+    // Como agora o document ID é o UUID, usar o mesmo método
+    return this.getSaleByUuid(documentId);
+  }
+
+  // Buscar venda por ID (compatibilidade - busca por UUID primeiro)
+  getSaleById(saleId: string): Observable<Sale | undefined> {
+    return this.getSaleByUuid(saleId);
+  }
+
+  // Cancelar venda por UUID (que agora é o document ID)
+  cancelSaleByDocumentId(documentId: string): Promise<void> {
+    const docRef = doc(this.firestore, `sales/${documentId}`);
     return updateDoc(docRef, {
       status: 'cancelled',
       updatedAt: new Date().toISOString()
     });
+  }
+
+  // Cancelar venda por UUID
+  cancelSale(uuid: string): Promise<void> {
+    // Como o UUID agora é o document ID, usar diretamente
+    return this.cancelSaleByDocumentId(uuid);
   }
 
   // Calcular total dos itens

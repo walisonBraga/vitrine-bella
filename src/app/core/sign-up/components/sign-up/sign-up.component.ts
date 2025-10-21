@@ -227,14 +227,8 @@ export class SignUpComponent implements OnInit {
   private checkIfNeedsCpfVerification(): void {
     const queryParams = this.route.snapshot.queryParams;
 
-    // Verificar se estamos no browser (não no servidor)
-    if (typeof window === 'undefined' || !window.localStorage) {
-      return;
-    }
-
-    // Se não tem dados de pré-cadastro no localStorage e não é um pré-cadastro
-    const preRegistrationData = localStorage.getItem('preRegistrationData');
-    if (!preRegistrationData && !queryParams['preRegistration']) {
+    // Se não é um pré-cadastro via query params, mostrar modal de verificação de CPF
+    if (!queryParams['preRegistration']) {
       // Mostrar modal de verificação de CPF
       this.showCpfModal = true;
       return;
@@ -245,37 +239,12 @@ export class SignUpComponent implements OnInit {
   }
 
   private checkPreRegistration(): void {
-    // Verificar se estamos no browser (não no servidor)
-    if (typeof window === 'undefined' || !window.localStorage) {
-      return;
-    }
-
-    // Verificar se há dados de pré-cadastro no localStorage ou query params
-    const preRegistrationData = localStorage.getItem('preRegistrationData');
+    // Verificar se há dados de pré-cadastro nos query params
     const queryParams = this.route.snapshot.queryParams;
 
-    if (preRegistrationData || queryParams['preRegistration']) {
-      try {
-        const data = preRegistrationData ? JSON.parse(preRegistrationData) : null;
-
-        if (data) {
-          // Preencher formulário com dados do pré-cadastro
-          this.signUpForm.patchValue({
-            nome: data.name || '',
-            cpf: data.cpf || '',
-            email: data.email || '',
-            telefone: data.phone || ''
-          });
-
-          // Marcar campos como readonly se necessário
-          this.signUpForm.get('cpf')?.disable();
-          this.signUpForm.get('email')?.disable();
-
-          this.snackBar.open('Dados do pré-cadastro carregados. Complete com sua senha.', 'Fechar', { duration: 5000 });
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados de pré-cadastro:', error);
-      }
+    if (queryParams['preRegistration']) {
+      // Se for um pré-cadastro via query params, mostrar modal de verificação de CPF
+      this.showCpfModal = true;
     }
   }
 
@@ -292,27 +261,15 @@ export class SignUpComponent implements OnInit {
       const { email, senha } = formData;
 
       // Verificar se é um pré-cadastro
-      const preRegistrationData = typeof window !== 'undefined' && window.localStorage
-        ? localStorage.getItem('preRegistrationData')
-        : null;
       let userId: string;
 
-      if (preRegistrationData) {
-        // Usar UID do pré-cadastro se existir
-        const data = JSON.parse(preRegistrationData);
-        userId = data.uid || data.id;
-        
+      if (this.foundPreRegistration) {
         // Para pré-cadastros, usar o email dos dados do pré-cadastro ou do formulário
-        const emailToUse = data.email || email || formData.email;
+        const emailToUse = this.foundPreRegistration.email || email || formData.email;
 
-        // Criar usuário no Firebase Auth com o UID existente (se possível)
-        try {
-          const authResponse = await this.authService.createUser(emailToUse, senha);
-          userId = authResponse.user.uid;
-        } catch (error) {
-          // Se falhar, usar o UID do pré-cadastro
-          console.log('Usando UID do pré-cadastro:', userId);
-        }
+        // Criar usuário no Firebase Auth
+        const authResponse = await this.authService.createUser(emailToUse, senha);
+        userId = authResponse.user.uid;
       } else {
         // Criar novo usuário no Firebase Auth
         const authResponse = await this.authService.createUser(email, senha);
@@ -347,21 +304,22 @@ export class SignUpComponent implements OnInit {
       // Salvar informações do usuário no Firestore
       await this.authService.saveUserInfo(userData);
 
-      // Se for um pré-cadastro, transferir histórico de vendas
-      if (preRegistrationData) {
+      // Se for um pré-cadastro, transferir histórico de vendas e excluir pré-cadastro
+      if (this.foundPreRegistration) {
         try {
-          const data = JSON.parse(preRegistrationData);
-          if (data.sales && data.sales.length > 0) {
+          if (this.foundPreRegistration.sales && this.foundPreRegistration.sales.length > 0) {
             // Transferir histórico de vendas para o usuário final
-            await this.transferSalesHistory(userId, data.sales);
+            await this.transferSalesHistory(userId, this.foundPreRegistration.sales);
           }
 
-          // Limpar dados do pré-cadastro do localStorage
-          if (typeof window !== 'undefined' && window.localStorage) {
-            localStorage.removeItem('preRegistrationData');
+          // Excluir pré-cadastro do Firestore após cadastro completo
+          if (this.foundPreRegistration.id || this.foundPreRegistration.firebaseDocumentId) {
+            const preRegistrationId = this.foundPreRegistration.id || this.foundPreRegistration.firebaseDocumentId;
+            await this.preRegistrationService.deletePreRegistration(preRegistrationId);
+            console.log('✅ Pré-cadastro excluído com sucesso após cadastro completo');
           }
         } catch (error) {
-          console.error('Erro ao transferir histórico de vendas:', error);
+          console.error('Erro ao transferir histórico de vendas ou excluir pré-cadastro:', error);
         }
       }
 
@@ -443,6 +401,17 @@ export class SignUpComponent implements OnInit {
                 this.foundPreRegistration = preRegistration;
                 this.snackBar.open('Pré-cadastro encontrado! Dados preenchidos automaticamente.', 'Fechar', { duration: 3000 });
 
+                // Armazenar dados do pré-cadastro para exclusão posterior
+                this.foundPreRegistration = {
+                  id: preRegistration.id,
+                  firebaseDocumentId: preRegistration.firebaseDocumentId,
+                  name: preRegistration.name,
+                  cpf: preRegistration.cpf,
+                  email: preRegistration.email,
+                  phone: preRegistration.phone,
+                  sales: preRegistration.sales || []
+                };
+
                 // Preencher formulário com dados do pré-cadastro
                 this.signUpForm.patchValue({
                   nome: preRegistration.name || '',
@@ -496,5 +465,4 @@ export class SignUpComponent implements OnInit {
   goToHome(): void {
     this.router.navigate(['/home']);
   }
-
 }

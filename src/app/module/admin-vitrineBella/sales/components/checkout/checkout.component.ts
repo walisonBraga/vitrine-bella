@@ -9,6 +9,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { SalesService } from '../../service/sales.service';
 import { PreRegistrationService, PreRegistration } from '../../../shared/services/pre-registration.service';
 import { LojaUsersService } from '../../../users/service/loja-users.service';
+import { CartService } from '../../../../../core/services/cart.service';
 
 @Component({
   selector: 'app-checkout',
@@ -36,6 +37,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // Estados
   isProcessingSale = false;
   isCreatingPreRegistration = false;
+  isProcessing = false; // Para o botão de finalizar compra
+  hasSearchedForCustomer = false;
+  showCustomerSearch = true; // Sempre mostrar busca primeiro
+  showCustomerForm = false; // Controla se deve mostrar formulário de dados do cliente
 
   // Totais
   subtotal = 0;
@@ -56,6 +61,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private salesService: SalesService,
     private preRegistrationService: PreRegistrationService,
     private lojaUsersService: LojaUsersService,
+    private cartService: CartService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {
@@ -67,6 +73,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.authenticatedUser = user;
+        // Preencher automaticamente o campo do vendedor
+        if (user) {
+          const salespersonName = user.fullName || user.displayName || user.email;
+          this.customerDataForm.patchValue({
+            salespersonName: salespersonName
+          });
+        }
       });
 
     // Carregar dados do carrinho do localStorage
@@ -98,6 +111,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Formulário de dados do cliente
     this.customerDataForm = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
+      salespersonName: ['', [Validators.required, Validators.minLength(2)]],
       cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)]],
@@ -163,7 +177,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   canProceedToNextStep(): boolean {
     switch (this.currentStep) {
       case 1: return this.cartItems.length > 0;
-      case 2: return this.foundCustomer !== null || this.customerDataForm.valid;
+      case 2: return this.showCustomerForm && (this.foundCustomer !== null || this.customerDataForm.valid);
       case 3: return this.paymentForm.valid;
       default: return true;
     }
@@ -215,91 +229,157 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   searchCustomer(): void {
     if (this.customerSearchForm.valid) {
       this.isSearchingCustomer = true;
+      this.hasSearchedForCustomer = true;
       const searchTerm = this.customerSearchForm.get('searchTerm')?.value.toLowerCase().trim();
 
-      // Buscar por CPF, email ou nome na coleção users do Firebase
-      this.lojaUsersService.getLojaUsers().subscribe({
+      // Buscar primeiro nos users (todos os usuários, não apenas os da loja)
+      this.lojaUsersService.getAllUsers().subscribe({
         next: (users: any[]) => {
-          console.log('Usuários encontrados:', users);
-          console.log('Termo de busca:', searchTerm);
+          console.log('🔍 Buscando usuários. Total encontrado:', users.length);
+          console.log('🔍 Termo de busca:', searchTerm);
 
-          // Filtrar apenas usuários que são clientes ou têm dados de cliente
           const customerUsers = users.filter((user: any) =>
             user.userRole === 'cliente' ||
             user.cpf ||
             user.email
           );
 
-          // Buscar por CPF exato primeiro, depois por email e nome
+          console.log('🔍 Usuários com dados de cliente:', customerUsers.length);
+          customerUsers.forEach(user => {
+            console.log(`👤 Usuário: ${user.fullName}, CPF: ${user.cpf}, Email: ${user.email}`);
+          });
+
           const foundUser = customerUsers.find((user: any) => {
-            // Se o termo parece ser um CPF (contém números e pontos/hífens)
-            if (/\d/.test(searchTerm)) {
-              // Limpar CPF para comparação (remover pontos, hífens e espaços)
+            // Buscar por CPF
+            if (/\d/.test(searchTerm) && !searchTerm.includes('@')) {
               const cleanSearchTerm = searchTerm.replace(/[.\-\s]/g, '');
               const cleanUserCpf = user.cpf ? user.cpf.replace(/[.\-\s]/g, '') : '';
 
-              // Buscar por CPF exato ou parcial
+              console.log(`🔍 Comparando CPF - Busca: "${cleanSearchTerm}" vs Usuário: "${cleanUserCpf}"`);
+
               if (cleanUserCpf && cleanUserCpf.includes(cleanSearchTerm)) {
-                console.log('CPF encontrado:', user.cpf, 'para busca:', searchTerm);
+                console.log('✅ CPF encontrado!', user.cpf);
                 return true;
               }
             }
 
             // Buscar por email
             if (user.email && user.email.toLowerCase().includes(searchTerm)) {
-              console.log('Email encontrado:', user.email, 'para busca:', searchTerm);
+              console.log('✅ Email encontrado!', user.email);
               return true;
             }
 
             // Buscar por nome
             if (user.fullName && user.fullName.toLowerCase().includes(searchTerm)) {
-              console.log('Nome encontrado:', user.fullName, 'para busca:', searchTerm);
+              console.log('✅ Nome encontrado!', user.fullName);
               return true;
             }
-
             return false;
           });
 
-          console.log('Cliente encontrado:', foundUser);
-
           if (foundUser) {
-            // Mapear dados do usuário para o formulário
-            const customerData = {
+            // Cliente encontrado nos users
+            this.foundCustomer = {
+              id: foundUser.uid,
               name: foundUser.fullName || '',
               email: foundUser.email || '',
               cpf: foundUser.cpf || '',
               phone: foundUser.phone || '',
-              address: {
-                street: '',
-                number: '',
-                complement: '',
-                neighborhood: '',
-                city: '',
-                state: '',
-                zipCode: ''
-              }
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              isCompleted: true
+            };
+
+            const customerData = {
+              name: foundUser.fullName || '',
+              email: foundUser.email || '',
+              cpf: foundUser.cpf || '',
+              phone: foundUser.phone || ''
             };
 
             this.customerDataForm.patchValue(customerData);
+            this.showCustomerSearch = false; // Esconder busca
+            this.showCustomerForm = true; // Mostrar dados
             this.snackBar.open('Cliente encontrado!', 'Fechar', { duration: 2000 });
+            this.isSearchingCustomer = false;
           } else {
-            this.snackBar.open('Cliente não encontrado. Preencha os dados para novo cadastro.', 'Fechar', { duration: 3000 });
+            // Se não encontrou nos users, buscar nos pre-registrations
+            this.searchInPreRegistrations(searchTerm);
           }
-          this.isSearchingCustomer = false;
         },
         error: (error: any) => {
-          console.error('Erro ao buscar cliente:', error);
-          this.snackBar.open('Erro ao buscar cliente no Firebase.', 'Fechar', { duration: 3000 });
-          this.isSearchingCustomer = false;
+          console.error('Erro ao buscar cliente nos users:', error);
+          // Se der erro nos users, tentar nos pre-registrations
+          this.searchInPreRegistrations(searchTerm);
         }
       });
     }
   }
 
+  private searchInPreRegistrations(searchTerm: string): void {
+    this.preRegistrationService.getAllPreRegistrations().subscribe({
+      next: (preRegistrations: PreRegistration[]) => {
+        const foundPreRegistration = preRegistrations.find((preReg: PreRegistration) => {
+          if (/\d/.test(searchTerm) && !searchTerm.includes('@')) {
+            const cleanSearchTerm = searchTerm.replace(/[.\-\s]/g, '');
+            const cleanPreRegCpf = preReg.cpf ? preReg.cpf.replace(/[.\-\s]/g, '') : '';
+            if (cleanPreRegCpf && cleanPreRegCpf.includes(cleanSearchTerm)) {
+              return true;
+            }
+          }
+          if (preReg.email && preReg.email.toLowerCase().includes(searchTerm)) {
+            return true;
+          }
+          if (preReg.name && preReg.name.toLowerCase().includes(searchTerm)) {
+            return true;
+          }
+          return false;
+        });
+
+        if (foundPreRegistration) {
+          // Cliente encontrado nos pre-registrations
+          this.foundCustomer = foundPreRegistration;
+
+          const customerData = {
+            name: foundPreRegistration.name || '',
+            email: foundPreRegistration.email || '',
+            cpf: foundPreRegistration.cpf || '',
+            phone: foundPreRegistration.phone || ''
+          };
+
+          this.customerDataForm.patchValue(customerData);
+          this.showCustomerSearch = false; // Esconder busca
+          this.showCustomerForm = true; // Mostrar dados
+          this.snackBar.open('Cliente encontrado nos pré-cadastros!', 'Fechar', { duration: 2000 });
+        } else {
+          // Cliente não encontrado em nenhuma coleção
+          this.foundCustomer = null;
+          this.customerDataForm.reset();
+          this.showCustomerSearch = false; // Esconder busca
+          this.showCustomerForm = true; // Mostrar formulário para novo cliente
+          this.snackBar.open('Cliente não encontrado. Preencha os dados para novo cadastro.', 'Fechar', { duration: 3000 });
+        }
+        this.isSearchingCustomer = false;
+      },
+      error: (error: any) => {
+        console.error('Erro ao buscar cliente nos pre-registrations:', error);
+        this.foundCustomer = null;
+        this.customerDataForm.reset();
+        this.showCustomerSearch = false; // Esconder busca
+        this.showCustomerForm = true; // Mostrar formulário para novo cliente
+        this.snackBar.open('Erro ao buscar cliente. Preencha os dados para novo cadastro.', 'Fechar', { duration: 3000 });
+        this.isSearchingCustomer = false;
+      }
+    });
+  }
+
   clearCustomerSearch(): void {
     this.foundCustomer = null;
+    this.hasSearchedForCustomer = false;
     this.customerDataForm.reset();
     this.customerSearchForm.reset();
+    this.showCustomerSearch = true; // Mostrar busca novamente
+    this.showCustomerForm = false; // Esconder formulário
   }
 
   onSearchInput(event: Event): void {
@@ -370,6 +450,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.isCreatingPreRegistration = true;
 
     const formData = this.customerDataForm.value;
+    // Salvar apenas os dados do cliente no pré-registro
     const preRegistrationData: Omit<PreRegistration, 'id' | 'createdAt' | 'updatedAt' | 'isCompleted' | 'sales'> = {
       cpf: formData.cpf,
       email: formData.email,
@@ -385,7 +466,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     this.preRegistrationService.createPreRegistration(preRegistrationData).subscribe({
       next: (preRegId) => {
-        this.processSale(preRegId);
+        // Processar venda sem vincular ao pré-registro (apenas dados do cliente salvos no pré-registro)
+        this.processSale();
       },
       error: (error) => {
         console.error('Erro ao criar pré-cadastro:', error);
@@ -396,69 +478,114 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  private processSale(preRegistrationId?: string): void {
+  private processSale(preRegistrationId?: string): Promise<void> {
+    const customerCpf = this.customerDataForm.get('cpf')?.value;
     const saleData: SaleForm = {
       customerName: this.customerDataForm.get('name')?.value,
       customerEmail: this.customerDataForm.get('email')?.value,
       customerPhone: this.customerDataForm.get('phone')?.value,
+      customerCpf: customerCpf,
+      accessCPF: customerCpf, // Usar CPF como accessCode para localizar a compra do usuário
       items: [...this.cartItems],
       discount: this.paymentForm.get('discount')?.value || 0,
       paymentMethod: this.paymentForm.get('paymentMethod')?.value
     };
 
-    this.salesService.createSale(saleData, this.authenticatedUser?.uid || '')
+    return this.salesService.createSale(saleData, this.authenticatedUser?.uid || '')
       .then((saleId) => {
-        // Adicionar venda ao histórico do cliente
-        if (preRegistrationId) {
-          this.addSaleToCustomerHistory(preRegistrationId, saleId);
-        }
-
+        // Venda salva apenas no banco de sales com accessCPF para localização
         this.steps[this.currentStep - 1].completed = true;
-        this.snackBar.open('Compra realizada com sucesso!', 'Fechar', { duration: 3000 });
-
-        // Limpar carrinho e redirecionar
-        localStorage.removeItem('checkout_cart');
-        setTimeout(() => {
-          this.router.navigate(['/admin/internal-sales']);
-        }, 2000);
-      })
-      .catch((error) => {
-        console.error('Erro ao processar venda:', error);
-        this.snackBar.open('Erro ao processar venda. Tente novamente.', 'Fechar', { duration: 3000 });
-      })
-      .finally(() => {
         this.isProcessingSale = false;
         this.isCreatingPreRegistration = false;
+      })
+      .catch((error: any) => {
+        console.error('Erro ao processar venda:', error);
+        this.snackBar.open('Erro ao processar venda. Tente novamente.', 'Fechar', { duration: 3000 });
+        this.isProcessingSale = false;
+        this.isCreatingPreRegistration = false;
+        throw error;
       });
   }
 
-  private addSaleToCustomerHistory(preRegistrationId: string, saleId: string): void {
-    const saleHistory = {
-      saleId,
-      date: new Date(),
-      amount: this.total,
-      items: this.cartItems.map(item => ({
-        productName: item.productName,
-        quantity: item.quantity,
-        price: item.productPrice
-      }))
-    };
+  finalizePurchase(): void {
+    if (!this.customerDataForm.valid || !this.paymentForm.valid) {
+      this.snackBar.open('Por favor, preencha todos os campos obrigatórios.', 'Fechar', { duration: 3000 });
+      return;
+    }
 
-    this.preRegistrationService.getPreRegistrationByCpf(
-      this.customerDataForm.get('cpf')?.value
-    ).subscribe(preReg => {
-      if (preReg && preReg.id) {
-        const updatedSales = [...(preReg.sales || []), saleHistory];
-        this.preRegistrationService.updatePreRegistration(preReg.id, { sales: updatedSales }).subscribe();
-      }
+    this.isProcessing = true;
+
+    // Processar a venda
+    this.processSale()
+      .then(() => {
+        // Limpar tudo após venda concluída
+        this.clearAllData();
+
+        // Mostrar mensagem de sucesso
+        this.snackBar.open('Venda finalizada com sucesso!', 'Fechar', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+
+        // Voltar para a tela de vendas internas
+        setTimeout(() => {
+          this.router.navigate(['/admin/internal-sales']);
+        }, 1500);
+      })
+      .catch((error: any) => {
+        console.error('Erro ao finalizar venda:', error);
+        this.snackBar.open('Erro ao finalizar venda. Tente novamente.', 'Fechar', { duration: 3000 });
+      })
+      .finally(() => {
+        this.isProcessing = false;
+      });
+  }
+
+  clearAllData(): void {
+    // Limpar carrinho do CartService
+    this.cartService.clearCart();
+    this.cartItems = [];
+
+    // Limpar carrinho local das vendas internas
+    localStorage.removeItem('checkout_cart');
+    if (this.authenticatedUser?.uid) {
+      const cartKey = `cart_${this.authenticatedUser.uid}`;
+      localStorage.removeItem(cartKey);
+    }
+
+    // Limpar formulários
+    this.customerDataForm.reset();
+    this.paymentForm.reset();
+
+    // Resetar estados
+    this.currentStep = 1;
+    this.showCustomerSearch = true;
+    this.showCustomerForm = false;
+    this.foundCustomer = null;
+    this.discount = 0;
+
+    // Limpar dados do cliente encontrado
+    this.foundCustomer = null;
+
+    // Resetar formulário de pagamento para PIX por padrão
+    this.paymentForm.patchValue({
+      paymentMethod: 'pix'
     });
   }
+
 
   // Getters para validação
   get customerNameError(): string {
     const nameControl = this.customerDataForm.get('name');
     if (nameControl?.hasError('required')) return 'Nome é obrigatório';
     if (nameControl?.hasError('minlength')) return 'Nome deve ter pelo menos 2 caracteres';
+    return '';
+  }
+
+  get salespersonNameError(): string {
+    const salespersonControl = this.customerDataForm.get('salespersonName');
+    if (salespersonControl?.hasError('required')) return 'Nome do vendedor é obrigatório';
+    if (salespersonControl?.hasError('minlength')) return 'Nome do vendedor deve ter pelo menos 2 caracteres';
     return '';
   }
 

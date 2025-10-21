@@ -3,15 +3,22 @@
     <!-- Header -->
     <header class="sales-header">
       <div class="header-content">
-        <h1 class="header-title">
-          <mat-icon>point_of_sale</mat-icon>
-          Vendas Internas
-        </h1>
-        <p class="header-subtitle">Realize vendas diretamente na loja</p>
-        <div *ngIf="authenticatedUser" class="salesperson-info">
-          <mat-icon>person</mat-icon>
-          <span>Vendedor: {{ authenticatedUser.fullName || authenticatedUser.displayName || authenticatedUser.email
+        <div class="header-main">
+          <div class="title-section">
+            <mat-icon class="header-icon">point_of_sale</mat-icon>
+            <div class="title-text">
+              <h1 class="header-title">Vendas Internas</h1>
+              <p class="header-subtitle">Realize vendas diretamente na loja</p>
+            </div>
+          </div>
+          <div *ngIf="authenticatedUser" class="salesperson-info">
+            <mat-icon>person</mat-icon>
+            <span>{{
+              authenticatedUser.fullName ||
+                authenticatedUser.displayName ||
+                authenticatedUser.email
             }}</span>
+          </div>
         </div>
       </div>
     </header>
@@ -32,103 +39,205 @@
               <mat-icon>inventory_2</mat-icon>
               Produtos Disponíveis
             </mat-card-title>
+            <mat-card-subtitle
+              >Selecione os produtos para adicionar ao
+              carrinho</mat-card-subtitle
+            >
           </mat-card-header>
           <mat-card-content>
             <!-- Search -->
-            <div [formGroup]="customerForm">
-              <mat-form-field appearance="outline" class="search-field">
-                <mat-label>Buscar produtos</mat-label>
-                <input matInput formControlName="searchTerm"
-                  placeholder="Digite nome, código, categoria ou descrição..." class="search-input"
-                  (input)="onSearchInput($event)">
-                <mat-icon matSuffix>search</mat-icon>
-              </mat-form-field>
+            <div class="search-section">
+              <div [formGroup]="customerForm">
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Buscar produtos</mat-label>
+                  <input
+                    matInput
+                    formControlName="searchTerm"
+                    placeholder="Digite nome, código, categoria ou descrição..."
+                    class="search-input"
+                    (input)="onSearchInput($event)"
+                  />
+                  <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+              </div>
             </div>
 
             <!-- Simplified View (when more than 100 products) -->
             <div *ngIf="showSimplifiedView" class="simplified-view">
               <div class="simplified-info">
                 <mat-icon>info</mat-icon>
-                <p>Muitos produtos encontrados ({{ products.length }}). Use a barra de pesquisa acima para encontrar o
-                  produto desejado.</p>
+                <p>
+                  Muitos produtos encontrados ({{ products.length }}). Use a
+                  barra de pesquisa acima para encontrar o produto desejado.
+                </p>
               </div>
-              <div class="search-results" *ngIf="getFilteredProducts().length > 0">
-                <h4>Resultados da busca ({{ getFilteredProducts().length }} produtos):</h4>
+              <div
+                class="search-results"
+                *ngIf="getFilteredProducts().length > 0"
+              >
+                <h4>
+                  Resultados da busca ({{ getFilteredProducts().length }}
+                  produtos):
+                </h4>
                 <div class="products-grid">
-                  <div class="product-card" *ngFor="let product of getFilteredProducts()">
+                  <div
+                    class="product-card"
+                    *ngFor="let product of getFilteredProducts()"
+                  >
                     <div class="product-image-container">
-                      <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.productName"
-                        class="product-image">
+                      <img
+                        *ngIf="product.imageUrl"
+                        [src]="product.imageUrl"
+                        [alt]="product.productName"
+                        class="product-image"
+                      />
                       <div *ngIf="!product.imageUrl" class="no-image">
                         <mat-icon>image_not_supported</mat-icon>
+                      </div>
+                      <div
+                        class="product-badge"
+                        *ngIf="product.stock <= 10 && product.stock > 0"
+                      >
+                        <span class="low-stock-badge">Estoque Baixo</span>
+                      </div>
+                      <div class="product-badge" *ngIf="product.stock === 0">
+                        <span class="out-of-stock-badge">Sem Estoque</span>
                       </div>
                     </div>
                     <div class="product-info">
                       <h4 class="product-name">{{ product.productName }}</h4>
                       <p class="product-category">{{ product.category }}</p>
                       <div class="product-price-stock">
-                        <span class="price">{{ product.price | currency:'BRL' }}</span>
-                        <span class="stock" [class.low-stock]="product.stock <= 10">
-                          Estoque: {{ product.stock }}
+                        <span class="price">{{
+                          product.price | currency : "BRL"
+                        }}</span>
+                        <span
+                          class="stock"
+                          [class.low-stock]="product.stock <= 10"
+                          [class.out-of-stock]="product.stock === 0"
+                        >
+                          <mat-icon class="stock-icon">inventory</mat-icon>
+                          {{ product.stock }}
                         </span>
                       </div>
                     </div>
-                    <button mat-raised-button color="primary" (click)="addToCart(product)"
-                      [disabled]="product.stock === 0" class="add-to-cart-btn">
-                      <mat-icon>add_shopping_cart</mat-icon>
-                      Adicionar
-                    </button>
+                    <div class="product-actions">
+                      <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="addToCart(product)"
+                        [disabled]="product.stock === 0"
+                        class="add-to-cart-btn"
+                      >
+                        <mat-icon>add_shopping_cart</mat-icon>
+                        Adicionar
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="no-results"
-                *ngIf="getFilteredProducts().length === 0 && customerForm.get('searchTerm')?.value">
+              <div
+                class="no-results"
+                *ngIf="
+                  getFilteredProducts().length === 0 &&
+                  customerForm.get('searchTerm')?.value
+                "
+              >
                 <mat-icon>search_off</mat-icon>
-                <p>Nenhum produto encontrado para "{{ customerForm.get('searchTerm')?.value }}"</p>
+                <p>
+                  Nenhum produto encontrado para "{{
+                    customerForm.get("searchTerm")?.value
+                  }}"
+                </p>
               </div>
             </div>
             <!-- Normal View (when less than 100 products) -->
             <div *ngIf="!showSimplifiedView">
               <!-- Mostrar apenas produtos filtrados quando há pesquisa -->
               <div *ngIf="hasSearchTerm" class="search-results">
-                <h4>Resultados da busca ({{ getFilteredProducts().length }} produtos):</h4>
+                <h4>
+                  Resultados da busca ({{ getFilteredProducts().length }}
+                  produtos):
+                </h4>
                 <div class="products-grid">
-                  <div class="product-card" *ngFor="let product of getFilteredProducts()">
+                  <div
+                    class="product-card"
+                    *ngFor="let product of getFilteredProducts()"
+                  >
                     <div class="product-image-container">
-                      <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.productName"
-                        class="product-image">
+                      <img
+                        *ngIf="product.imageUrl"
+                        [src]="product.imageUrl"
+                        [alt]="product.productName"
+                        class="product-image"
+                      />
                       <div *ngIf="!product.imageUrl" class="no-image">
                         <mat-icon>image_not_supported</mat-icon>
+                      </div>
+                      <div
+                        class="product-badge"
+                        *ngIf="product.stock <= 10 && product.stock > 0"
+                      >
+                        <span class="low-stock-badge">Estoque Baixo</span>
+                      </div>
+                      <div class="product-badge" *ngIf="product.stock === 0">
+                        <span class="out-of-stock-badge">Sem Estoque</span>
                       </div>
                     </div>
                     <div class="product-info">
                       <h4 class="product-name">{{ product.productName }}</h4>
                       <p class="product-category">{{ product.category }}</p>
                       <div class="product-price-stock">
-                        <span class="price">{{ product.price | currency:'BRL' }}</span>
-                        <span class="stock" [class.low-stock]="product.stock <= 10">
-                          Estoque: {{ product.stock }}
+                        <span class="price">{{
+                          product.price | currency : "BRL"
+                        }}</span>
+                        <span
+                          class="stock"
+                          [class.low-stock]="product.stock <= 10"
+                          [class.out-of-stock]="product.stock === 0"
+                        >
+                          <mat-icon class="stock-icon">inventory</mat-icon>
+                          {{ product.stock }}
                         </span>
                       </div>
                     </div>
-                    <button mat-raised-button color="primary" (click)="addToCart(product)"
-                      [disabled]="product.stock === 0" class="add-to-cart-btn">
-                      <mat-icon>add_shopping_cart</mat-icon>
-                      Adicionar
-                    </button>
+                    <div class="product-actions">
+                      <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="addToCart(product)"
+                        [disabled]="product.stock === 0"
+                        class="add-to-cart-btn"
+                      >
+                        <mat-icon>add_shopping_cart</mat-icon>
+                        Adicionar
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div class="no-results" *ngIf="getFilteredProducts().length === 0">
+                <div
+                  class="no-results"
+                  *ngIf="getFilteredProducts().length === 0"
+                >
                   <mat-icon>search_off</mat-icon>
-                  <p>Nenhum produto encontrado para "{{ customerForm.get('searchTerm')?.value }}"</p>
+                  <p>
+                    Nenhum produto encontrado para "{{
+                      customerForm.get("searchTerm")?.value
+                    }}"
+                  </p>
                 </div>
               </div>
 
               <!-- Mostrar mensagem quando não há pesquisa -->
               <div *ngIf="!hasSearchTerm" class="search-prompt">
                 <mat-icon>search</mat-icon>
-                <h3>Digite o nome, código, categoria ou descrição do produto</h3>
-                <p>Use a barra de pesquisa acima para encontrar os produtos disponíveis</p>
+                <h3>
+                  Digite o nome, código, categoria ou descrição do produto
+                </h3>
+                <p>
+                  Use a barra de pesquisa acima para encontrar os produtos
+                  disponíveis
+                </p>
               </div>
             </div>
           </mat-card-content>
@@ -141,31 +250,67 @@
               <mat-icon>shopping_cart</mat-icon>
               Carrinho de Vendas
             </mat-card-title>
-            <mat-card-subtitle>{{ cartItems.length }} item(s) no carrinho</mat-card-subtitle>
+            <mat-card-subtitle>
+              <span class="cart-count">{{ cartItems.length }} item(s)</span>
+              <span class="cart-total" *ngIf="cartItems.length > 0">{{
+                total | currency : "BRL"
+              }}</span>
+            </mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <!-- Cart Items -->
             <div class="cart-items" *ngIf="cartItems.length > 0">
               <div class="cart-item" *ngFor="let item of cartItems">
+                <div class="item-image">
+                  <div class="item-no-image">
+                    <mat-icon>inventory</mat-icon>
+                  </div>
+                </div>
                 <div class="item-info">
-                  <h5>{{ item.productName }}</h5>
-                  <p>{{ item.productPrice | currency:'BRL' }} cada</p>
+                  <h5 class="item-name">{{ item.productName }}</h5>
+                  <p class="item-price">
+                    {{ item.productPrice | currency : "BRL" }} cada
+                  </p>
                 </div>
                 <div class="item-controls">
-                  <button mat-icon-button (click)="updateQuantity(item.productId, item.quantity - 1)"
-                    [disabled]="item.quantity <= 1">
-                    <mat-icon>remove</mat-icon>
-                  </button>
-                  <span class="quantity">{{ item.quantity }}</span>
-                  <button mat-icon-button (click)="updateQuantity(item.productId, item.quantity + 1)"
-                    [disabled]="item.quantity >= getProductStock(item.productId)">
-                    <mat-icon>add</mat-icon>
-                  </button>
+                  <div class="quantity-controls">
+                    <button
+                      mat-icon-button
+                      (click)="
+                        updateQuantity(item.productId, item.quantity - 1)
+                      "
+                      [disabled]="item.quantity <= 1"
+                      class="quantity-btn"
+                    >
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <span class="quantity">{{ item.quantity }}</span>
+                    <button
+                      mat-icon-button
+                      (click)="
+                        updateQuantity(item.productId, item.quantity + 1)
+                      "
+                      [disabled]="
+                        item.quantity >= getProductStock(item.productId)
+                      "
+                      class="quantity-btn"
+                    >
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
                 </div>
                 <div class="item-total">
-                  {{ item.subtotal | currency:'BRL' }}
+                  <span class="total-label">Total:</span>
+                  <span class="total-amount">{{
+                    item.subtotal | currency : "BRL"
+                  }}</span>
                 </div>
-                <button mat-icon-button color="warn" (click)="removeFromCart(item.productId)" class="remove-btn">
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="removeFromCart(item.productId)"
+                  class="remove-btn"
+                >
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -180,29 +325,64 @@
 
             <!-- Cart Summary -->
             <div class="cart-summary" *ngIf="cartItems.length > 0">
-              <div class="summary-row">
-                <span>Subtotal:</span>
-                <span>{{ subtotal | currency:'BRL' }}</span>
-              </div>
-              <div class="summary-row discount-row">
-                <span>Desconto:</span>
-                <div [formGroup]="customerForm">
-                  <mat-form-field appearance="outline" class="discount-field">
-                    <input matInput type="number" formControlName="discount" (input)="onDiscountChange()"
-                      placeholder="0.00" min="0">
-                    <span matPrefix>R$&nbsp;</span>
-                  </mat-form-field>
+              <div class="summary-section">
+                <div class="summary-row">
+                  <span class="summary-label">Subtotal:</span>
+                  <span class="summary-value">{{
+                    subtotal | currency : "BRL"
+                  }}</span>
                 </div>
-              </div>
-              <div class="summary-row total-row">
-                <span><strong>Total:</strong></span>
-                <span class="total-amount">{{ total | currency:'BRL' }}</span>
+                <div class="summary-row coupon-row">
+                  <span class="summary-label">Cupom:</span>
+                  <div class="coupon-input-container">
+                    <mat-form-field appearance="outline" class="coupon-field">
+                      <input
+                        matInput
+                        placeholder="Digite o código do cupom"
+                        class="coupon-input"
+                      />
+                      <mat-icon matSuffix>local_offer</mat-icon>
+                    </mat-form-field>
+                    <button mat-button color="primary" class="apply-coupon-btn">
+                      Aplicar
+                    </button>
+                  </div>
+                </div>
+                <div class="summary-row discount-row">
+                  <span class="summary-label">Desconto:</span>
+                  <div
+                    [formGroup]="customerForm"
+                    class="discount-input-container"
+                  >
+                    <mat-form-field appearance="outline" class="discount-field">
+                      <input
+                        matInput
+                        type="number"
+                        formControlName="discount"
+                        (input)="onDiscountChange()"
+                        placeholder="0.00"
+                        min="0"
+                      />
+                      <span matTextPrefix>R$&nbsp;</span>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="summary-row total-row">
+                  <span class="summary-label"><strong>Total:</strong></span>
+                  <span class="summary-value total-amount">{{
+                    total | currency : "BRL"
+                  }}</span>
+                </div>
               </div>
 
               <!-- Botão Finalizar Compra -->
-              <div class="checkout-button">
-                <button mat-raised-button color="primary" (click)="goToCheckout()" 
-                        class="finalize-purchase-btn">
+              <div class="checkout-section">
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="goToCheckout()"
+                  class="finalize-purchase-btn"
+                >
                   <mat-icon>shopping_cart_checkout</mat-icon>
                   Finalizar Compra
                 </button>
@@ -211,7 +391,6 @@
           </mat-card-content>
         </mat-card>
       </div>
-
     </div>
   </div>
 </app-navigation-admin>

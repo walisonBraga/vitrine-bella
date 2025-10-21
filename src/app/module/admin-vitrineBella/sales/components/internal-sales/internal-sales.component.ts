@@ -79,6 +79,7 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
       customerName: ['', [Validators.required, Validators.minLength(2)]],
       customerEmail: ['', [Validators.email]],
       customerPhone: [''],
+      customerCpf: [''], // CPF do cliente
       paymentMethod: ['cash', Validators.required]
     });
 
@@ -214,7 +215,8 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
         this.saleForm.patchValue({
           customerName: result.customerData.name,
           customerEmail: result.customerData.email,
-          customerPhone: result.customerData.phone
+          customerPhone: result.customerData.phone,
+          customerCpf: result.customerData.cpf
         });
 
         // Processar a venda com os dados do pré-cadastro
@@ -227,10 +229,14 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
     if (this.saleForm.valid && this.cartItems.length > 0) {
       this.isProcessingSale = true;
 
+      // Buscar CPF do cliente se disponível
+      const customerCpf = this.saleForm.get('customerCpf')?.value;
       const saleData: SaleForm = {
         customerName: this.saleForm.get('customerName')?.value,
         customerEmail: this.saleForm.get('customerEmail')?.value,
         customerPhone: this.saleForm.get('customerPhone')?.value,
+        customerCpf: customerCpf,
+        accessCPF: customerCpf, // Usar CPF como accessCode para localizar a compra do usuário
         items: [...this.cartItems],
         discount: this.customerForm.get('discount')?.value || 0,
         paymentMethod: this.saleForm.get('paymentMethod')?.value
@@ -243,10 +249,7 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
           // Primeiro calcular e mostrar a soma das vendas
           this.calculateAndShowSalesSum(finalAmount);
 
-          // Adicionar venda ao histórico do cliente (se for pré-cadastro)
-          if (preRegistrationId) {
-            this.addSaleToCustomerHistory(preRegistrationId, saleId, finalAmount);
-          }
+          // Venda salva apenas no banco de sales com accessCPF para localização
 
           this.snackBar.open('Venda realizada com sucesso!', 'Fechar', { duration: 3000 });
           this.clearCart();
@@ -269,28 +272,6 @@ export class InternalSalesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private addSaleToCustomerHistory(preRegistrationId: string, saleId: string, amount: number): void {
-    const saleHistory = {
-      saleId,
-      date: new Date(),
-      amount,
-      items: this.cartItems.map(item => ({
-        productName: item.productName,
-        quantity: item.quantity,
-        price: item.productPrice
-      }))
-    };
-
-    // Buscar pré-cadastro e adicionar venda ao histórico
-    this.preRegistrationService.getPreRegistrationByCpf(
-      this.saleForm.get('customerName')?.value // Aqui deveria ser CPF, mas vamos ajustar
-    ).subscribe(preReg => {
-      if (preReg && preReg.id) {
-        const updatedSales = [...(preReg.sales || []), saleHistory];
-        this.preRegistrationService.updatePreRegistration(preReg.id, { sales: updatedSales }).subscribe();
-      }
-    });
-  }
 
   getPaymentMethodDisplayName(method: string): string {
     switch (method) {

@@ -8,6 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { AuthService } from '../auth/auth.service';
 import { PreRegistrationService } from '../../module/admin-vitrineBella/shared/services/pre-registration.service';
 import { LojaUsersService } from '../../module/admin-vitrineBella/users/service/loja-users.service';
+import { SalesService } from '../../module/admin-vitrineBella/sales/service/sales.service';
 import { Subject, takeUntil } from 'rxjs';
 import { NavbarHomeComponent } from '../navbar-home/components/navbar-home/navbar-home.component';
 
@@ -28,7 +29,7 @@ import { NavbarHomeComponent } from '../navbar-home/components/navbar-home/navba
 })
 export class OrdersComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+
   user: any = null;
   purchaseHistory: any[] = [];
   isLoading = false;
@@ -37,7 +38,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private preRegistrationService: PreRegistrationService,
-    private lojaUsersService: LojaUsersService
+    private lojaUsersService: LojaUsersService,
+    private salesService: SalesService
   ) {}
 
   ngOnInit(): void {
@@ -58,12 +60,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   loadPurchaseHistory(): void {
     if (!this.user) return;
-
     this.isLoading = true;
     this.errorMessage = '';
-
-    console.log('Buscando histórico para usuário:', this.user.uid);
-
     // Buscar diretamente o usuário atual pelo UID
     this.getUserById(this.user.uid);
   }
@@ -72,51 +70,104 @@ export class OrdersComponent implements OnInit, OnDestroy {
     // Buscar todos os usuários (incluindo clientes)
     this.lojaUsersService.getAllUsers().subscribe({
       next: (users) => {
-        console.log('Todos os usuários encontrados:', users);
         const currentUser = users.find(u => u.uid === userId);
-        console.log('Usuário atual encontrado:', currentUser);
-        
         if (currentUser && currentUser.salesHistory && currentUser.salesHistory.length > 0) {
-          // Usuário tem histórico de vendas
-          console.log('Histórico encontrado no usuário:', currentUser.salesHistory);
+          // Usuário tem histórico de vendas na conta
           this.purchaseHistory = currentUser.salesHistory;
           this.isLoading = false;
         } else {
-          // Tentar buscar em pré-cadastros se o usuário tem CPF
+          // Buscar vendas pelo accessCPF se o usuário tem CPF
           if (this.user.cpf) {
-            console.log('Buscando em pré-cadastros para CPF:', this.user.cpf);
-            this.loadFromPreRegistration();
+            this.loadFromSalesByAccessCPF();
           } else {
-            console.log('Nenhum histórico encontrado');
-            this.purchaseHistory = [];
-            this.isLoading = false;
+            // Se não tem CPF, tentar buscar por email
+            if (this.user.email) {
+              this.loadFromSalesByEmail();
+            } else {
+              this.purchaseHistory = [];
+              this.isLoading = false;
+            }
           }
         }
       },
       error: (error) => {
-        console.error('Erro ao carregar usuário:', error);
         this.errorMessage = 'Erro ao carregar dados do usuário';
         this.isLoading = false;
       }
     });
   }
 
-  private loadFromPreRegistration(): void {
+  private loadFromSalesByAccessCPF(): void {
     if (!this.user.cpf) {
       this.isLoading = false;
       return;
     }
 
-    this.preRegistrationService.getSalesHistory(this.user.cpf)
+    // Formatar CPF para busca (60995610053 -> 609.956.100-53)
+    const formattedCpf = this.formatCpfForSearch(this.user.cpf);
+
+    // Buscar vendas pelo accessCPF formatado
+    this.salesService.getSalesByAccessCPF(formattedCpf)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (sales) => {
-          console.log('Vendas encontradas em pré-cadastros:', sales);
-          this.purchaseHistory = sales;
+          if (sales && sales.length > 0) {
+            // Mapear as vendas para o formato esperado
+            this.purchaseHistory = sales.map(sale => ({
+              saleId: sale.id,
+              date: sale.createdAt,
+              amount: sale.finalAmount,
+              items: sale.items.map(item => ({
+                productName: item.productName,
+                quantity: item.quantity,
+                price: item.productPrice
+              })),
+              paymentMethod: sale.paymentMethod,
+              status: sale.status
+            }));
+          } else {
+            this.purchaseHistory = [];
+          }
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Erro ao carregar histórico de pré-cadastro:', error);
+          this.purchaseHistory = [];
+          this.isLoading = false;
+        }
+      });
+  }
+
+  private loadFromSalesByEmail(): void {
+    if (!this.user.email) {
+      this.isLoading = false;
+      return;
+    }
+
+    // Buscar vendas por email do cliente
+    this.salesService.getSalesByCustomerEmail(this.user.email)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (sales) => {
+          if (sales && sales.length > 0) {
+            // Mapear as vendas para o formato esperado
+            this.purchaseHistory = sales.map(sale => ({
+              saleId: sale.id,
+              date: sale.createdAt,
+              amount: sale.finalAmount,
+              items: sale.items.map(item => ({
+                productName: item.productName,
+                quantity: item.quantity,
+                price: item.productPrice
+              })),
+              paymentMethod: sale.paymentMethod,
+              status: sale.status
+            }));
+          } else {
+            this.purchaseHistory = [];
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
           this.purchaseHistory = [];
           this.isLoading = false;
         }
@@ -125,7 +176,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   formatDate(date: any): string {
     if (!date) return 'Data não informada';
-    
+
     const dateObj = date instanceof Date ? date : new Date(date);
     return dateObj.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -184,5 +235,18 @@ export class OrdersComponent implements OnInit, OnDestroy {
     return this.purchaseHistory.reduce((total: number, purchase: any) => {
       return total + this.getTotalItems(purchase);
     }, 0);
+  }
+
+  private formatCpfForSearch(cpf: string): string {
+    if (!cpf) return '';
+
+    // Remover formatação existente
+    const cleanCpf = cpf.replace(/[.\-\s]/g, '');
+
+    // Verificar se tem 11 dígitos
+    if (cleanCpf.length !== 11) return cpf;
+
+    // Formatar para 000.000.000-00
+    return cleanCpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   }
 }

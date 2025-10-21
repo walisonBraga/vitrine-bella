@@ -1,412 +1,721 @@
 <app-navigation-admin>
   <div class="checkout-container">
-  <!-- Header -->
-  <header class="checkout-header">
-    <div class="header-content">
-      <button mat-icon-button (click)="goToSalesPage()" class="back-button">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-      <div class="header-text">
-        <h1 class="header-title">
-          <mat-icon>shopping_cart</mat-icon>
-          Finalizar Compra
-        </h1>
-        <p class="header-subtitle">Complete os dados para finalizar sua compra</p>
-      </div>
-    </div>
-  </header>
-
-  <!-- Progress Steps -->
-  <div class="progress-steps">
-    <div class="steps-container">
-      <div *ngFor="let step of steps" 
-           class="step" 
-           [class.active]="step.number === currentStep"
-           [class.completed]="step.completed"
-           (click)="goToStep(step.number)">
-        <div class="step-number">
-          <mat-icon *ngIf="step.completed">check</mat-icon>
-          <span *ngIf="!step.completed">{{ step.number }}</span>
+    <!-- Header -->
+    <header class="checkout-header">
+      <div class="header-content">
+        <div class="header-main">
+          <button mat-icon-button (click)="goToSalesPage()" class="back-button">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="header-text">
+            <h1 class="header-title">
+              <mat-icon class="header-icon">shopping_cart</mat-icon>
+              Finalizar Compra
+            </h1>
+            <p class="header-subtitle">
+              Complete os dados para finalizar sua compra
+            </p>
+          </div>
         </div>
-        <div class="step-content">
-          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
-          <span class="step-title">{{ step.title }}</span>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+          <div class="steps-container">
+            <div
+              *ngFor="let step of steps"
+              class="step"
+              [class.active]="step.number === currentStep"
+              [class.completed]="step.completed"
+              (click)="goToStep(step.number)"
+            >
+              <div class="step-number">
+                <mat-icon *ngIf="step.completed">check</mat-icon>
+                <span *ngIf="!step.completed">{{ step.number }}</span>
+              </div>
+              <div class="step-content">
+                <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+                <span class="step-title">{{ step.title }}</span>
+              </div>
+              <div class="step-line" *ngIf="step.number < totalSteps"></div>
+            </div>
+          </div>
         </div>
-        <div class="step-line" *ngIf="step.number < totalSteps"></div>
       </div>
-    </div>
-  </div>
+    </header>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Etapa 1: Produtos -->
-    <div *ngIf="currentStep === 1" class="step-content">
-      <mat-card class="products-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>shopping_cart</mat-icon>
-            Produtos Selecionados
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <!-- Empty Cart -->
-          <div class="empty-cart" *ngIf="cartItems.length === 0">
-            <mat-icon class="empty-icon">shopping_cart</mat-icon>
-            <h3>Carrinho vazio</h3>
-            <p>Você precisa adicionar produtos antes de finalizar a compra.</p>
-            <button mat-raised-button color="primary" (click)="goToSalesPage()" class="go-to-sales-btn">
-              <mat-icon>arrow_back</mat-icon>
-              Voltar para Produtos
-            </button>
-          </div>
-
-          <!-- Cart Items -->
-          <div class="cart-items" *ngIf="cartItems.length > 0">
-            <div class="cart-item" *ngFor="let item of cartItems">
-              <div class="item-image">
-                <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.productName">
-                <mat-icon *ngIf="!item.imageUrl">image_not_supported</mat-icon>
-              </div>
-              <div class="item-info">
-                <h4 class="item-name">{{ item.productName }}</h4>
-                <p class="item-price">{{ item.productPrice | currency:'BRL' }} cada</p>
-              </div>
-              <div class="item-controls">
-                <button mat-icon-button (click)="updateQuantity(item.productId, item.quantity - 1)"
-                        [disabled]="item.quantity <= 1">
-                  <mat-icon>remove</mat-icon>
-                </button>
-                <span class="quantity">{{ item.quantity }}</span>
-                <button mat-icon-button (click)="updateQuantity(item.productId, item.quantity + 1)">
-                  <mat-icon>add</mat-icon>
-                </button>
-              </div>
-              <div class="item-total">
-                {{ item.subtotal | currency:'BRL' }}
-              </div>
-              <button mat-icon-button color="warn" (click)="removeItem(item.productId)" class="remove-btn">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          </div>
-
-          <!-- Cart Summary -->
-          <div class="cart-summary" *ngIf="cartItems.length > 0">
-            <div class="summary-row">
-              <span>Subtotal:</span>
-              <span>{{ subtotal | currency:'BRL' }}</span>
-            </div>
-            <div class="summary-row total-row">
-              <span><strong>Total:</strong></span>
-              <span class="total-amount">{{ subtotal | currency:'BRL' }}</span>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
-    <!-- Etapa 2: Cliente -->
-    <div *ngIf="currentStep === 2" class="step-content">
-      <!-- Resumo dos Produtos -->
-      <mat-card class="products-summary-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>shopping_cart</mat-icon>
-            Resumo da Compra
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="cart-items-summary">
-            <div class="cart-item-summary" *ngFor="let item of cartItems">
-              <div class="item-image">
-                <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.productName">
-                <mat-icon *ngIf="!item.imageUrl">image_not_supported</mat-icon>
-              </div>
-              <div class="item-info">
-                <h5 class="item-name">{{ item.productName }}</h5>
-                <p class="item-details">{{ item.quantity }}x {{ item.productPrice | currency:'BRL' }}</p>
-              </div>
-              <div class="item-total">
-                {{ item.subtotal | currency:'BRL' }}
-              </div>
-            </div>
-          </div>
-          <div class="cart-summary">
-            <div class="summary-row total-row">
-              <span><strong>Total:</strong></span>
-              <span class="total-amount">{{ total | currency:'BRL' }}</span>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <div class="customer-section">
-        <!-- Busca de Cliente -->
-        <mat-card class="customer-search-card">
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Etapa 1: Produtos -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <mat-card class="products-card">
           <mat-card-header>
             <mat-card-title>
-              <mat-icon>search</mat-icon>
-              Buscar Cliente Existente
+              <mat-icon>shopping_cart</mat-icon>
+              Produtos Selecionados
             </mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <form [formGroup]="customerSearchForm" class="search-form">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Buscar por nome, email ou CPF</mat-label>
-                <input matInput formControlName="searchTerm" placeholder="Digite o nome, email ou CPF do cliente"
-                       (input)="onSearchInput($event)">
-                <mat-icon matSuffix>search</mat-icon>
-              </mat-form-field>
-              <button mat-raised-button color="primary" (click)="searchCustomer()" 
-                      [disabled]="customerSearchForm.invalid || isSearchingCustomer">
-                <mat-spinner *ngIf="isSearchingCustomer" diameter="20" class="btn-spinner"></mat-spinner>
-                <mat-icon *ngIf="!isSearchingCustomer">search</mat-icon>
-                {{ isSearchingCustomer ? 'Buscando...' : 'Buscar Cliente' }}
+            <!-- Empty Cart -->
+            <div class="empty-cart" *ngIf="cartItems.length === 0">
+              <mat-icon class="empty-icon">shopping_cart</mat-icon>
+              <h3>Carrinho vazio</h3>
+              <p>
+                Você precisa adicionar produtos antes de finalizar a compra.
+              </p>
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="goToSalesPage()"
+                class="go-to-sales-btn"
+              >
+                <mat-icon>arrow_back</mat-icon>
+                Voltar para Produtos
               </button>
-            </form>
+            </div>
 
-            <!-- Cliente Encontrado -->
-            <div *ngIf="foundCustomer" class="found-customer">
-              <div class="customer-info">
-                <mat-icon>person</mat-icon>
-                <div class="customer-details">
-                  <h4>{{ foundCustomer.name }}</h4>
-                  <p>{{ foundCustomer.email }}</p>
-                  <p>{{ foundCustomer.phone }}</p>
+            <!-- Cart Items -->
+            <div class="cart-items" *ngIf="cartItems.length > 0">
+              <div class="cart-item" *ngFor="let item of cartItems">
+                <div class="item-image">
+                  <img
+                    *ngIf="item.imageUrl"
+                    [src]="item.imageUrl"
+                    [alt]="item.productName"
+                    class="item-image-img"
+                  />
+                  <div *ngIf="!item.imageUrl" class="item-no-image">
+                    <mat-icon>inventory</mat-icon>
+                  </div>
                 </div>
-              </div>
-              <button mat-button color="accent" (click)="clearCustomerSearch()">
-                <mat-icon>clear</mat-icon>
-                Usar outro cliente
-              </button>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Dados do Cliente -->
-        <mat-card class="customer-data-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>person_add</mat-icon>
-              {{ foundCustomer ? 'Dados do Cliente' : 'Novo Cliente' }}
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <form [formGroup]="customerDataForm" class="customer-form">
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Nome Completo *</mat-label>
-                  <input matInput formControlName="name" placeholder="Digite o nome completo">
-                  <mat-icon matSuffix>person</mat-icon>
-                  <mat-error>{{ customerNameError }}</mat-error>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="half-width">
-                  <mat-label>CPF *</mat-label>
-                  <input matInput formControlName="cpf" placeholder="000.000.000-00" 
-                         (input)="onCpfChange($event)" maxlength="14">
-                  <mat-icon matSuffix>badge</mat-icon>
-                  <mat-error>{{ cpfError }}</mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="half-width">
-                  <mat-label>Data de Nascimento</mat-label>
-                  <input matInput type="date" formControlName="birthDate">
-                  <mat-icon matSuffix>calendar_today</mat-icon>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="half-width">
-                  <mat-label>Email *</mat-label>
-                  <input matInput formControlName="email" placeholder="email@exemplo.com">
-                  <mat-icon matSuffix>email</mat-icon>
-                  <mat-error>{{ emailError }}</mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="half-width">
-                  <mat-label>Telefone *</mat-label>
-                  <input matInput formControlName="phone" placeholder="(00) 00000-0000" 
-                         (input)="onPhoneChange($event)" maxlength="15">
-                  <mat-icon matSuffix>phone</mat-icon>
-                  <mat-error>{{ phoneError }}</mat-error>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="half-width">
-                  <mat-label>Gênero</mat-label>
-                  <mat-select formControlName="gender">
-                    <mat-option value="masculino">Masculino</mat-option>
-                    <mat-option value="feminino">Feminino</mat-option>
-                    <mat-option value="outro">Outro</mat-option>
-                    <mat-option value="nao_informar">Não informar</mat-option>
-                  </mat-select>
-                  <mat-icon matSuffix>wc</mat-icon>
-                </mat-form-field>
-              </div>
-            </form>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </div>
-
-    <!-- Etapa 3: Pagamento -->
-    <div *ngIf="currentStep === 3" class="step-content">
-      <mat-card class="payment-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>payment</mat-icon>
-            Forma de Pagamento
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="paymentForm" class="payment-form">
-            <div class="payment-methods">
-              <h3>Selecione a forma de pagamento:</h3>
-              <div class="payment-options">
-                <mat-radio-group formControlName="paymentMethod" class="payment-radio-group">
-                  <mat-radio-button value="pix" class="payment-option">
-                    <div class="payment-option-content">
-                      <mat-icon>account_balance_wallet</mat-icon>
-                      <span>PIX</span>
-                      <small>Pagamento instantâneo</small>
-                    </div>
-                  </mat-radio-button>
-                  
-                  <mat-radio-button value="credit_card" class="payment-option">
-                    <div class="payment-option-content">
-                      <mat-icon>credit_card</mat-icon>
-                      <span>Cartão de Crédito</span>
-                      <small>Parcelado em até 12x</small>
-                    </div>
-                  </mat-radio-button>
-                  
-                  <mat-radio-button value="debit_card" class="payment-option">
-                    <div class="payment-option-content">
-                      <mat-icon>credit_card</mat-icon>
-                      <span>Cartão de Débito</span>
-                      <small>Débito automático</small>
-                    </div>
-                  </mat-radio-button>
-                  
-                  <mat-radio-button value="cash" class="payment-option">
-                    <div class="payment-option-content">
-                      <mat-icon>money</mat-icon>
-                      <span>Dinheiro</span>
-                      <small>Pagamento à vista</small>
-                    </div>
-                  </mat-radio-button>
-                </mat-radio-group>
+                <div class="item-info">
+                  <h4 class="item-name">{{ item.productName }}</h4>
+                  <p class="item-price">
+                    {{ item.productPrice | currency : "BRL" }} cada
+                  </p>
+                </div>
+                <div class="item-controls">
+                  <div class="quantity-controls">
+                    <button
+                      mat-icon-button
+                      (click)="
+                        updateQuantity(item.productId, item.quantity - 1)
+                      "
+                      [disabled]="item.quantity <= 1"
+                      class="quantity-btn"
+                    >
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <span class="quantity">{{ item.quantity }}</span>
+                    <button
+                      mat-icon-button
+                      (click)="
+                        updateQuantity(item.productId, item.quantity + 1)
+                      "
+                      class="quantity-btn"
+                    >
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </div>
+                <div class="item-total">
+                  <span class="total-label">Total:</span>
+                  <span class="total-amount">{{
+                    item.subtotal | currency : "BRL"
+                  }}</span>
+                </div>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="removeItem(item.productId)"
+                  class="remove-btn"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
               </div>
             </div>
 
-            <!-- Desconto -->
-            <div class="discount-section">
-              <h3>Desconto:</h3>
-              <mat-form-field appearance="outline" class="discount-field">
-                <input matInput type="number" formControlName="discount" 
-                       (input)="onDiscountChange()" placeholder="0.00" min="0">
-                <span matPrefix>R$&nbsp;</span>
-              </mat-form-field>
-            </div>
-
-            <!-- Resumo Final -->
-            <div class="final-summary">
-              <h3>Resumo da Compra:</h3>
-              <div class="summary-details">
+            <!-- Cart Summary -->
+            <div class="cart-summary" *ngIf="cartItems.length > 0">
+              <div class="summary-section">
                 <div class="summary-row">
-                  <span>Subtotal:</span>
-                  <span>{{ subtotal | currency:'BRL' }}</span>
-                </div>
-                <div class="summary-row" *ngIf="discount > 0">
-                  <span>Desconto:</span>
-                  <span>-{{ discount | currency:'BRL' }}</span>
+                  <span class="summary-label">Subtotal:</span>
+                  <span class="summary-value">{{
+                    subtotal | currency : "BRL"
+                  }}</span>
                 </div>
                 <div class="summary-row total-row">
-                  <span><strong>Total:</strong></span>
-                  <span class="total-amount">{{ total | currency:'BRL' }}</span>
+                  <span class="summary-label"><strong>Total:</strong></span>
+                  <span class="summary-value total-amount">{{
+                    subtotal | currency : "BRL"
+                  }}</span>
                 </div>
               </div>
             </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    </div>
 
-    <!-- Etapa 4: Confirmação -->
-    <div *ngIf="currentStep === 4" class="step-content">
-      <mat-card class="confirmation-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>check_circle</mat-icon>
-            Confirmação da Compra
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <!-- Dados do Cliente -->
-          <div class="confirmation-section">
-            <h3>Dados do Cliente:</h3>
-            <div class="confirmation-info">
-              <p><strong>Nome:</strong> {{ customerDataForm.get('name')?.value }}</p>
-              <p><strong>Email:</strong> {{ customerDataForm.get('email')?.value }}</p>
-              <p><strong>Telefone:</strong> {{ customerDataForm.get('phone')?.value }}</p>
-              <p><strong>CPF:</strong> {{ customerDataForm.get('cpf')?.value }}</p>
+            <!-- Navigation Buttons -->
+            <div class="navigation-buttons" *ngIf="cartItems.length > 0">
+              <button
+                mat-button
+                (click)="goToSalesPage()"
+                [disabled]="isProcessingSale"
+                class="prev-btn"
+              >
+                <mat-icon>arrow_back</mat-icon>
+                Voltar para Produtos
+              </button>
+
+              <button
+                mat-button
+                (click)="clearCart()"
+                [disabled]="isProcessingSale"
+                class="clear-btn"
+              >
+                <mat-icon>clear</mat-icon>
+                Cancelar Compra
+              </button>
+
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="nextStep()"
+                [disabled]="!canProceedToNextStep() || isProcessingSale"
+                class="next-btn"
+              >
+                <mat-spinner
+                  *ngIf="isProcessingSale"
+                  diameter="20"
+                  class="btn-spinner"
+                ></mat-spinner>
+                <mat-icon *ngIf="!isProcessingSale">arrow_forward</mat-icon>
+                Continuar
+              </button>
             </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Etapa 2: Cliente -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <div class="two-column-layout">
+          <!-- Coluna Esquerda: Resumo dos Produtos -->
+          <div class="left-column">
+            <mat-card class="products-summary-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>shopping_cart</mat-icon>
+                  Produtos Selecionados
+                </mat-card-title>
+                <div class="header-actions">
+                  <button
+                    mat-icon-button
+                    (click)="clearCart()"
+                    [disabled]="isProcessingSale"
+                    class="cancel-purchase-btn"
+                    matTooltip="Cancelar Compra"
+                  >
+                    <mat-icon>clear</mat-icon>
+                  </button>
+                </div>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="cart-items-summary">
+                  <div class="cart-item-summary" *ngFor="let item of cartItems">
+                    <div class="item-image">
+                      <img
+                        *ngIf="item.imageUrl"
+                        [src]="item.imageUrl"
+                        [alt]="item.productName"
+                        class="item-image-img"
+                      />
+                      <div *ngIf="!item.imageUrl" class="item-no-image">
+                        <mat-icon>inventory</mat-icon>
+                      </div>
+                    </div>
+                    <div class="item-info">
+                      <h5 class="item-name">{{ item.productName }}</h5>
+                      <p class="item-details">
+                        {{ item.quantity }}x
+                        {{ item.productPrice | currency : "BRL" }}
+                      </p>
+                    </div>
+                    <div class="item-total">
+                      <span class="total-amount">{{
+                        item.subtotal | currency : "BRL"
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="cart-summary">
+                  <div class="summary-section">
+                    <div class="summary-row total-row">
+                      <span class="summary-label"><strong>Total:</strong></span>
+                      <span class="summary-value total-amount">{{
+                        total | currency : "BRL"
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="navigation-buttons">
+                  <button
+                    mat-button
+                    (click)="previousStep()"
+                    [disabled]="isProcessingSale"
+                    class="prev-btn"
+                  >
+                    <mat-icon>arrow_back</mat-icon>
+                    Voltar
+                  </button>
+
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="nextStep()"
+                    [disabled]="!canProceedToNextStep() || isProcessingSale"
+                    class="next-btn"
+                  >
+                    <mat-spinner
+                      *ngIf="isProcessingSale"
+                      diameter="20"
+                      class="btn-spinner"
+                    ></mat-spinner>
+                    <mat-icon *ngIf="!isProcessingSale">arrow_forward</mat-icon>
+                    Continuar
+                  </button>
+                </div>
+              </mat-card-content>
+            </mat-card>
           </div>
 
-          <!-- Produtos -->
-          <div class="confirmation-section">
-            <h3>Produtos:</h3>
-            <div class="confirmation-items">
-              <div class="confirmation-item" *ngFor="let item of cartItems">
-                <span>{{ item.productName }} x{{ item.quantity }}</span>
-                <span>{{ item.subtotal | currency:'BRL' }}</span>
+          <!-- Coluna Direita: Dados do Cliente -->
+          <div class="right-column">
+            <div class="customer-section">
+              <!-- Busca de Cliente -->
+              <mat-card class="customer-search-card" *ngIf="showCustomerSearch">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>search</mat-icon>
+                    Buscar Cliente Existente
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <form [formGroup]="customerSearchForm" class="search-form">
+                    <div class="search-input-container">
+                      <mat-form-field appearance="outline" class="search-field">
+                        <mat-label>Buscar por nome, email ou CPF</mat-label>
+                        <input
+                          matInput
+                          formControlName="searchTerm"
+                          placeholder="Digite o nome, email ou CPF do cliente"
+                          (input)="onSearchInput($event)"
+                        />
+                        <mat-icon matSuffix>search</mat-icon>
+                      </mat-form-field>
+                      <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="searchCustomer()"
+                        [disabled]="
+                          customerSearchForm.invalid || isSearchingCustomer
+                        "
+                        class="search-button"
+                      >
+                        <mat-spinner
+                          *ngIf="isSearchingCustomer"
+                          diameter="20"
+                        ></mat-spinner>
+                        <mat-icon *ngIf="!isSearchingCustomer">search</mat-icon>
+                        {{ isSearchingCustomer ? "Buscando..." : "Buscar" }}
+                      </button>
+                    </div>
+                  </form>
+
+                  <!-- Cliente Encontrado -->
+                  <div *ngIf="foundCustomer" class="found-customer">
+                    <div class="customer-info">
+                      <mat-icon>person</mat-icon>
+                      <div class="customer-details">
+                        <h4>{{ foundCustomer.name }}</h4>
+                        <p>{{ foundCustomer.email }}</p>
+                        <p>{{ foundCustomer.phone }}</p>
+                      </div>
+                    </div>
+                    <button
+                      mat-button
+                      color="accent"
+                      (click)="clearCustomerSearch()"
+                    >
+                      <mat-icon>clear</mat-icon>
+                      Usar outro cliente
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Dados do Cliente -->
+              <mat-card class="customer-data-card" *ngIf="showCustomerForm">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>person</mat-icon>
+                    {{ foundCustomer ? "Cliente Cadastrado" : "Novo Cliente" }}
+                  </mat-card-title>
+                  <div class="header-actions" *ngIf="!showCustomerSearch">
+                    <button
+                      mat-button
+                      color="primary"
+                      (click)="clearCustomerSearch()"
+                      class="search-customer-btn"
+                    >
+                      <mat-icon>search</mat-icon>
+                      Buscar Outro Cliente
+                    </button>
+                  </div>
+                </mat-card-header>
+                <mat-card-content>
+                  <!-- Se cliente já tem cadastro, mostrar apenas nome e CPF -->
+                  <div *ngIf="foundCustomer" class="existing-customer-info">
+                    <div class="customer-status">
+                      <mat-icon class="status-icon">check_circle</mat-icon>
+                      <span class="status-text"
+                        >Cliente já possui cadastro</span
+                      >
+                    </div>
+                    <div class="customer-details-display">
+                      <div class="detail-row">
+                        <span class="detail-label">Nome:</span>
+                        <span class="detail-value">{{
+                          foundCustomer.name
+                        }}</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">CPF:</span>
+                        <span class="detail-value">{{
+                          foundCustomer.cpf
+                        }}</span>
+                      </div>
+                      <div class="detail-row" *ngIf="foundCustomer.email">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">{{
+                          foundCustomer.email
+                        }}</span>
+                      </div>
+                      <div class="detail-row" *ngIf="foundCustomer.phone">
+                        <span class="detail-label">Telefone:</span>
+                        <span class="detail-value">{{
+                          foundCustomer.phone
+                        }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Se é novo cliente, mostrar formulário completo -->
+                  <form
+                    *ngIf="!foundCustomer"
+                    [formGroup]="customerDataForm"
+                    class="customer-form"
+                  >
+                    <div class="form-row">
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Nome Completo *</mat-label>
+                        <input
+                          matInput
+                          formControlName="name"
+                          placeholder="Digite o nome completo"
+                        />
+                        <mat-icon matSuffix>person</mat-icon>
+                        <mat-error>{{ customerNameError }}</mat-error>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Nome do Vendedor *</mat-label>
+                        <input
+                          matInput
+                          formControlName="salespersonName"
+                          placeholder="Nome do vendedor responsável"
+                          [value]="authenticatedUser?.fullName || authenticatedUser?.displayName || authenticatedUser?.email"
+                        />
+                        <mat-icon matSuffix>store</mat-icon>
+                        <mat-error>{{ customerDataForm.get('salespersonName')?.errors ? 'Nome do vendedor é obrigatório' : '' }}</mat-error>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>CPF *</mat-label>
+                        <input
+                          matInput
+                          formControlName="cpf"
+                          placeholder="000.000.000-00"
+                          (input)="onCpfChange($event)"
+                          maxlength="14"
+                        />
+                        <mat-icon matSuffix>badge</mat-icon>
+                        <mat-error>{{ cpfError }}</mat-error>
+                      </mat-form-field><mat-form-field appearance="outline" class="half-width">
+                        <input
+                          matInput
+                          type="date"
+                          formControlName="birthDate"
+                          placeholder="Data de Nascimento"
+                        />
+                        <mat-icon matSuffix>calendar_today</mat-icon>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Email *</mat-label>
+                        <input
+                          matInput
+                          formControlName="email"
+                          placeholder="email@exemplo.com"
+                        />
+                        <mat-icon matSuffix>email</mat-icon>
+                        <mat-error>{{ emailError }}</mat-error>
+                      </mat-form-field><mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Telefone *</mat-label>
+                        <input
+                          matInput
+                          formControlName="phone"
+                          placeholder="(00) 00000-0000"
+                          (input)="onPhoneChange($event)"
+                          maxlength="15"
+                        />
+                        <mat-icon matSuffix>phone</mat-icon>
+                        <mat-error>{{ phoneError }}</mat-error>
+                      </mat-form-field>
+                    </div>
+                  </form>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapa 3: Pagamento -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <mat-card class="payment-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>payment</mat-icon>
+              Forma de Pagamento
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="paymentForm" class="payment-form">
+              <div class="payment-methods">
+                <h3>Selecione a forma de pagamento:</h3>
+                <div class="payment-options">
+                  <mat-radio-group
+                    formControlName="paymentMethod"
+                    class="payment-radio-group"
+                  >
+                    <mat-radio-button value="pix" class="payment-option">
+                      <div class="payment-option-content">
+                        <mat-icon>account_balance_wallet</mat-icon>
+                        <span>PIX</span>
+                      </div>
+                    </mat-radio-button>
+
+                    <mat-radio-button
+                      value="credit_card"
+                      class="payment-option"
+                    >
+                      <div class="payment-option-content">
+                        <mat-icon>credit_card</mat-icon>
+                        <span>Cartão de Crédito</span>
+                      </div>
+                    </mat-radio-button>
+
+                    <mat-radio-button value="debit_card" class="payment-option">
+                      <div class="payment-option-content">
+                        <mat-icon>credit_card</mat-icon>
+                        <span>Cartão de Débito</span>
+                      </div>
+                    </mat-radio-button>
+
+                    <mat-radio-button value="cash" class="payment-option">
+                      <div class="payment-option-content">
+                        <mat-icon>money</mat-icon>
+                        <span>Dinheiro</span>
+                      </div>
+                    </mat-radio-button>
+                  </mat-radio-group>
+                </div>
+              </div>
+
+              <!-- Desconto -->
+              <div class="discount-section">
+                <h3>Desconto:</h3>
+                <mat-form-field appearance="outline" class="discount-field">
+                  <input
+                    matInput
+                    type="number"
+                    formControlName="discount"
+                    (input)="onDiscountChange()"
+                    placeholder="0.00"
+                    min="0"
+                  />
+                  <span matTextPrefix>R$&nbsp;</span>
+                </mat-form-field>
+              </div>
+
+              <!-- Resumo Final -->
+              <div class="final-summary">
+                <h3>Resumo da Compra:</h3>
+                <div class="summary-details">
+                  <div class="summary-section">
+                    <div class="summary-row">
+                      <span class="summary-label">Subtotal:</span>
+                      <span class="summary-value">{{
+                        subtotal | currency : "BRL"
+                      }}</span>
+                    </div>
+                    <div class="summary-row" *ngIf="discount > 0">
+                      <span class="summary-label">Desconto:</span>
+                      <span class="summary-value"
+                        >-{{ discount | currency : "BRL" }}</span
+                      >
+                    </div>
+                    <div class="summary-row total-row">
+                      <span class="summary-label"><strong>Total:</strong></span>
+                      <span class="summary-value total-amount">{{
+                        total | currency : "BRL"
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Navigation Buttons -->
+              <div class="navigation-buttons">
+                <button
+                  mat-button
+                  (click)="previousStep()"
+                  [disabled]="isProcessingSale"
+                  class="prev-btn"
+                >
+                  <mat-icon>arrow_back</mat-icon>
+                  Voltar
+                </button>
+
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="nextStep()"
+                  [disabled]="!canProceedToNextStep() || isProcessingSale"
+                  class="next-btn"
+                >
+                  <mat-spinner
+                    *ngIf="isProcessingSale"
+                    diameter="20"
+                    class="btn-spinner"
+                  ></mat-spinner>
+                  <mat-icon *ngIf="!isProcessingSale">arrow_forward</mat-icon>
+                  Continuar
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Etapa 4: Confirmação -->
+      <div *ngIf="currentStep === 4" class="step-content">
+        <mat-card class="confirmation-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>check_circle</mat-icon>
+              Confirmação da Compra
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <!-- Dados do Cliente -->
+            <div class="confirmation-section">
+              <h3>Dados do Cliente:</h3>
+              <div class="confirmation-info">
+                <p>
+                  <strong>Nome:</strong>
+                  {{ customerDataForm.get("name")?.value }}
+                </p>
+                <p>
+                  <strong>Email:</strong>
+                  {{ customerDataForm.get("email")?.value }}
+                </p>
+                <p>
+                  <strong>Telefone:</strong>
+                  {{ customerDataForm.get("phone")?.value }}
+                </p>
+                <p>
+                  <strong>CPF:</strong> {{ customerDataForm.get("cpf")?.value }}
+                </p>
+                <p>
+                  <strong>Vendedor:</strong> {{ customerDataForm.get("salespersonName")?.value }}
+                </p>
               </div>
             </div>
-          </div>
 
-          <!-- Pagamento -->
-          <div class="confirmation-section">
-            <h3>Pagamento:</h3>
-            <div class="confirmation-info">
-              <p><strong>Forma:</strong> {{ getPaymentMethodDisplayName(paymentForm.get('paymentMethod')?.value) }}</p>
-              <p><strong>Desconto:</strong> {{ discount | currency:'BRL' }}</p>
-              <p><strong>Total:</strong> {{ total | currency:'BRL' }}</p>
+            <!-- Produtos -->
+            <div class="confirmation-section">
+              <h3>Produtos:</h3>
+              <div class="confirmation-items">
+                <div class="confirmation-item" *ngFor="let item of cartItems">
+                  <span>{{ item.productName }} x{{ item.quantity }}</span>
+                  <span>{{ item.subtotal | currency : "BRL" }}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
+
+            <!-- Pagamento -->
+            <div class="confirmation-section">
+              <h3>Pagamento:</h3>
+              <div class="confirmation-info">
+                <p>
+                  <strong>Forma:</strong>
+                  {{
+                    getPaymentMethodDisplayName(
+                      paymentForm.get("paymentMethod")?.value
+                    )
+                  }}
+                </p>
+                <p>
+                  <strong>Desconto:</strong> {{ discount | currency : "BRL" }}
+                </p>
+                <p><strong>Total:</strong> {{ total | currency : "BRL" }}</p>
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="confirmation-actions">
+              <button
+                mat-raised-button
+                color="warn"
+                (click)="previousStep()"
+                class="cancel-btn"
+              >
+                <mat-icon>arrow_back</mat-icon>
+                Voltar
+              </button>
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="finalizePurchase()"
+                [disabled]="isProcessing"
+                class="finalize-btn"
+              >
+                <mat-icon *ngIf="!isProcessing">check_circle</mat-icon>
+                <mat-spinner *ngIf="isProcessing" diameter="20"></mat-spinner>
+                {{ isProcessing ? 'Finalizando...' : 'Finalizar Compra' }}
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
+
   </div>
-
-  <!-- Navigation Buttons -->
-  <div class="navigation-buttons">
-    <button mat-button (click)="previousStep()" 
-            [disabled]="currentStep === 1" class="prev-btn">
-      <mat-icon>arrow_back</mat-icon>
-      Voltar
-    </button>
-
-    <button mat-button (click)="clearCart()" 
-            [disabled]="isProcessingSale" class="clear-btn">
-      <mat-icon>clear</mat-icon>
-      Cancelar Compra
-    </button>
-
-    <button mat-raised-button color="primary" 
-            (click)="currentStep === 4 ? confirmPurchase() : nextStep()"
-            [disabled]="!canProceedToNextStep() || isProcessingSale" 
-            class="next-btn">
-      <mat-spinner *ngIf="isProcessingSale" diameter="20" class="btn-spinner"></mat-spinner>
-      <mat-icon *ngIf="!isProcessingSale">
-        {{ currentStep === 4 ? 'check' : 'arrow_forward' }}
-      </mat-icon>
-      {{ isProcessingSale ? 'Processando...' : 
-         currentStep === 4 ? 'Confirmar Compra' : 'Continuar' }}
-    </button>
-  </div>
-</div>
 </app-navigation-admin>

@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, getDocs, query, where, doc, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { Observable, from } from 'rxjs';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface PreRegistration {
-  id?: string;
+  id?: string; // UUID4 gerado
+  firebaseDocumentId?: string; // Document ID do Firebase (mesmo que UUID4)
   cpf: string;
   email: string;
   phone: string;
@@ -18,12 +20,6 @@ export interface PreRegistration {
   updatedAt: Date;
   isCompleted: boolean;
   authUid?: string; // UID do Firebase Auth quando completar o cadastro
-  sales?: Array<{
-    saleId: string;
-    date: Date;
-    amount: number;
-    items: any[];
-  }>;
 }
 
 @Injectable({
@@ -35,16 +31,20 @@ export class PreRegistrationService {
   constructor(private firestore: Firestore) { }
 
   // Criar pré-cadastro
-  createPreRegistration(data: Omit<PreRegistration, 'id' | 'createdAt' | 'updatedAt' | 'isCompleted' | 'sales'>): Observable<string> {
+  createPreRegistration(data: Omit<PreRegistration, 'id' | 'firebaseDocumentId' | 'createdAt' | 'updatedAt' | 'isCompleted'>): Observable<string> {
+    const generatedUuid = uuidv4(); // Gerar UID4 para usar como document ID
     const preRegistration: PreRegistration = {
       ...data,
+      id: generatedUuid, // UUID4 gerado
+      firebaseDocumentId: generatedUuid, // Mesmo UUID4 como document ID
       createdAt: new Date(),
       updatedAt: new Date(),
-      isCompleted: false,
-      sales: []
+      isCompleted: false
     };
 
-    return from(addDoc(collection(this.firestore, this.collectionName), preRegistration).then(doc => doc.id));
+    // Usar setDoc com o UUID4 como document ID ao invés de addDoc
+    const docRef = doc(this.firestore, this.collectionName, generatedUuid);
+    return from(setDoc(docRef, preRegistration).then(() => generatedUuid));
   }
 
   // Buscar pré-cadastro por CPF
@@ -54,7 +54,7 @@ export class PreRegistrationService {
         .then(snapshot => {
           if (snapshot.empty) return null;
           const doc = snapshot.docs[0];
-          return { id: doc.id, ...doc.data() } as PreRegistration;
+          return { id: doc.id, firebaseDocumentId: doc.id, ...doc.data() } as PreRegistration;
         })
     );
   }
@@ -66,12 +66,12 @@ export class PreRegistrationService {
         .then(snapshot => {
           if (snapshot.empty) return null;
           const doc = snapshot.docs[0];
-          return { id: doc.id, ...doc.data() } as PreRegistration;
+          return { id: doc.id, firebaseDocumentId: doc.id, ...doc.data() } as PreRegistration;
         })
     );
   }
 
-  // Atualizar pré-cadastro
+  // Atualizar pré-cadastro por UUID (que agora é o document ID)
   updatePreRegistration(id: string, data: Partial<PreRegistration>): Observable<void> {
     const updateData = {
       ...data,
@@ -80,7 +80,7 @@ export class PreRegistrationService {
     return from(updateDoc(doc(this.firestore, this.collectionName, id), updateData));
   }
 
-  // Completar cadastro (vincular com Auth UID)
+  // Completar cadastro (vincular com Auth UID) por UUID
   completeRegistration(id: string, authUid: string, additionalData?: Partial<PreRegistration>): Observable<void> {
     const updateData = {
       authUid,
@@ -91,38 +91,6 @@ export class PreRegistrationService {
     return from(updateDoc(doc(this.firestore, this.collectionName, id), updateData));
   }
 
-  // Adicionar venda ao histórico
-  addSaleToHistory(cpf: string, saleData: any): Observable<void> {
-    return new Observable(observer => {
-      this.getPreRegistrationByCpf(cpf).subscribe({
-        next: (preReg) => {
-          if (preReg && preReg.id) {
-            const updatedSales = [...(preReg.sales || []), saleData];
-            this.updatePreRegistration(preReg.id, { sales: updatedSales }).subscribe({
-              next: () => observer.next(),
-              error: (error) => observer.error(error)
-            });
-          } else {
-            observer.next();
-          }
-        },
-        error: (error) => observer.error(error)
-      });
-    });
-  }
-
-  // Buscar histórico de vendas
-  getSalesHistory(cpf: string): Observable<any[]> {
-    return new Observable(observer => {
-      this.getPreRegistrationByCpf(cpf).subscribe({
-        next: (preReg) => {
-          observer.next(preReg?.sales || []);
-          observer.complete();
-        },
-        error: (error) => observer.error(error)
-      });
-    });
-  }
 
   // Listar todos os pré-cadastros
   getAllPreRegistrations(): Observable<PreRegistration[]> {
@@ -131,13 +99,14 @@ export class PreRegistrationService {
         .then(snapshot => {
           return snapshot.docs.map(doc => ({
             id: doc.id,
+            firebaseDocumentId: doc.id,
             ...doc.data()
           })) as PreRegistration[];
         })
     );
   }
 
-  // Deletar pré-cadastro
+  // Deletar pré-cadastro por UUID
   deletePreRegistration(id: string): Observable<void> {
     return from(deleteDoc(doc(this.firestore, this.collectionName, id)));
   }
