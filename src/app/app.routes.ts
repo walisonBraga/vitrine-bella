@@ -7,6 +7,7 @@ import { ProductDetailComponent } from './core/product-detail/product-detail.com
 import { FavoritesComponent } from './core/favorites/favorites.component';
 import { CartComponent } from './cart/cart.component';
 import { EnderecoComponent } from './checkout/endereco/endereco.component';
+import { EntregaComponent } from './checkout/entrega/entrega.component';
 import { OrdersComponent } from './core/orders/orders.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { AdminGuard } from './core/guards/admin.guard';
@@ -49,6 +50,11 @@ export const routes: Routes = [
   {
     path: 'checkout/endereco',
     component: EnderecoComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'checkout/entrega',
+    component: EntregaComponent,
     canActivate: [AuthGuard]
   },
   {

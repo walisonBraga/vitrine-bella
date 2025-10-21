@@ -1,0 +1,169 @@
+<div class="entrega-container">
+  <app-navbar-home></app-navbar-home>
+
+  <!-- Barra de progresso -->
+  <div class="progress-bar">
+    <div class="progress-step completed">
+      <mat-icon>shopping_cart</mat-icon>
+      <span>Carrinho</span>
+    </div>
+    <div class="progress-line completed"></div>
+    <div class="progress-step completed">
+      <mat-icon>location_on</mat-icon>
+      <span>Endereço</span>
+    </div>
+    <div class="progress-line completed"></div>
+    <div class="progress-step active">
+      <mat-icon>local_shipping</mat-icon>
+      <span>Entrega</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>payment</mat-icon>
+      <span>Pagamento</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>visibility</mat-icon>
+      <span>Confirmação</span>
+    </div>
+    <div class="progress-line"></div>
+    <div class="progress-step">
+      <mat-icon>check</mat-icon>
+      <span>Concluir</span>
+    </div>
+  </div>
+
+  <div class="entrega-content">
+    <!-- Coluna esquerda - Opções de entrega -->
+    <div class="delivery-column">
+        <mat-card class="delivery-card">
+          <h2>Endereço selecionado:</h2>
+          <div class="selected-address">
+            <p>
+              {{ selectedAddress.logradouro }}, {{ selectedAddress.bairro }} - 
+              {{ selectedAddress.cidade }}/{{ selectedAddress.uf }} - 
+              CEP: {{ selectedAddress.cep }}
+            </p>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <h2>Selecione o tipo de entrega</h2>
+
+          <!-- Informações do vendedor -->
+          <div class="seller-info">
+            <span>Vendido e entregue por:</span>
+            <strong>vitrineBella</strong>
+          </div>
+
+          <!-- Loading spinner -->
+          <div *ngIf="isLoadingFrete" class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Calculando opções de frete...</p>
+          </div>
+
+          <!-- Opções de entrega -->
+          <form [formGroup]="deliveryForm" class="delivery-form" *ngIf="!isLoadingFrete">
+            <div class="delivery-options">
+              <div 
+                *ngFor="let option of deliveryOptions" 
+                class="delivery-option"
+                [class.selected]="selectedDelivery?.id === option.id"
+                (click)="selectDelivery(option)"
+              >
+                <mat-radio-button 
+                  [value]="option.id"
+                  [checked]="selectedDelivery?.id === option.id"
+                  (change)="selectDelivery(option)"
+                  class="delivery-radio"
+                >
+                </mat-radio-button>
+                
+                <div class="option-info">
+                  <div class="option-name">
+                    {{ option.name }}
+                  </div>
+                  <div class="option-date">
+                    Chegará até: {{ calculateDeliveryDate(option.estimatedDays) }}
+                  </div>
+                </div>
+                
+                <div class="option-price">
+                  {{ formatPrice(option.price) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Nota importante -->
+            <div class="delivery-note">
+              <small>
+                <mat-icon>info</mat-icon>
+                *Mediante a confirmação de pagamento <span class="highlight">até às 12 horas</span>.
+              </small>
+            </div>
+          </form>
+        </mat-card>
+    </div>
+
+    <!-- Coluna direita - Resumo -->
+    <div class="summary-column">
+        <mat-card class="summary-card">
+          <h2>
+            <mat-icon>receipt</mat-icon>
+            RESUMO
+          </h2>
+          <mat-divider></mat-divider>
+
+          <div class="summary-row">
+            <span>Valor dos Produtos:</span>
+            <span>{{ formatPrice(cart.totalPrice) }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Frete:</span>
+            <span>{{ formatPrice(selectedDelivery?.price || 0) }}</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total a prazo:</span>
+            <span>{{ formatPrice(getTotalWithShipping()) }}</span>
+          </div>
+
+          <div class="installment-info">
+            <p>(em até 10x de {{ formatPrice(getInstallmentValue()) }} sem juros)</p>
+          </div>
+
+          <div class="pix-discount">
+            <div class="summary-row">
+              <span>Valor à vista no PIX:</span>
+              <span class="pix-price">{{ formatPrice(getPixPrice()) }}</span>
+            </div>
+            <div class="savings-info">
+              <p>(Economize: {{ formatPrice(getPixSavings()) }})</p>
+            </div>
+          </div>
+
+          <!-- Botões de ação -->
+          <div class="action-buttons">
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="continuar()" 
+              class="continue-btn"
+              [disabled]="!selectedDelivery"
+            >
+              CONTINUAR
+            </button>
+            <button 
+              mat-button 
+              (click)="voltar()" 
+              class="back-btn"
+            >
+              VOLTAR
+            </button>
+          </div>
+        </mat-card>
+    </div>
+  </div>
+</div>

@@ -128,6 +128,10 @@
     .edit-btn {
       color: #ff6b35;
     }
+
+    .delete-btn {
+      color: #f44336;
+    }
   }
 }
 
@@ -223,6 +227,99 @@
 
       @media (max-width: 768px) {
         width: 100%;
+      }
+    }
+  }
+}
+
+// Modal de editar endereço
+.edit-address-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: auto;
+    overflow-y: auto;
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+
+      h3 {
+        margin: 0;
+        color: #333;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      button {
+        color: #666;
+      }
+    }
+
+    .address-form {
+      .form-row {
+        display: flex;
+        gap: 15px;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+
+      .half-width {
+        flex: 1;
+
+        @media (max-width: 768px) {
+          flex: none;
+        }
+      }
+
+      mat-form-field {
+        width: 100%;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      button {
+        min-width: 120px;
+
+        @media (max-width: 768px) {
+          width: 100%;
+        }
+      }
+
+      button[color="warn"] {
+        margin-right: auto;
       }
     }
   }
@@ -395,4 +492,16 @@
     flex-direction: column;
     gap: 8px;
   }
+}
+
+// Badge para endereço padrão
+.default-badge {
+  background: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-right: 8px;
+  text-transform: uppercase;
 }
