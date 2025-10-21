@@ -235,19 +235,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       // Buscar primeiro nos users (todos os usuários, não apenas os da loja)
       this.lojaUsersService.getAllUsers().subscribe({
         next: (users: any[]) => {
-          console.log('🔍 Buscando usuários. Total encontrado:', users.length);
-          console.log('🔍 Termo de busca:', searchTerm);
-
           const customerUsers = users.filter((user: any) =>
             user.userRole === 'cliente' ||
             user.cpf ||
             user.email
           );
-
-          console.log('🔍 Usuários com dados de cliente:', customerUsers.length);
-          customerUsers.forEach(user => {
-            console.log(`👤 Usuário: ${user.fullName}, CPF: ${user.cpf}, Email: ${user.email}`);
-          });
 
           const foundUser = customerUsers.find((user: any) => {
             // Buscar por CPF
@@ -255,23 +247,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
               const cleanSearchTerm = searchTerm.replace(/[.\-\s]/g, '');
               const cleanUserCpf = user.cpf ? user.cpf.replace(/[.\-\s]/g, '') : '';
 
-              console.log(`🔍 Comparando CPF - Busca: "${cleanSearchTerm}" vs Usuário: "${cleanUserCpf}"`);
-
               if (cleanUserCpf && cleanUserCpf.includes(cleanSearchTerm)) {
-                console.log('✅ CPF encontrado!', user.cpf);
                 return true;
               }
             }
 
             // Buscar por email
             if (user.email && user.email.toLowerCase().includes(searchTerm)) {
-              console.log('✅ Email encontrado!', user.email);
               return true;
             }
 
             // Buscar por nome
             if (user.fullName && user.fullName.toLowerCase().includes(searchTerm)) {
-              console.log('✅ Nome encontrado!', user.fullName);
               return true;
             }
             return false;
@@ -467,11 +454,36 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.preRegistrationService.createPreRegistration(preRegistrationData).subscribe({
       next: (preRegId) => {
         // Processar venda sem vincular ao pré-registro (apenas dados do cliente salvos no pré-registro)
-        this.processSale();
+        this.processSale()
+          .then(() => {
+            // Limpar tudo após venda concluída
+            this.clearAllData();
+
+            // Mostrar mensagem de sucesso
+            this.snackBar.open('Venda finalizada com sucesso!', 'Fechar', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+
+            // Voltar para a tela de vendas internas
+            setTimeout(() => {
+              this.router.navigate(['/admin/internal-sales']);
+            }, 1500);
+          })
+          .catch((error: any) => {
+            console.error('Erro ao processar venda:', error);
+            this.snackBar.open('Erro ao processar venda. Tente novamente.', 'Fechar', { duration: 3000 });
+          })
+          .finally(() => {
+            this.isProcessing = false;
+            this.isProcessingSale = false;
+            this.isCreatingPreRegistration = false;
+          });
       },
       error: (error) => {
         console.error('Erro ao criar pré-cadastro:', error);
         this.snackBar.open('Erro ao criar pré-cadastro. Tente novamente.', 'Fechar', { duration: 3000 });
+        this.isProcessing = false;
         this.isProcessingSale = false;
         this.isCreatingPreRegistration = false;
       }
@@ -515,30 +527,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     this.isProcessing = true;
 
-    // Processar a venda
-    this.processSale()
-      .then(() => {
-        // Limpar tudo após venda concluída
-        this.clearAllData();
-
-        // Mostrar mensagem de sucesso
-        this.snackBar.open('Venda finalizada com sucesso!', 'Fechar', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-
-        // Voltar para a tela de vendas internas
-        setTimeout(() => {
-          this.router.navigate(['/admin/internal-sales']);
-        }, 1500);
-      })
-      .catch((error: any) => {
-        console.error('Erro ao finalizar venda:', error);
-        this.snackBar.open('Erro ao finalizar venda. Tente novamente.', 'Fechar', { duration: 3000 });
-      })
-      .finally(() => {
-        this.isProcessing = false;
-      });
+    // Usar confirmPurchase para criar pré-registration se necessário
+    this.confirmPurchase();
   }
 
   clearAllData(): void {

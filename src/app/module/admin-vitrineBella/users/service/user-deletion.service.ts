@@ -23,20 +23,18 @@ export class UserDeletionService {
     try {
       // 1. Excluir do Firestore primeiro
       await deleteDoc(doc(this.firestore, 'users', uid));
-      console.log(`✅ Usuário ${uid} excluído do Firestore`);
 
       // 2. Tentar excluir do Firebase Authentication via Cloud Function
       if (this.functions) {
         try {
           const deleteUserFunction = httpsCallable(this.functions, 'deleteUser');
           await deleteUserFunction({ uid });
-          console.log(`✅ Usuário ${uid} excluído do Firebase Authentication`);
         } catch (functionError) {
-          console.warn('⚠️ Cloud Function falhou, apenas Firestore foi excluído');
+          console.warn('Cloud Function falhou, apenas Firestore foi excluído');
         }
       } else {
-        console.warn('⚠️ Firebase Functions não configurado');
-        console.warn('📝 Para exclusão completa, configure Cloud Functions ou exclua manualmente do Firebase Console');
+        console.warn('Firebase Functions não configurado');
+        console.warn('Para exclusão completa, configure Cloud Functions ou exclua manualmente do Firebase Console');
         console.warn('🔗 Acesse: Firebase Console > Authentication > Users');
       }
 

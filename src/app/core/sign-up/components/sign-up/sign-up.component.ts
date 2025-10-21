@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../../auth/auth.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { NavbarHomeComponent } from "../../../navbar-home/components/navbar-home/navbar-home.component";
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
@@ -210,19 +211,6 @@ export class SignUpComponent implements OnInit {
     return null;
   }
 
-  private async transferSalesHistory(userId: string, salesHistory: any[]): Promise<void> {
-    try {
-      // Atualizar o usuário com o histórico de vendas
-      await this.lojaUsersService.updateUser(userId, {
-        salesHistory: salesHistory
-      });
-
-      console.log('Histórico de vendas transferido com sucesso');
-    } catch (error) {
-      console.error('Erro ao transferir histórico de vendas:', error);
-      throw error;
-    }
-  }
 
   private checkIfNeedsCpfVerification(): void {
     const queryParams = this.route.snapshot.queryParams;
@@ -304,22 +292,27 @@ export class SignUpComponent implements OnInit {
       // Salvar informações do usuário no Firestore
       await this.authService.saveUserInfo(userData);
 
-      // Se for um pré-cadastro, transferir histórico de vendas e excluir pré-cadastro
+      // Se for um pré-cadastro, excluir pré-cadastro após cadastro completo
       if (this.foundPreRegistration) {
         try {
-          if (this.foundPreRegistration.sales && this.foundPreRegistration.sales.length > 0) {
-            // Transferir histórico de vendas para o usuário final
-            await this.transferSalesHistory(userId, this.foundPreRegistration.sales);
-          }
-
           // Excluir pré-cadastro do Firestore após cadastro completo
-          if (this.foundPreRegistration.id || this.foundPreRegistration.firebaseDocumentId) {
-            const preRegistrationId = this.foundPreRegistration.id || this.foundPreRegistration.firebaseDocumentId;
-            await this.preRegistrationService.deletePreRegistration(preRegistrationId);
-            console.log('✅ Pré-cadastro excluído com sucesso após cadastro completo');
+          const preRegistrationId = this.foundPreRegistration.id || this.foundPreRegistration.firebaseDocumentId;
+
+          if (preRegistrationId) {
+            // Usar firstValueFrom para converter Observable para Promise
+            await firstValueFrom(this.preRegistrationService.deletePreRegistration(preRegistrationId));
+            this.snackBar.open('Pré-cadastro convertido para cadastro completo com sucesso!', 'Fechar', {
+              duration: 4000,
+              panelClass: ['success-snackbar']
+            });
           }
         } catch (error) {
-          console.error('Erro ao transferir histórico de vendas ou excluir pré-cadastro:', error);
+          console.error('Erro ao excluir pré-cadastro:', error);
+          // Não bloquear o cadastro se houver erro na exclusão do pré-cadastro
+          this.snackBar.open('Cadastro realizado, mas houve um problema ao processar o pré-cadastro anterior.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['warning-snackbar']
+          });
         }
       }
 
@@ -397,20 +390,17 @@ export class SignUpComponent implements OnInit {
           this.preRegistrationService.getPreRegistrationByCpf(cpf).subscribe({
             next: (preRegistration: any) => {
               if (preRegistration) {
-                // Pré-cadastro encontrado - preencher formulário automaticamente
-                this.foundPreRegistration = preRegistration;
-                this.snackBar.open('Pré-cadastro encontrado! Dados preenchidos automaticamente.', 'Fechar', { duration: 3000 });
-
-                // Armazenar dados do pré-cadastro para exclusão posterior
+                // Pré-cadastro encontrado - armazenar dados para exclusão posterior
                 this.foundPreRegistration = {
                   id: preRegistration.id,
                   firebaseDocumentId: preRegistration.firebaseDocumentId,
                   name: preRegistration.name,
                   cpf: preRegistration.cpf,
                   email: preRegistration.email,
-                  phone: preRegistration.phone,
-                  sales: preRegistration.sales || []
+                  phone: preRegistration.phone
                 };
+
+                this.snackBar.open('Pré-cadastro encontrado! Dados preenchidos automaticamente.', 'Fechar', { duration: 3000 });
 
                 // Preencher formulário com dados do pré-cadastro
                 this.signUpForm.patchValue({
@@ -421,10 +411,12 @@ export class SignUpComponent implements OnInit {
                 });
 
                 // Marcar campos como readonly se necessário
+                this.signUpForm.get('nome')?.disable();
                 this.signUpForm.get('cpf')?.disable();
                 this.signUpForm.get('email')?.disable();
+                this.signUpForm.get('telefone')?.disable();
 
-                this.closeCpfModal();
+                this.closeCpfModalWithoutResettingPreRegistration();
               } else {
                 // Nenhum pré-cadastro encontrado - preencher CPF automaticamente e permitir cadastro normal
                 this.snackBar.open('Nenhum pré-cadastro encontrado. CPF preenchido automaticamente.', 'Fechar', { duration: 3000 });
@@ -462,7 +454,14 @@ export class SignUpComponent implements OnInit {
     this.foundPreRegistration = null;
   }
 
+  closeCpfModalWithoutResettingPreRegistration(): void {
+    this.showCpfModal = false;
+    this.cpfVerificationForm.reset();
+    // NÃO resetar foundPreRegistration para preservar os dados para exclusão
+  }
+
   goToHome(): void {
     this.router.navigate(['/home']);
   }
+
 }

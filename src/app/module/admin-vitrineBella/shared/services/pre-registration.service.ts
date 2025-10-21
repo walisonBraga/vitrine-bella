@@ -42,9 +42,14 @@ export class PreRegistrationService {
       isCompleted: false
     };
 
+
     // Usar setDoc com o UUID4 como document ID ao invés de addDoc
     const docRef = doc(this.firestore, this.collectionName, generatedUuid);
-    return from(setDoc(docRef, preRegistration).then(() => generatedUuid));
+    return from(setDoc(docRef, preRegistration).then(() => {
+      return generatedUuid;
+    }).catch((error) => {
+      throw error;
+    }));
   }
 
   // Buscar pré-cadastro por CPF
@@ -52,7 +57,36 @@ export class PreRegistrationService {
     return from(
       getDocs(query(collection(this.firestore, this.collectionName), where('cpf', '==', cpf)))
         .then(snapshot => {
-          if (snapshot.empty) return null;
+          if (snapshot.empty) {
+            // Tentar buscar com formatação se o CPF estiver limpo
+            if (cpf.length === 11 && !cpf.includes('.')) {
+              const cpfFormatted = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+
+              return getDocs(query(collection(this.firestore, this.collectionName), where('cpf', '==', cpfFormatted)))
+                .then(snapshotFormatted => {
+                  if (snapshotFormatted.empty) {
+                    return null;
+                  }
+                  const doc = snapshotFormatted.docs[0];
+                  return { id: doc.id, firebaseDocumentId: doc.id, ...doc.data() } as PreRegistration;
+                });
+            }
+
+            // Tentar buscar sem formatação se o CPF estiver formatado
+            const cpfClean = cpf.replace(/\D/g, '');
+            if (cpfClean !== cpf) {
+              return getDocs(query(collection(this.firestore, this.collectionName), where('cpf', '==', cpfClean)))
+                .then(snapshotClean => {
+                  if (snapshotClean.empty) {
+                    return null;
+                  }
+                  const doc = snapshotClean.docs[0];
+                  return { id: doc.id, firebaseDocumentId: doc.id, ...doc.data() } as PreRegistration;
+                });
+            }
+
+            return null;
+          }
           const doc = snapshot.docs[0];
           return { id: doc.id, firebaseDocumentId: doc.id, ...doc.data() } as PreRegistration;
         })
@@ -108,6 +142,7 @@ export class PreRegistrationService {
 
   // Deletar pré-cadastro por UUID
   deletePreRegistration(id: string): Observable<void> {
-    return from(deleteDoc(doc(this.firestore, this.collectionName, id)));
+    const docRef = doc(this.firestore, this.collectionName, id);
+    return from(deleteDoc(docRef));
   }
 }

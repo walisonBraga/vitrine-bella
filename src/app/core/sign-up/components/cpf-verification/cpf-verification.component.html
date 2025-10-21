@@ -21,11 +21,13 @@
         </mat-form-field>
 
         <div class="action-buttons">
-          <button mat-raised-button color="primary" type="submit" 
+          <button mat-raised-button color="primary" type="submit"
                   [disabled]="cpfForm.invalid || isVerifying" class="verify-btn">
-            <mat-spinner *ngIf="isVerifying" diameter="20" class="btn-spinner"></mat-spinner>
-            <mat-icon *ngIf="!isVerifying">search</mat-icon>
-            {{ isVerifying ? 'Verificando...' : 'Verificar Pré-cadastro' }}
+            <div class="btn-content">
+              <mat-spinner *ngIf="isVerifying" diameter="20" class="btn-spinner"></mat-spinner>
+              <mat-icon *ngIf="!isVerifying" class="btn-icon">search</mat-icon>
+              <span class="btn-text">{{ isVerifying ? 'Verificando...' : 'Verificar Pré-cadastro' }}</span>
+            </div>
           </button>
         </div>
       </form>
