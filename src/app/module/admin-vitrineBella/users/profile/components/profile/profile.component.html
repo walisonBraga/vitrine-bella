@@ -1,14 +1,6 @@
 <app-navigation-admin>
   <!-- Conteúdo principal -->
   <div class="profile-container">
-    <!-- Header MEUS DADOS -->
-    <div class="page-header">
-      <h1>
-        <mat-icon>person</mat-icon>
-        MEUS DADOS
-      </h1>
-    </div>
-
     <!-- Card principal -->
     <div class="profile-card">
       <form [formGroup]="editForm" (ngSubmit)="onSaveEdit()">
@@ -21,21 +13,36 @@
                 [name]="userData?.fullName || 'Usuário'"
                 [photoUrl]="previewUrl || userData?.photoURL"
                 [size]="120"
-                [showBorder]="true">
+                [showBorder]="true"
+              >
               </app-avatar>
-              <button type="button" class="change-photo-btn" (click)="fileInput.click()" [disabled]="photoUploading">
+              <button
+                type="button"
+                class="change-photo-btn"
+                (click)="fileInput.click()"
+                [disabled]="photoUploading"
+              >
                 <mat-spinner *ngIf="photoUploading" diameter="16"></mat-spinner>
                 <mat-icon *ngIf="!photoUploading">camera_alt</mat-icon>
-                {{ photoUploading ? 'Enviando...' : 'Alterar foto' }}
+                {{ photoUploading ? "Enviando..." : "Alterar foto" }}
               </button>
 
               <!-- Indicador de foto selecionada -->
-              <div class="photo-selected-indicator" *ngIf="selectedFile && !photoUploading">
+              <div
+                class="photo-selected-indicator"
+                *ngIf="selectedFile && !photoUploading"
+              >
                 <mat-icon>check_circle</mat-icon>
                 <span>Foto selecionada</span>
               </div>
 
-              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none" />
+              <input
+                type="file"
+                #fileInput
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                style="display: none"
+              />
             </div>
           </div>
 
@@ -43,30 +50,45 @@
           <div class="fields-section">
             <!-- E-mail -->
             <div class="form-field">
-              <label>E-mail</label>
-              <div class="input-container readonly">
-                <input type="email" [value]="userData?.email || ''" readonly />
-                <mat-icon class="lock-icon">lock</mat-icon>
-              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>E-mail</mat-label>
+                <input
+                  matInput
+                  type="email"
+                  [value]="userData?.email || ''"
+                  readonly
+                />
+                <mat-icon matSuffix>lock</mat-icon>
+              </mat-form-field>
               <a href="#" class="change-link">ALTERAR E-MAIL</a>
             </div>
 
             <!-- CPF e Data de nascimento lado a lado -->
             <div class="form-row">
               <div class="form-field">
-                <label>CPF</label>
-                <div class="input-container readonly">
-                  <input type="text" [value]="userData?.cpf || 'Não informado'" readonly />
-                  <mat-icon class="lock-icon">lock</mat-icon>
-                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>CPF</mat-label>
+                  <input
+                    matInput
+                    type="text"
+                    [value]="userData?.cpf || 'Não informado'"
+                    readonly
+                  />
+                  <mat-icon matSuffix>lock</mat-icon>
+                </mat-form-field>
               </div>
 
               <div class="form-field">
-                <label>Data de nascimento</label>
-                <div class="input-container readonly">
-                  <input type="text" [value]="formatBirthDate(userData?.birthDate)" readonly />
-                  <mat-icon class="lock-icon">lock</mat-icon>
-                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Data de nascimento</mat-label>
+                  <input
+                    matInput
+                    type="text"
+                    [value]="formatBirthDate(userData?.birthDate)"
+                    readonly
+                  />
+                  <mat-icon matSuffix>lock</mat-icon>
+                </mat-form-field>
               </div>
             </div>
           </div>
@@ -75,40 +97,79 @@
         <!-- Nome completo e Telefone lado a lado -->
         <div class="form-row">
           <div class="form-field">
-            <label>Nome completo*</label>
-            <div class="input-container">
-              <input matInput formControlName="fullName" placeholder="Digite seu nome completo" />
-            </div>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nome completo*</mat-label>
+              <input
+                matInput
+                formControlName="fullName"
+                placeholder="Digite seu nome completo"
+              />
+              <mat-error
+                *ngIf="
+                  editForm.get('fullName')?.invalid &&
+                  editForm.get('fullName')?.touched
+                "
+              >
+                Nome completo é obrigatório
+              </mat-error>
+            </mat-form-field>
             <div class="required-note">(*) Campos obrigatórios</div>
           </div>
 
           <div class="form-field">
-            <label>Telefone celular*</label>
-            <div class="input-container">
-              <input matInput formControlName="phone" placeholder="(00) 00000-0000" mask="(00) 00000-0000" />
-            </div>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Telefone celular</mat-label>
+              <input
+                matInput
+                formControlName="phone"
+                placeholder="(00) 00000-0000"
+                mask="(00) 00000-0000"
+              />
+              <mat-error
+                *ngIf="
+                  editForm.get('phone')?.invalid &&
+                  editForm.get('phone')?.touched
+                "
+              >
+                Formato inválido. Use: (00) 00000-0000
+              </mat-error>
+            </mat-form-field>
           </div>
         </div>
 
         <!-- Checkbox de marketing -->
         <div class="checkbox-field">
           <mat-checkbox formControlName="marketing" checked>
-            Quero receber ofertas e novidades por e-mail, SMS, WhatsApp ou mensagens nos Apps's KaBuM
+            Quero receber ofertas e novidades por e-mail, SMS, WhatsApp ou
+            mensagens nos Apps's KaBuM
           </mat-checkbox>
         </div>
 
         <!-- Botões de ação -->
         <div class="action-buttons">
           <div class="left-actions">
-            <a href="#" class="change-link" (click)="onTogglePassword(); $event.preventDefault()">
+            <a
+              href="#"
+              class="change-link"
+              (click)="onTogglePassword(); $event.preventDefault()"
+            >
               ALTERAR SENHA
             </a>
-            <a href="#" class="delete-link" (click)="onDeleteAccount(); $event.preventDefault()">
+            <a
+              href="#"
+              class="delete-link"
+              (click)="onDeleteAccount(); $event.preventDefault()"
+            >
               <mat-icon>delete</mat-icon>
               EXCLUIR MINHA CONTA
             </a>
           </div>
-          <button mat-raised-button type="submit" class="save-button" [disabled]="loading || editForm.invalid">
+          <button
+            mat-raised-button
+            type="submit"
+            class="save-button"
+            [disabled]="loading || editForm.invalid || !hasFormChanges()"
+          >
             {{ loading ? "SALVANDO..." : "SALVAR ALTERAÇÕES" }}
           </button>
         </div>
@@ -136,15 +197,24 @@
           <mat-form-field appearance="outline">
             <mat-label>Confirmar Senha</mat-label>
             <input matInput formControlName="confirmPassword" type="password" />
-            <mat-error *ngIf="confirmPassword?.invalid">Confirmação obrigatória</mat-error>
-            <mat-error *ngIf="passwordForm.hasError('mismatch')">Senhas não coincidem</mat-error>
+            <mat-error *ngIf="confirmPassword?.invalid"
+              >Confirmação obrigatória</mat-error
+            >
+            <mat-error *ngIf="passwordForm.hasError('mismatch')"
+              >Senhas não coincidem</mat-error
+            >
           </mat-form-field>
 
           <div class="modal-buttons">
             <button mat-button type="button" (click)="onTogglePassword()">
               Cancelar
             </button>
-            <button mat-raised-button color="primary" type="submit" [disabled]="loading || passwordForm.invalid">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="loading || passwordForm.invalid"
+            >
               {{ loading ? "Alterando..." : "Alterar Senha" }}
             </button>
           </div>

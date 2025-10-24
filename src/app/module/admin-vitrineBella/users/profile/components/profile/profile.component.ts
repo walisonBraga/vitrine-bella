@@ -37,7 +37,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.editForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)]],
+      phone: ['', [this.phoneValidator]],
       role: [{ value: '', disabled: true }, Validators.required],
       marketing: [true]
     });
@@ -77,6 +77,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
         marketing: this.userData.marketing ?? true
       });
     }
+  }
+
+  phoneValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value || value.trim() === '') {
+      return null; // Campo vazio é válido (opcional)
+    }
+
+    // Validação para formato brasileiro: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+    const phonePattern = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
+    return phonePattern.test(value) ? null : { invalidPhone: true };
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -291,6 +302,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.snackBar.open('Funcionalidade de exclusão de conta será implementada em breve', 'Fechar', {
       duration: 3000
     });
+  }
+
+  hasFormChanges(): boolean {
+    if (!this.userData) return false;
+
+    const formValue = this.editForm.value;
+    return (
+      formValue.fullName !== (this.userData.fullName || '') ||
+      formValue.phone !== (this.userData.phone || '') ||
+      formValue.marketing !== (this.userData.marketing ?? true) ||
+      this.selectedFile !== null
+    );
   }
 
   get email() { return this.editForm.get('email'); }

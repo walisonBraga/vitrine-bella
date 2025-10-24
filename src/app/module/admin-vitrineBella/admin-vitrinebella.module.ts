@@ -35,6 +35,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 // Importações Ngx-Mask
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
@@ -164,6 +165,7 @@ import { PreRegistrationService } from './shared/services/pre-registration.servi
     MatCardModule,
     MatChipsModule,
     MatRadioModule,
+    MatButtonToggleModule,
 
     //Material Mask
     NgxMaskDirective,

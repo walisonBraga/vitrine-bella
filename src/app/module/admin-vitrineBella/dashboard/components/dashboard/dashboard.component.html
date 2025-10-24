@@ -7,11 +7,34 @@
         <p class="header-subtitle">Estatísticas de produtos, vendas e lucros</p>
       </div>
       <div class="header-actions">
-        <button mat-raised-button color="primary" (click)="exportData()" class="header-btn" [disabled]="isLoading">
+        <!-- Period Filter -->
+        <mat-button-toggle-group
+          [(value)]="selectedPeriod"
+          (change)="onPeriodChange($event.value)"
+          class="period-filter"
+        >
+          <mat-button-toggle value="today">Hoje</mat-button-toggle>
+          <mat-button-toggle value="week">Semana</mat-button-toggle>
+          <mat-button-toggle value="month">Mês</mat-button-toggle>
+          <mat-button-toggle value="year">Ano</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="exportData()"
+          class="header-btn"
+          [disabled]="isLoading"
+        >
           <mat-icon>download</mat-icon>
           Exportar Relatório
         </button>
-        <button mat-button (click)="refreshData()" class="header-btn" [disabled]="isLoading">
+        <button
+          mat-button
+          (click)="refreshData()"
+          class="header-btn"
+          [disabled]="isLoading"
+        >
           <mat-icon>refresh</mat-icon>
           Atualizar
         </button>
@@ -31,6 +54,45 @@
       <button mat-button (click)="refreshData()">Tentar Novamente</button>
     </div>
 
+    <!-- Alerts Section -->
+    <section
+      *ngIf="!isLoading && !errorMessage && alerts.length > 0"
+      class="alerts-section"
+    >
+      <div
+        *ngFor="let alert of alerts"
+        class="alert-card"
+        [ngClass]="'alert-' + alert.type"
+      >
+        <div class="alert-content">
+          <div class="alert-icon">
+            <mat-icon>{{ alert.icon }}</mat-icon>
+          </div>
+          <div class="alert-text">
+            <h4>{{ alert.title }}</h4>
+            <p>{{ alert.message }}</p>
+          </div>
+          <div class="alert-actions">
+            <button
+              *ngIf="alert.action"
+              mat-button
+              color="primary"
+              (click)="alert.actionCallback?.()"
+            >
+              {{ alert.action }}
+            </button>
+            <button
+              mat-icon-button
+              (click)="dismissAlert(alert.id)"
+              class="dismiss-btn"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Stats Cards -->
     <section *ngIf="!isLoading && !errorMessage" class="stats-section">
       <mat-card class="stat-card">
@@ -49,10 +111,23 @@
       <mat-card class="stat-card">
         <mat-card-content>
           <div class="stat-icon">
+            <mat-icon>shopping_cart</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>{{ totalSales }}</h3>
+            <p>Total de Vendas</p>
+            <span class="growth positive">+{{ salesGrowth }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
             <mat-icon>trending_up</mat-icon>
           </div>
           <div class="stat-content">
-            <h3>R$ {{ dailySales | number:'1.2-2' }}</h3>
+            <h3>R$ {{ dailySales | number : "1.2-2" }}</h3>
             <p>Vendas Diárias</p>
             <span class="growth positive">+{{ salesGrowth }}%</span>
           </div>
@@ -65,9 +140,35 @@
             <mat-icon>account_balance</mat-icon>
           </div>
           <div class="stat-content">
-            <h3>R$ {{ annualProfit | number:'1.2-2' }}</h3>
-            <p>Lucro Anual</p>
+            <h3>R$ {{ monthlySales | number : "1.2-2" }}</h3>
+            <p>Vendas Mensais</p>
             <span class="growth positive">+{{ profitGrowth }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>{{ totalCustomers }}</h3>
+            <p>Total de Clientes</p>
+            <span class="growth positive">+{{ customersGrowth }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>R$ {{ averageOrderValue | number : "1.2-2" }}</h3>
+            <p>Ticket Médio</p>
+            <span class="growth positive">{{ conversionRate }}%</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -84,6 +185,19 @@
           </div>
         </mat-card-content>
       </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>analytics</mat-icon>
+          </div>
+          <div class="stat-content">
+            <h3>{{ conversionRate }}%</h3>
+            <p>Taxa de Conversão</p>
+            <span class="growth positive">+{{ customersGrowth }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </section>
 
     <!-- Charts Section -->
@@ -95,23 +209,35 @@
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container">
-            <apx-chart [series]="salesAmountByMonthChartData.series" [chart]="salesAmountByMonthChartData.chart"
-              [xaxis]="salesAmountByMonthChartData.xaxis" [dataLabels]="salesAmountByMonthChartData.dataLabels"
-              [title]="salesAmountByMonthChartData.title"></apx-chart>
+            <apx-chart
+              [series]="salesAmountByMonthChartData.series"
+              [chart]="salesAmountByMonthChartData.chart"
+              [xaxis]="salesAmountByMonthChartData.xaxis"
+              [dataLabels]="salesAmountByMonthChartData.dataLabels"
+              [title]="salesAmountByMonthChartData.title"
+              [colors]="salesAmountByMonthChartData.colors!"
+            ></apx-chart>
           </div>
         </mat-card-content>
       </mat-card>
 
       <mat-card class="chart-card">
         <mat-card-header>
-          <mat-card-title>Quantidade de Produtos Vendidos por Mês</mat-card-title>
+          <mat-card-title
+            >Quantidade de Produtos Vendidos por Mês</mat-card-title
+          >
           <mat-card-subtitle>Unidades vendidas</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container">
-            <apx-chart [series]="quantitySoldByMonthChartData.series" [chart]="quantitySoldByMonthChartData.chart"
-              [xaxis]="quantitySoldByMonthChartData.xaxis" [dataLabels]="quantitySoldByMonthChartData.dataLabels"
-              [title]="quantitySoldByMonthChartData.title"></apx-chart>
+            <apx-chart
+              [series]="quantitySoldByMonthChartData.series"
+              [chart]="quantitySoldByMonthChartData.chart"
+              [xaxis]="quantitySoldByMonthChartData.xaxis"
+              [dataLabels]="quantitySoldByMonthChartData.dataLabels"
+              [title]="quantitySoldByMonthChartData.title"
+              [colors]="quantitySoldByMonthChartData.colors!"
+            ></apx-chart>
           </div>
         </mat-card-content>
       </mat-card>
@@ -123,9 +249,55 @@
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container">
-            <apx-chart [series]="salesOverTimeChartData.series" [chart]="salesOverTimeChartData.chart"
-              [xaxis]="salesOverTimeChartData.xaxis" [dataLabels]="salesOverTimeChartData.dataLabels"
-              [title]="salesOverTimeChartData.title"></apx-chart>
+            <apx-chart
+              [series]="salesOverTimeChartData.series"
+              [chart]="salesOverTimeChartData.chart"
+              [xaxis]="salesOverTimeChartData.xaxis!"
+              [dataLabels]="salesOverTimeChartData.dataLabels!"
+              [title]="salesOverTimeChartData.title!"
+              [stroke]="salesOverTimeChartData.stroke!"
+              [colors]="salesOverTimeChartData.colors!"
+            ></apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Métodos de Pagamento</mat-card-title>
+          <mat-card-subtitle
+            >Distribuição por tipo de pagamento</mat-card-subtitle
+          >
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart
+              [series]="paymentMethodsChartData.series"
+              [chart]="paymentMethodsChartData.chart"
+              [labels]="paymentMethodsChartData.labels"
+              [title]="paymentMethodsChartData.title"
+              [colors]="paymentMethodsChartData.colors"
+              [legend]="paymentMethodsChartData.legend"
+            ></apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Distribuição por Categoria</mat-card-title>
+          <mat-card-subtitle>Produtos por categoria</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart
+              [series]="categoryDistributionChartData.series"
+              [chart]="categoryDistributionChartData.chart"
+              [labels]="categoryDistributionChartData.labels"
+              [title]="categoryDistributionChartData.title"
+              [colors]="categoryDistributionChartData.colors"
+              [legend]="categoryDistributionChartData.legend"
+            ></apx-chart>
           </div>
         </mat-card-content>
       </mat-card>
